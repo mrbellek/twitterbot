@@ -2,9 +2,11 @@
 // vim: foldmethod=marker
 
 /* Generic exception class
-*/
-class OAuthException extends Exception {
-  // pass
+ */
+if (!class_exists('OAuthException')) {
+  class OAuthException extends Exception {
+    // pass
+  }
 }
 
 class OAuthConsumer {
@@ -28,18 +30,18 @@ class OAuthToken {
   public $secret;
 
   /**
-* key = the token
-* secret = the token secret
-*/
+   * key = the token
+   * secret = the token secret
+   */
   function __construct($key, $secret) {
     $this->key = $key;
     $this->secret = $secret;
   }
 
   /**
-* generates the basic string serialization of a token that a server
-* would respond to request_token and access_token calls with
-*/
+   * generates the basic string serialization of a token that a server
+   * would respond to request_token and access_token calls with
+   */
   function to_string() {
     return "oauth_token=" .
            OAuthUtil::urlencode_rfc3986($this->key) .
@@ -53,36 +55,36 @@ class OAuthToken {
 }
 
 /**
-* A class for implementing a Signature Method
-* See section 9 ("Signing Requests") in the spec
-*/
+ * A class for implementing a Signature Method
+ * See section 9 ("Signing Requests") in the spec
+ */
 abstract class OAuthSignatureMethod {
   /**
-* Needs to return the name of the Signature Method (ie HMAC-SHA1)
-* @return string
-*/
+   * Needs to return the name of the Signature Method (ie HMAC-SHA1)
+   * @return string
+   */
   abstract public function get_name();
 
   /**
-* Build up the signature
-* NOTE: The output of this function MUST NOT be urlencoded.
-* the encoding is handled in OAuthRequest when the final
-* request is serialized
-* @param OAuthRequest $request
-* @param OAuthConsumer $consumer
-* @param OAuthToken $token
-* @return string
-*/
+   * Build up the signature
+   * NOTE: The output of this function MUST NOT be urlencoded.
+   * the encoding is handled in OAuthRequest when the final
+   * request is serialized
+   * @param OAuthRequest $request
+   * @param OAuthConsumer $consumer
+   * @param OAuthToken $token
+   * @return string
+   */
   abstract public function build_signature($request, $consumer, $token);
 
   /**
-* Verifies that a given signature is correct
-* @param OAuthRequest $request
-* @param OAuthConsumer $consumer
-* @param OAuthToken $token
-* @param string $signature
-* @return bool
-*/
+   * Verifies that a given signature is correct
+   * @param OAuthRequest $request
+   * @param OAuthConsumer $consumer
+   * @param OAuthToken $token
+   * @param string $signature
+   * @return bool
+   */
   public function check_signature($request, $consumer, $token, $signature) {
     $built = $this->build_signature($request, $consumer, $token);
     return $built == $signature;
@@ -90,12 +92,12 @@ abstract class OAuthSignatureMethod {
 }
 
 /**
-* The HMAC-SHA1 signature method uses the HMAC-SHA1 signature algorithm as defined in [RFC2104]
-* where the Signature Base String is the text and the key is the concatenated values (each first
-* encoded per Parameter Encoding) of the Consumer Secret and Token Secret, separated by an '&'
-* character (ASCII code 38) even if empty.
-* - Chapter 9.2 ("HMAC-SHA1")
-*/
+ * The HMAC-SHA1 signature method uses the HMAC-SHA1 signature algorithm as defined in [RFC2104] 
+ * where the Signature Base String is the text and the key is the concatenated values (each first 
+ * encoded per Parameter Encoding) of the Consumer Secret and Token Secret, separated by an '&' 
+ * character (ASCII code 38) even if empty.
+ *   - Chapter 9.2 ("HMAC-SHA1")
+ */
 class OAuthSignatureMethod_HMAC_SHA1 extends OAuthSignatureMethod {
   function get_name() {
     return "HMAC-SHA1";
@@ -118,24 +120,24 @@ class OAuthSignatureMethod_HMAC_SHA1 extends OAuthSignatureMethod {
 }
 
 /**
-* The PLAINTEXT method does not provide any security protection and SHOULD only be used
-* over a secure channel such as HTTPS. It does not use the Signature Base String.
-* - Chapter 9.4 ("PLAINTEXT")
-*/
+ * The PLAINTEXT method does not provide any security protection and SHOULD only be used 
+ * over a secure channel such as HTTPS. It does not use the Signature Base String.
+ *   - Chapter 9.4 ("PLAINTEXT")
+ */
 class OAuthSignatureMethod_PLAINTEXT extends OAuthSignatureMethod {
   public function get_name() {
     return "PLAINTEXT";
   }
 
   /**
-* oauth_signature is set to the concatenated encoded values of the Consumer Secret and
-* Token Secret, separated by a '&' character (ASCII code 38), even if either secret is
-* empty. The result MUST be encoded again.
-* - Chapter 9.4.1 ("Generating Signatures")
-*
-* Please note that the second encoding MUST NOT happen in the SignatureMethod, as
-* OAuthRequest handles this!
-*/
+   * oauth_signature is set to the concatenated encoded values of the Consumer Secret and 
+   * Token Secret, separated by a '&' character (ASCII code 38), even if either secret is 
+   * empty. The result MUST be encoded again.
+   *   - Chapter 9.4.1 ("Generating Signatures")
+   *
+   * Please note that the second encoding MUST NOT happen in the SignatureMethod, as
+   * OAuthRequest handles this!
+   */
   public function build_signature($request, $consumer, $token) {
     $key_parts = array(
       $consumer->secret,
@@ -151,13 +153,13 @@ class OAuthSignatureMethod_PLAINTEXT extends OAuthSignatureMethod {
 }
 
 /**
-* The RSA-SHA1 signature method uses the RSASSA-PKCS1-v1_5 signature algorithm as defined in
-* [RFC3447] section 8.2 (more simply known as PKCS#1), using SHA-1 as the hash function for
-* EMSA-PKCS1-v1_5. It is assumed that the Consumer has provided its RSA public key in a
-* verified way to the Service Provider, in a manner which is beyond the scope of this
-* specification.
-* - Chapter 9.3 ("RSA-SHA1")
-*/
+ * The RSA-SHA1 signature method uses the RSASSA-PKCS1-v1_5 signature algorithm as defined in 
+ * [RFC3447] section 8.2 (more simply known as PKCS#1), using SHA-1 as the hash function for 
+ * EMSA-PKCS1-v1_5. It is assumed that the Consumer has provided its RSA public key in a 
+ * verified way to the Service Provider, in a manner which is beyond the scope of this 
+ * specification.
+ *   - Chapter 9.3 ("RSA-SHA1")
+ */
 abstract class OAuthSignatureMethod_RSA_SHA1 extends OAuthSignatureMethod {
   public function get_name() {
     return "RSA-SHA1";
@@ -236,8 +238,8 @@ class OAuthRequest {
 
 
   /**
-* attempt to build up a request from what was passed to the server
-*/
+   * attempt to build up a request from what was passed to the server
+   */
   public static function from_request($http_method=NULL, $http_url=NULL, $parameters=NULL) {
     $scheme = (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] != "on")
               ? 'http'
@@ -287,8 +289,8 @@ class OAuthRequest {
   }
 
   /**
-* pretty much a helper function to set up the request
-*/
+   * pretty much a helper function to set up the request
+   */
   public static function from_consumer_and_token($consumer, $token, $http_method, $http_url, $parameters=NULL) {
     @$parameters or $parameters = array();
     $defaults = array("oauth_version" => OAuthRequest::$version,
@@ -331,9 +333,9 @@ class OAuthRequest {
   }
 
   /**
-* The request parameters, sorted and concatenated into a normalized string.
-* @return string
-*/
+   * The request parameters, sorted and concatenated into a normalized string.
+   * @return string
+   */
   public function get_signable_parameters() {
     // Grab all parameters
     $params = $this->parameters;
@@ -348,12 +350,12 @@ class OAuthRequest {
   }
 
   /**
-* Returns the base string of this request
-*
-* The base string defined as the method, the url
-* and the parameters (normalized), each urlencoded
-* and the concated with &.
-*/
+   * Returns the base string of this request
+   *
+   * The base string defined as the method, the url
+   * and the parameters (normalized), each urlencoded
+   * and the concated with &.
+   */
   public function get_signature_base_string() {
     $parts = array(
       $this->get_normalized_http_method(),
@@ -367,16 +369,16 @@ class OAuthRequest {
   }
 
   /**
-* just uppercases the http method
-*/
+   * just uppercases the http method
+   */
   public function get_normalized_http_method() {
     return strtoupper($this->http_method);
   }
 
   /**
-* parses the url and rebuilds it to be
-* scheme://host/path
-*/
+   * parses the url and rebuilds it to be
+   * scheme://host/path
+   */
   public function get_normalized_http_url() {
     $parts = parse_url($this->http_url);
 
@@ -395,8 +397,8 @@ class OAuthRequest {
   }
 
   /**
-* builds a url usable for a GET request
-*/
+   * builds a url usable for a GET request
+   */
   public function to_url() {
     $post_data = $this->to_postdata();
     $out = $this->get_normalized_http_url();
@@ -407,18 +409,18 @@ class OAuthRequest {
   }
 
   /**
-* builds the data one would send in a POST request
-*/
+   * builds the data one would send in a POST request
+   */
   public function to_postdata() {
     return OAuthUtil::build_http_query($this->parameters);
   }
 
   /**
-* builds the Authorization: header
-*/
+   * builds the Authorization: header
+   */
   public function to_header($realm=null) {
     $first = true;
-if($realm) {
+	if($realm) {
       $out = 'Authorization: OAuth realm="' . OAuthUtil::urlencode_rfc3986($realm) . '"';
       $first = false;
     } else
@@ -461,15 +463,15 @@ if($realm) {
   }
 
   /**
-* util function: current timestamp
-*/
+   * util function: current timestamp
+   */
   private static function generate_timestamp() {
     return time();
   }
 
   /**
-* util function: current nonce
-*/
+   * util function: current nonce
+   */
   private static function generate_nonce() {
     $mt = microtime();
     $rand = mt_rand();
@@ -480,7 +482,7 @@ if($realm) {
 
 class OAuthServer {
   protected $timestamp_threshold = 300; // in seconds, five minutes
-  protected $version = '1.0'; // hi blaine
+  protected $version = '1.0';             // hi blaine
   protected $signature_methods = array();
 
   protected $data_store;
@@ -497,9 +499,9 @@ class OAuthServer {
   // high level functions
 
   /**
-* process a request_token request
-* returns the request token on success
-*/
+   * process a request_token request
+   * returns the request token on success
+   */
   public function fetch_request_token(&$request) {
     $this->get_version($request);
 
@@ -518,9 +520,9 @@ class OAuthServer {
   }
 
   /**
-* process an access_token request
-* returns the access token on success
-*/
+   * process an access_token request
+   * returns the access token on success
+   */
   public function fetch_access_token(&$request) {
     $this->get_version($request);
 
@@ -539,8 +541,8 @@ class OAuthServer {
   }
 
   /**
-* verify an api call, checks all the parameters
-*/
+   * verify an api call, checks all the parameters
+   */
   public function verify_request(&$request) {
     $this->get_version($request);
     $consumer = $this->get_consumer($request);
@@ -551,12 +553,12 @@ class OAuthServer {
 
   // Internals from here
   /**
-* version 1
-*/
+   * version 1
+   */
   private function get_version(&$request) {
     $version = $request->get_parameter("oauth_version");
     if (!$version) {
-      // Service Providers MUST assume the protocol version to be 1.0 if this parameter is not present.
+      // Service Providers MUST assume the protocol version to be 1.0 if this parameter is not present. 
       // Chapter 7.0 ("Accessing Protected Ressources")
       $version = '1.0';
     }
@@ -567,8 +569,8 @@ class OAuthServer {
   }
 
   /**
-* figure out the signature with some defaults
-*/
+   * figure out the signature with some defaults
+   */
   private function get_signature_method(&$request) {
     $signature_method =
         @$request->get_parameter("oauth_signature_method");
@@ -591,8 +593,8 @@ class OAuthServer {
   }
 
   /**
-* try to find the consumer for the provided request's consumer key
-*/
+   * try to find the consumer for the provided request's consumer key
+   */
   private function get_consumer(&$request) {
     $consumer_key = @$request->get_parameter("oauth_consumer_key");
     if (!$consumer_key) {
@@ -608,8 +610,8 @@ class OAuthServer {
   }
 
   /**
-* try to find the token for the provided request's token key
-*/
+   * try to find the token for the provided request's token key
+   */
   private function get_token(&$request, $consumer, $token_type="access") {
     $token_field = @$request->get_parameter('oauth_token');
     $token = $this->data_store->lookup_token(
@@ -622,9 +624,9 @@ class OAuthServer {
   }
 
   /**
-* all-in-one function to check the signature on a request
-* should guess the signature method appropriately
-*/
+   * all-in-one function to check the signature on a request
+   * should guess the signature method appropriately
+   */
   private function check_signature(&$request, $consumer, $token) {
     // this should probably be in a different method
     $timestamp = @$request->get_parameter('oauth_timestamp');
@@ -649,8 +651,8 @@ class OAuthServer {
   }
 
   /**
-* check that the timestamp is new enough
-*/
+   * check that the timestamp is new enough
+   */
   private function check_timestamp($timestamp) {
     if( ! $timestamp )
       throw new OAuthException(
@@ -667,8 +669,8 @@ class OAuthServer {
   }
 
   /**
-* check that the nonce is not repeated
-*/
+   * check that the nonce is not repeated
+   */
   private function check_nonce($consumer, $token, $nonce, $timestamp) {
     if( ! $nonce )
       throw new OAuthException(
@@ -870,5 +872,3 @@ class OAuthUtil {
     return implode('&', $pairs);
   }
 }
-
-?>

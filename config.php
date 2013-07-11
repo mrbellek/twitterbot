@@ -7,7 +7,7 @@ define('ACCESS_TOKEN', 'insert_your_access_token_here');
 define('ACCESS_TOKEN_SECRET', 'insert_your_access_token_secret_here');
 
 $twitter = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
-$twitter->host = "http://search.twitter.com/";
+$twitter->host = "https://api.twitter.com/1.1/";
 $search = $twitter->get('search', array('q' => 'search key word', 'rpp' => 15));
 
 $twitter->host = "https://api.twitter.com/1.1/";
@@ -18,5 +18,3 @@ foreach($search->results as $tweet) {
 }
 
 echo "Success! Check your twitter bot for retweets!";
-
-?>
