@@ -12,9 +12,7 @@ $search = $twitter->get('search/tweets', array(
 foreach($search->statuses as $tweet) {
 	die(var_dumP('<pre>',$tweet));
 	echo $tweet->text . "<br>\n";
-	//$status = 'RT @'.$tweet->from_user.' '.$tweet->text;
-	//if(strlen($status) > 140) $status = substr($status, 0, 139);
-	//$twitter->post('statuses/update', array('status' => $status));
+	$twitter->get('statuses/retweet/' . $tweet->id_str);
 }
 
 echo "<br>Done!";
