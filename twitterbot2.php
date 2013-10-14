@@ -9,7 +9,7 @@ $twitter->host = "https://api.twitter.com/1.1/";
 //////////////
 $allowedUser = 'FoundDildo';
 $minimumRateLimit = 10;
-$searchString = 'found dildo -RT -retweet -retweeted -"people demand rubber dicks" -"ask.fm" -tumblr -tmblr';
+$searchString = 'found vibrator -RT -retweet -retweeted -"ask.fm" -tumblr -tmblr';
 $searchMax = 10;
 $searchFilters = array(
 	'"@',				//quote (instead of retweet)
@@ -17,6 +17,8 @@ $searchFilters = array(
 	'“@',				//mangled smart quote
 	'@ebay',			//don't retweet stupid ebay links
 	'@founddildo',		//don't retweet mentions
+	'plot twist',		//don't retweet some dumb joke
+	'#hukd',			//don't retweet 'hotdealsUK'
 );
 $userFilters = array('dildo');
 
@@ -51,7 +53,7 @@ if ($rateLimit->remaining < $minimumRateLimit) {
 //////////////////////////////////////////////////////////////////////////////
 printf('Searching for "%s".. (%d max)<br>', $searchString, $searchMax); //
 //////////////////////////////////////////////////////////////////////////////
-$lastSearch = @json_decode(file_get_contents('lastsearch.json'));
+$lastSearch = @json_decode(file_get_contents('lastsearch2.json'));
 $search = $twitter->get('search/tweets', array(
 	'q' 			=> $searchString,
 	'result_type' 	=> 'mixed',
@@ -62,7 +64,7 @@ $data = array(
 	'max_id' => $search->search_metadata->max_id_str,
 	'timestamp' => date('Y-m-d H:i:s'),
 );
-file_put_contents('lastsearch.json', json_encode($data));
+file_put_contents('lastsearch2.json', json_encode($data));
 if (empty($search->statuses) || count($search->statuses) == 0) {
 	printf('- no results since last search (done at %s).<br><br>', $lastSearch->timestamp);
 	die('Done!');
