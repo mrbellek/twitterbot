@@ -9,6 +9,16 @@ $search = $twitter->get('search/tweets', array(
 	'count' => 15,
 ));
 
+/*
+ * TODO:
+ * - extra zoektermen die bij RoundTeam in de config zaten ("@, [office quote]@, @ebay, ask.fm, people demand rubber dicks)
+ * - links expanden en filteren op zoektermen
+ * - username/description/bio filteren op zoektermen
+ * - in config.json opslaan vanaf welke id laatst gezocht is, zodat niet dingen 2x geretweet worden
+ * - cronjob mss aanpassen zodat deze 1x of 2x per uur draait
+ * - ratelimit ophalen? GET application/rate_limit_status
+ */
+
 foreach($search->statuses as $tweet) {
 	die(var_dumP('<pre>',$tweet));
 	echo $tweet->text . "<br>\n";
