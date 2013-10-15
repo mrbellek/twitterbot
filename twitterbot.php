@@ -10,7 +10,7 @@ $twitter->host = "https://api.twitter.com/1.1/";
 $allowedUser = 'FoundDildo';
 $minimumRateLimit = 10;
 $searchString = 'found dildo -RT -retweet -retweeted -"people demand rubber dicks" -"ask.fm" -tumblr -tmblr';
-$searchMax = 10;
+$searchMax = 5;
 $searchFilters = array(
 	'"@',				//quote (instead of retweet)
 	chr(147) . '@',		//smart quote “

@@ -10,7 +10,7 @@ $twitter->host = "https://api.twitter.com/1.1/";
 $allowedUser = 'ChunkyBot';
 $minimumRateLimit = 10;
 $searchString = '"chunky monkey" ice -RT -retweet -retweeted -vegan';
-$searchMax = 10;
+$searchMax = 5;
 $searchFilters = array(
 	'"@',				//quote (instead of retweet)
 	chr(147) . '@',		//smart quote “
