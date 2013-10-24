@@ -9,7 +9,7 @@ $twitter->host = "https://api.twitter.com/1.1/";
 //////////////
 $allowedUser = 'FoundDildo';
 $minimumRateLimit = 10;
-$searchString = 'found vibrator -RT -retweet -retweeted -"ask.fm" -tumblr -tmblr';
+$searchString = 'found vibrator -RT -retweet -retweeted -"ask.fm" -tumblr -tmblr -"cat hissing"';
 $searchMax = 5;
 $searchFilters = array(
 	'"@',				//quote (instead of retweet)
