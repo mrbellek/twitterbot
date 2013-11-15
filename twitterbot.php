@@ -17,6 +17,7 @@ $searchFilters = array(
 	'“@',				//mangled smart quote
 	'@ebay',			//don't retweet stupid ebay links
 	'@founddildo',		//don't retweet mentions
+	'baggins',			//don't retweet mentions of @Dildo_Baggins or w/e
 );
 $userFilters = array('dildo');
 
