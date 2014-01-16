@@ -50,9 +50,19 @@ if ($rateLimit->remaining < $minimumRateLimit) {
 	printf('- remaining %d/%d calls, reset at %s<br><br>', $rateLimit->remaining, $rateLimit->limit, date('Y-m-d H:i:s', $rateLimit->reset));
 }
 
-//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////
+echo 'Getting blocked users..<br>'; //
+//////////////////////////////////////
+$blockedUsers = $twitter->get('blocks/ids');
+if (!isset($blockedUsers->ids)) {
+	die('- Unable to get blocked users, stopping<br><br>');
+} else {
+	echo '<br>';
+}
+
+//////////////////////////////////////////////////////////////////////////
 printf('Searching for "%s".. (%d max)<br>', $searchString, $searchMax); //
-//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 $lastSearch = @json_decode(file_get_contents('lastsearch2.json'));
 $search = $twitter->get('search/tweets', array(
 	'q' 			=> $searchString,
@@ -91,6 +101,15 @@ foreach($search->statuses as $status) {
 	foreach ($userFilters as $filter) {
 		if(strpos(strtolower($tweet->user->screen_name), $filter) !== FALSE) {
 			printf('<b>Skipping tweet because username contains "%s"</b> (%s)<br>', $filter, $tweet->user->screen_name);
+			$skipTweet = TRUE;
+			break;
+		}
+	}
+
+	//check blocked
+	foreach ($blockedUsers->ids as $blockedId) {
+		if ($tweet->user->id == $blockedId) {
+			printf('<b>Skipping tweet because user "%s" is blocked</b><br>', $tweet->user->screen_name);
 			$skipTweet = TRUE;
 			break;
 		}
