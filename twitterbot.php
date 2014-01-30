@@ -18,6 +18,7 @@ $searchFilters = array(
 	'@ebay',			//don't retweet stupid ebay links
 	'@founddildo',		//don't retweet mentions
 	'baggins',			//don't retweet mentions of @Dildo_Baggins or w/e
+	'found andy'		//don't retweet pic of woody doll with dildos anymore
 );
 $userFilters = array('dildo');
 
