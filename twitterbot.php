@@ -19,6 +19,7 @@ $searchFilters = array(
 	'@founddildo',		//don't retweet mentions
 	'baggins',			//don't retweet mentions of @Dildo_Baggins or w/e
 	'found andy'		//don't retweet pic of woody doll with dildos anymore
+	'fish'				//don't retweet norwegian fisherman who found a dildo inside a cod's stomach anymore
 );
 $userFilters = array('dildo');
 
