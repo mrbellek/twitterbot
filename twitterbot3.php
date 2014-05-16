@@ -60,7 +60,7 @@ if (!isset($blockedUsers->ids)) {
 //////////////////////////////////////////////////////////////////////////
 printf('Searching for "%s".. (%d max)<br>', $searchString, $searchMax); //
 //////////////////////////////////////////////////////////////////////////
-$lastSearch = @json_decode(file_get_contents('lastsearch3.json'));
+$lastSearch = @json_decode(file_get_contents(MYPATH . '/lastsearch3.json'));
 $search = $twitter->get('search/tweets', array(
 	'q' 			=> $searchString,
 	'result_type' 	=> 'mixed',
@@ -71,7 +71,7 @@ $data = array(
 	'max_id' => $search->search_metadata->max_id_str,
 	'timestamp' => date('Y-m-d H:i:s'),
 );
-file_put_contents('lastsearch3.json', json_encode($data));
+file_put_contents(MYPATH . '/lastsearch3.json', json_encode($data));
 if (empty($search->statuses) || count($search->statuses) == 0) {
 	printf('- no results since last search (done at %s).<br><br>', $lastSearch->timestamp);
 	die('Done!');
