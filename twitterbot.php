@@ -24,7 +24,7 @@ $searchFilters = array(
 );
 
 $userFilters = array(
-	'dildo'				//don't retweet anyone with dildo in their handle
+	'dildo',			//don't retweet anyone with dildo in their handle
 );
 
 ///////////////////////////////////////

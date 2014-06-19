@@ -16,12 +16,15 @@ $searchFilters = array(
 	chr(147) . '@',		//smart quote “
 	'â€œ@',				//mangled smart quote
 	'@ebay',			//don't retweet stupid ebay links
+	'found on ebay',	//more stupid ebay spam
 	'@founddildo',		//don't retweet mentions
 	'plot twist',		//don't retweet some dumb joke
 	'#hukd',			//don't retweet 'hotdealsUK'
 	'fish',				//don't retweet fisherman finding a vibrator inside a cod
 );
-$userFilters = array('dildo');
+$userFilters = array(
+	'dildo',			//don't retweet anyone with dildo in their handle
+);
 
 ///////////////////////////////////////
 echo '<pre>Fetching identity..<br>'; //
