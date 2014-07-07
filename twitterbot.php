@@ -11,17 +11,16 @@ $allowedUser = 'FoundDildo';
 $minimumRateLimit = 10;
 $searchString = 'found dildo -RT -retweet -retweeted -"people demand rubber dicks" -"ask.fm" -tumblr -tmblr';
 $searchMax = 5;
+
+//hardcoded filters
 $searchFilters = array(
 	'"@',				//quote (instead of retweet)
 	chr(147) . '@',		//smart quote “
 	'â€œ@',				//mangled smart quote
-	'@ebay',			//don't retweet stupid ebay links
-	'found on ebay',	//more stupid ebay spam
-	'@founddildo',		//don't retweet mentions
-	'baggins',			//don't retweet mentions of @Dildo_Baggins or w/e
-	'found andy',		//don't retweet pic of woody doll with dildos anymore
-	'fish',				//don't retweet norwegian fisherman who found a dildo inside a cod's stomach anymore
 );
+if ($extraFilters = @json_decode(file_get_contents(MYPATH . '/filters.json'))) {
+	$searchFilters = array_merge($searchFilters, $extraFilters);
+}
 
 $userFilters = array(
 	'dildo',			//don't retweet anyone with dildo in their handle
