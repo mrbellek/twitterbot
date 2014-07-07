@@ -21,7 +21,6 @@ $searchFilters = array(
 if ($extraFilters = @json_decode(file_get_contents(MYPATH . '/filters2.json'))) {
 	$searchFilters = array_merge($searchFilters, $extraFilters);
 }
-die(var_dump($searchFilters));
 
 $userFilters = array(
 	'dildo',			//don't retweet anyone with dildo in their handle
