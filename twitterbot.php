@@ -12,14 +12,18 @@ $minimumRateLimit = 10;
 $searchString = 'found dildo -RT -retweet -retweeted -"people demand rubber dicks" -"ask.fm" -tumblr -tmblr';
 $searchMax = 5;
 
+//load JSON settings
+$jsonSettings = json_decode(file_get_contents(MYPATH . '/settings.json'), TRUE);
+
 //hardcoded filters
 $searchFilters = array(
 	'"@',				//quote (instead of retweet)
 	chr(147) . '@',		//smart quote “
 	'â€œ@',				//mangled smart quote
 );
-if ($extraFilters = @json_decode(file_get_contents(MYPATH . '/filters.json'))) {
-	$searchFilters = array_merge($searchFilters, $extraFilters);
+
+if (!empty($jsonSettings['filters'])) {
+	$searchFilters = array_merge($searchFilters, $jsonSettings['filters']);
 }
 
 $userFilters = array(
@@ -67,7 +71,7 @@ if (!isset($blockedUsers->ids)) {
 //////////////////////////////////////////////////////////////////////////
 printf('Searching for "%s".. (%d max)<br>', $searchString, $searchMax); //
 //////////////////////////////////////////////////////////////////////////
-$lastSearch = @json_decode(file_get_contents(MYPATH . '/lastsearch.json'));
+$lastSearch = json_decode(file_get_contents(MYPATH . '/lastsearch.json'));
 $search = $twitter->get('search/tweets', array(
 	'q' 			=> $searchString,
 	'result_type' 	=> 'mixed',
@@ -79,6 +83,7 @@ $data = array(
 	'timestamp' => date('Y-m-d H:i:s'),
 );
 file_put_contents(MYPATH . '/lastsearch.json', json_encode($data));
+
 if (empty($search->statuses) || count($search->statuses) == 0) {
 	printf('- no results since last search (done at %s).<br><br>', $lastSearch->timestamp);
 	die('Done!');
@@ -119,6 +124,12 @@ foreach($search->statuses as $status) {
 		}
 	}
 
+	//calculate probability that we will retweet this based on content
+	if (mt_rand() / mt_getrandmax() > rollDie($tweet, $jsonSettings['dice'])) {
+		printf('<b>Skipping tweet because the dice said so: %s<br>', str_replace("\n", ' ', $tweet->text));
+		$skipTweet = TRUE;
+	}
+
 	if (!$skipTweet) {
 		printf('Retweeting: <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
 			$tweet->user->screen_name,
@@ -152,4 +163,25 @@ function expandUrls($tweet, $urls = TRUE, $photos = FALSE) {
 		}
 	}
 	return $tweet;
+}
+
+//calculate probability we should tweet this, based on some properties
+function rollDie($tweet, $settings) {
+
+	if (!empty($tweet->entities->media) && count($tweet->entities->media) > 0) {
+		//photos are usually funny (1.0)
+		return $settings['media'];
+
+	} elseif (!empty($tweet->entities->urls) && count($tweet->entities->urls) > 0) {
+		//links are ok but can be porn (0.8)
+		return $settings['urls'];
+
+	} elseif (strpos('@', $tweet->text) === 0) {
+		//mentions tend to be 'remember that time' stories or insults (0.5)
+		return $settings['mentions'];
+
+	} else {
+		//regular tweets are better than mentions (0.6)
+		return $settings['base'];
+	}
 }
