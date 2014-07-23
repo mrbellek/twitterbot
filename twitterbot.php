@@ -22,6 +22,7 @@ $searchFilters = array(
 	'“@',				//mangled smart quote
 );
 
+//load more filters from settings
 if (!empty($jsonSettings['filters'])) {
 	$searchFilters = array_merge($searchFilters, $jsonSettings['filters']);
 }
@@ -29,6 +30,16 @@ if (!empty($jsonSettings['filters'])) {
 $userFilters = array(
 	'dildo',			//don't retweet anyone with dildo in their handle
 );
+
+//set default dice values
+if (empty($jsonSettings['dice'])) {
+	$jsonSettings['dice'] = array(
+		'media' => 1.0,
+		'urls' => 0.8,
+		'mentions' => 0.5,
+		'base' => 0.7
+	);
+}
 
 ///////////////////////////////////////
 echo '<pre>Fetching identity..<br>'; //
