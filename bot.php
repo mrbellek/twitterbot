@@ -22,7 +22,7 @@ class TwitterBot
 	private $sSettingsFile;		//where to get settings from
 	private $sLastSearchFile;	//where to save data from last search
 
-	public function __construct() {
+	public function __construct($aArgs) {
 
 		$this->oTwitter = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
 		$this->oTwitter->host = "https://api.twitter.com/1.1/";
@@ -43,9 +43,6 @@ class TwitterBot
 			'mentions'	=> 0.5,
 			'base' 		=> 0.7,
 		);
-	}
-
-	public function init($aArgs) {
 
 		//parse arguments, set values or defaults
 		$this->sUsername 		= (!empty($aArgs['sUsername']) ? $aArgs['sUsername'] : '');
@@ -143,7 +140,10 @@ class TwitterBot
 			));
 		} else {
 			printf('- Remaining %d/%d calls (blocked users), next reset at %s.<br><br>',
-				$oBlockedLimit->remaining, $oBlockedLimit->limit, date('Y-m-d H:i:s', $oBlockedLimit->reset));
+				$oBlockedLimit->remaining,
+				$oBlockedLimit->limit,
+				date('Y-m-d H:i:s', $oBlockedLimit->reset)
+			);
 		}
 	}
 
@@ -344,4 +344,3 @@ class TwitterBot
 		die($sMessage . '<br><br>Done!');
 	}
 }
-

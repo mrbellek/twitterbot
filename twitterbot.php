@@ -2,8 +2,7 @@
 require_once('config.inc.php');
 require_once('bot.php');
 
-$oTwitterBot = new TwitterBot;
-$oTwitterBot->init(array(
+$oTwitterBot = new TwitterBot(array(
 	'sUsername'			=> 'FoundDildo',
 	'sSettingsFile'		=> 'settings.json',
 	'sLastSearchFile'	=> 'lastsearch.json',
