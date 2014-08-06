@@ -12,7 +12,7 @@ class TwitterBot
 	private $aUsernameFilters = array();
 	private $aDiceValues = array();
 
-	//stuff passed in init
+	//stuff passed in constructor 
 	private $sUsername;			//username we will be tweeting from
 	private $sSearchString;		//search query
 	private $iSearchMax;		//max search results to get at once
@@ -97,7 +97,7 @@ class TwitterBot
 		echo 'Fetching identity..<br>';
 
 		if (!$this->sUsername) {
-			$this->halt('- No username! Set username when calling init().');
+			$this->halt('- No username! Set username when calling constructor.');
 		}
 
 		$oCurrentUser = $this->oTwitter->get('/account/verify_credentials');
@@ -162,7 +162,7 @@ class TwitterBot
 	private function doSearch() {
 
 		if (empty($this->sSearchString)) {
-			$this->halt('No search string! Set search string when calling init().');
+			$this->halt('No search string! Set search string when calling constructor.');
 		}
 
 		printf('Searching for "%s".. (%d max)<br>', $this->sSearchString, $this->iSearchMax);
