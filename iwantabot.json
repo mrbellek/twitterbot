@@ -1,0 +1,13 @@
+{
+	"filters": [
+		"@iwantabot",
+	],
+	"userfilters": [
+	],
+	"dice": {
+		"media": 1.0,
+		"urls": 1.0,
+		"mentions": 1.0,
+		"base": 1.0
+	}
+}

@@ -1,4 +1,8 @@
 <?php
+/*
+ * TODO:
+ * - implement multiple search strings (run command arg? or array of search strings?)
+ */
 require_once('twitteroauth.php');
 
 class TwitterBot
@@ -14,7 +18,7 @@ class TwitterBot
 
 	//stuff passed in constructor 
 	private $sUsername;			//username we will be tweeting from
-	private $sSearchString;		//search query
+	private $aSearchStrings;	//search query
 	private $iSearchMax;		//max search results to get at once
 
 	private $iMinRateLimit;		//rate limit threshold, halt if rate limit is below this
@@ -46,7 +50,7 @@ class TwitterBot
 
 		//parse arguments, set values or defaults
 		$this->sUsername 		= (!empty($aArgs['sUsername']) ? $aArgs['sUsername'] : '');
-		$this->sSearchString	= (!empty($aArgs['sSearchString']) ? $aArgs['sSearchString'] : '');
+		$this->aSearchStrings	= (!empty($aArgs['aSearchStrings']) ? $aArgs['aSearchStrings'] : '');
 		$this->iSearchMax		= (!empty($aArgs['iSearchMax']) ? $aArgs['iSearchMax'] : 5);
 		$this->iMinRateLimit	= (!empty($aArgs['iMinRateLimit']) ? $aArgs['iMinRateLimit'] : 5);
 		$this->sSettingsFile 	= (!empty($aArgs['sSettingsFile']) ? $aArgs['sSettingsFile'] : 'settings.json');
@@ -82,12 +86,19 @@ class TwitterBot
 				//retrieve list of all blocked users
 				if ($this->getBlockedUsers()) {
 
-					//perform search for stuff to retweet
-					if ($this->doSearch()) {
+					//loop through all search strings
+					$this->aSearchStrings = (is_array($this->aSearchStrings) ? $this->aSearchStrings : array(1 => $this->aSearchStrings));
+					foreach ($this->aSearchStrings as $iIndex => $sSearchString) {
 
-						//filter and retweet
-						$this->doRetweets();
+						//perform search for stuff to retweet
+						if ($this->doSearch($sSearchString, $iIndex)) {
+
+							//filter and retweet
+							$this->doRetweets();
+						}
 					}
+
+					$this->halt('<br>Performed all searches.');
 				}
 			}
 		}
@@ -173,20 +184,20 @@ class TwitterBot
 		return TRUE;
 	}
 
-	private function doSearch() {
+	private function doSearch($sSearchString, $iIndex) {
 
-		if (empty($this->sSearchString)) {
+		if (empty($sSearchString)) {
 			$this->halt('No search string! Set search string when calling constructor.');
 			return FALSE;
 		}
 
-		printf('Searching formax %d tweets with: %s..<br>', $this->iSearchMax, $this->sSearchString);
+		printf('Searching for max %d tweets with: %s..<br>', $this->iSearchMax, $sSearchString);
 
 		//retrieve data for last search to prevent duplicates
-		$aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . $this->sLastSearchFile), TRUE);
+		$aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . sprintf($this->sLastSearchFile, $iIndex)), TRUE);
 
 		$oSearch = $this->oTwitter->get('search/tweets', array(
-			'q'				=> $this->sSearchString,
+			'q'				=> $sSearchString,
 			'result_type'	=> 'mixed',
 			'count'			=> $this->iSearchMax,
 			'since_id'		=> ($aLastSearch && !empty($aLastSearch['max_id']) ? $aLastSearch['max_id'] : FALSE),
@@ -202,16 +213,17 @@ class TwitterBot
 			'max_id'	=> $oSearch->search_metadata->max_id_str,
 			'timestamp'	=> date('Y-m-d H:i:s'),
 		);
-		file_put_contents(MYPATH . '/' . $this->sLastSearchFile, json_encode($aThisSearch));
+		file_put_contents(MYPATH . '/' . sprintf($this->sLastSearchFile, $iIndex), json_encode($aThisSearch));
 
+		$this->aTweets = FALSE;
 		if (empty($oSearch->statuses) || count($oSearch->statuses) == 0) {
-			$this->halt(sprintf('- No results since last search at %s, halting.', $aLastSearch['timestamp']));
+			printf('- No results since last search at %s.<br><br>', $aLastSearch['timestamp']);
 			return FALSE;
+
+		} else {
+			$this->aTweets = $oSearch->statuses;
+			return TRUE;
 		}
-
-		$this->aTweets = $oSearch->statuses;
-
-		return TRUE;
 	}
 
 	private function doRetweets() {
@@ -244,6 +256,8 @@ class TwitterBot
 				return FALSE;
 			}
 		}
+
+		$this->aTweets = FALSE;
 	}
 
 	//apply all filters to a tweet to determine if we're retweeting it
