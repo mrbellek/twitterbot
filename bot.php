@@ -53,7 +53,7 @@ class TwitterBot
 		$this->sLastSearchFile 	= (!empty($aArgs['sLastSearchFile']) ? $aArgs['sLastSearchFile'] : 'lastsearch.json');
 
 		//load settings
-		$this->aSettings = json_decode(file_get_contents(MYPATH . '/' . $this->sSettingsFile), TRUE);
+		$this->aSettings = json_decode(@file_get_contents(MYPATH . '/' . $this->sSettingsFile), TRUE);
 
 		//merge tweet text filters
 		if (!empty($this->aSettings['filters'])) {
@@ -74,22 +74,24 @@ class TwitterBot
 	public function run() {
 
 		//get current user and verify it's the right one
-		$this->getIdentity();
+		if ($this->getIdentity()) {
 
-		//check rate limit status
-		$this->getRateLimitStatus();
+			//check rate limit status
+			if ($this->getRateLimitStatus()) {
 
-		//retrieve list of all blocked users
-		$this->getBlockedUsers();
+				//retrieve list of all blocked users
+				if ($this->getBlockedUsers()) {
 
-		//perform search for stuff to retweet
-		$this->doSearch();
+					//perform search for stuff to retweet
+					if ($this->doSearch()) {
 
-		//filter and retweet
-		$this->doRetweets();
-
+						//filter and retweet
+						$this->doRetweets();
+					}
+				}
+			}
+		}
 		//end
-		$this->halt();
 	}
 
 	private function getIdentity() {
@@ -98,6 +100,7 @@ class TwitterBot
 
 		if (!$this->sUsername) {
 			$this->halt('- No username! Set username when calling constructor.');
+			return FALSE;
 		}
 
 		$oCurrentUser = $this->oTwitter->get('/account/verify_credentials');
@@ -107,10 +110,14 @@ class TwitterBot
 				printf('- Allowed: @%s, continuing.<br><br>', $oCurrentUser->screen_name);
 			} else {
 				$this->halt(sprintf('- Not allowed: @%s (expected: %s), halting.', $oCurrentUser->screen_name, $this->aUsername));
+				return FALSE;
 			}
 		} else {
 			$this->halt(sprintf('- Call failed, halting. (%s)', $oCurrentUser->errors[0]->message));
+			return FALSE;
 		}
+
+		return TRUE;
 	}
 
 	private function getRateLimitStatus() {
@@ -127,6 +134,7 @@ class TwitterBot
 				$oRateLimit->limit,
 				date('Y-m-d H:i:s', $oRateLimit->reset)
 			));
+			return FALSE;
 		} else {
 			printf('- Remaining %d/%d calls (search), next reset at %s.<br>', $oRateLimit->remaining, $oRateLimit->limit, date('Y-m-d H:i:s', $oRateLimit->reset));
 		}
@@ -138,6 +146,7 @@ class TwitterBot
 				$oBlockedLimit->limit,
 				date('Y-m-d H:i:s', $oBlockedLimit->reset)
 			));
+			return FALSE;
 		} else {
 			printf('- Remaining %d/%d calls (blocked users), next reset at %s.<br><br>',
 				$oBlockedLimit->remaining,
@@ -145,6 +154,8 @@ class TwitterBot
 				date('Y-m-d H:i:s', $oBlockedLimit->reset)
 			);
 		}
+
+		return TRUE;
 	}
 
 	private function getBlockedUsers() {
@@ -154,21 +165,25 @@ class TwitterBot
 
 		if (empty($oBlockedUsers->ids)) {
 			$this->halt(sprintf('- Unable to get blocked users, halting. (%s)', $oBlockedUsers->errors[0]->message));
+			return FALSE;
 		} else {
 			$this->aBlockedUsers = $oBlockedUsers->ids;
 		}
+
+		return TRUE;
 	}
 
 	private function doSearch() {
 
 		if (empty($this->sSearchString)) {
 			$this->halt('No search string! Set search string when calling constructor.');
+			return FALSE;
 		}
 
-		printf('Searching for "%s".. (%d max)<br>', $this->sSearchString, $this->iSearchMax);
+		printf('Searching formax %d tweets with: %s..<br>', $this->iSearchMax, $this->sSearchString);
 
 		//retrieve data for last search to prevent duplicates
-		$aLastSearch = json_decode(file_get_contents(MYPATH . '/' . $this->sLastSearchFile), TRUE);
+		$aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . $this->sLastSearchFile), TRUE);
 
 		$oSearch = $this->oTwitter->get('search/tweets', array(
 			'q'				=> $this->sSearchString,
@@ -179,6 +194,7 @@ class TwitterBot
 
 		if (empty($oSearch->search_metadata)) {
 			$this->halt(sprintf('- Unable to get search results, halting. (%s)', $oSearch->errors[0]->message));
+			return FALSE;
 		}
 
 		//save data for next run
@@ -190,15 +206,19 @@ class TwitterBot
 
 		if (empty($oSearch->statuses) || count($oSearch->statuses) == 0) {
 			$this->halt(sprintf('- No results since last search at %s, halting.', $aLastSearch['timestamp']));
+			return FALSE;
 		}
 
 		$this->aTweets = $oSearch->statuses;
+
+		return TRUE;
 	}
 
 	private function doRetweets() {
 
 		if (empty($this->aTweets)) {
 			$this->halt('Nothing to retweet.');
+			return FALSE;
 		}
 
 		foreach ($this->aTweets as $oTweet) {
@@ -217,7 +237,12 @@ class TwitterBot
 				$oTweet->user->screen_name,
 				str_replace("\n", ' ', $oTweet->text)
 			);
-			$this->oTwitter->post('statuses/retweet/' . $oTweet->id_str);
+			$oRet = $this->oTwitter->post('statuses/retweet/' . $oTweet->id_str);
+
+			if (!empty($oRet->error)) {
+				$this->halt(sprintf('- Retweet failed, halting. %s', $oRet->error));
+				return FALSE;
+			}
 		}
 	}
 
@@ -341,6 +366,7 @@ class TwitterBot
 	}
 
 	private function halt($sMessage = '') {
-		die($sMessage . '<br><br>Done!');
+		echo $sMessage . '<br><br>Done!<br><br>';
+		return FALSE;
 	}
 }
