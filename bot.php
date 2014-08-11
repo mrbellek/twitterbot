@@ -48,13 +48,26 @@ class TwitterBot
 			'base' 		=> 0.7,
 		);
 
+		//parse arguments and merge with defaults
+		$this->parseArgs($aArgs);
+
+		//load settings file and merge with defaults
+		$this->loadSettings();
+	}
+
+	private function parseArgs($aArgs) {
+
 		//parse arguments, set values or defaults
-		$this->sUsername 		= (!empty($aArgs['sUsername']) ? $aArgs['sUsername'] : '');
-		$this->aSearchStrings	= (!empty($aArgs['aSearchStrings']) ? $aArgs['aSearchStrings'] : '');
-		$this->iSearchMax		= (!empty($aArgs['iSearchMax']) ? $aArgs['iSearchMax'] : 5);
-		$this->iMinRateLimit	= (!empty($aArgs['iMinRateLimit']) ? $aArgs['iMinRateLimit'] : 5);
-		$this->sSettingsFile 	= (!empty($aArgs['sSettingsFile']) ? $aArgs['sSettingsFile'] : 'settings.json');
-		$this->sLastSearchFile 	= (!empty($aArgs['sLastSearchFile']) ? $aArgs['sLastSearchFile'] : 'lastsearch.json');
+		$this->sUsername 		= (!empty($aArgs['sUsername']) 		? $aArgs['sUsername']		: '');
+		$this->aSearchStrings	= (!empty($aArgs['aSearchStrings']) ? $aArgs['aSearchStrings']	: '');
+		$this->iSearchMax		= (!empty($aArgs['iSearchMax'])		? $aArgs['iSearchMax']		: 5);
+		$this->iMinRateLimit	= (!empty($aArgs['iMinRateLimit'])	? $aArgs['iMinRateLimit']	: 5);
+
+		$this->sSettingsFile 	= (!empty($aArgs['sSettingsFile'])	? $aArgs['sSettingsFile']		: strtolower($this->sUsername) . '.json');
+		$this->sLastSearchFile 	= (!empty($aArgs['sLastSearchFile']) ? $aArgs['sLastSearchFile']	: strtolower($this->sUsername) . '-last%d.json');
+	}
+
+	private function loadSettings() {
 
 		//load settings
 		$this->aSettings = json_decode(@file_get_contents(MYPATH . '/' . $this->sSettingsFile), TRUE);
