@@ -1,7 +1,9 @@
 <?php
 /*
  * TODO:
- * - implement multiple search strings (run command arg? or array of search strings?)
+ * - display number of blocked users when getting list
+ * - only get rate limit status of relevant calls
+ * - rename object to RetweetBot or something
  */
 require_once('twitteroauth.php');
 
@@ -127,13 +129,13 @@ class TwitterBot
 			return FALSE;
 		}
 
-		$oCurrentUser = $this->oTwitter->get('/account/verify_credentials');
+		$oCurrentUser = $this->oTwitter->get('account/verify_credentials');
 
 		if (is_object($oCurrentUser)) {
 			if ($oCurrentUser->screen_name = $this->sUsername) {
 				printf('- Allowed: @%s, continuing.<br><br>', $oCurrentUser->screen_name);
 			} else {
-				$this->halt(sprintf('- Not allowed: @%s (expected: %s), halting.', $oCurrentUser->screen_name, $this->aUsername));
+				$this->halt(sprintf('- Not allowed: @%s (expected: %s), halting.', $oCurrentUser->screen_name, $this->sUsername));
 				return FALSE;
 			}
 		} else {

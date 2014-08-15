@@ -9,7 +9,7 @@ $oTwitterBot = new TwitterBot(array(
 	'aSearchStrings'	=> array(
 		1 => '"i want a bot"',
 		2 => '"i want a twitter bot"',
-		3 => '"i need a bot"',
+		3 => '"i need a * bot"',
 		4 => '"i need a twitter bot"',
 	),
 ));

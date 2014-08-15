@@ -3,6 +3,7 @@
 		"@iwantabot",
 	],
 	"userfilters": [
+		"bot",
 	],
 	"dice": {
 		"media": 1.0,
