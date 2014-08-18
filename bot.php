@@ -27,6 +27,7 @@ class TwitterBot
 
 	private $sSettingsFile;		//where to get settings from
 	private $sLastSearchFile;	//where to save data from last search
+	private $sLogFile;			//where to log stuff
 
 	public function __construct($aArgs) {
 
@@ -67,6 +68,11 @@ class TwitterBot
 
 		$this->sSettingsFile 	= (!empty($aArgs['sSettingsFile'])	? $aArgs['sSettingsFile']		: strtolower($this->sUsername) . '.json');
 		$this->sLastSearchFile 	= (!empty($aArgs['sLastSearchFile']) ? $aArgs['sLastSearchFile']	: strtolower($this->sUsername) . '-last%d.json');
+		$this->sLogFile			= (!empty($aArgs['sLogFile'])		? $aArgs['sLogFile']			: strtolower($this->sUsername) . '.log');
+
+		if ($this->sLogFile == '.log') {
+			$this->sLogFile = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME) . '.log';
+		}
 	}
 
 	private function loadSettings() {
@@ -125,20 +131,23 @@ class TwitterBot
 		echo 'Fetching identity..<br>';
 
 		if (!$this->sUsername) {
+			$this->logger(2, 'No username');
 			$this->halt('- No username! Set username when calling constructor.');
 			return FALSE;
 		}
 
 		$oCurrentUser = $this->oTwitter->get('account/verify_credentials');
 
-		if (is_object($oCurrentUser)) {
-			if ($oCurrentUser->screen_name = $this->sUsername) {
+		if (is_object($oCurrentUser) && !empty($oCurrentUser->screen_name)) {
+			if ($oCurrentUser->screen_name == $this->sUsername) {
 				printf('- Allowed: @%s, continuing.<br><br>', $oCurrentUser->screen_name);
 			} else {
+				$this->logger(2, sprintf('Authenticated username was unexpected: %s (expected: %s)', $oCurrentUser->screen_name, $this->sUsername));
 				$this->halt(sprintf('- Not allowed: @%s (expected: %s), halting.', $oCurrentUser->screen_name, $this->sUsername));
 				return FALSE;
 			}
 		} else {
+			$this->logger(2, sprintf('Twitter API call failed: GET account/verify_credentials (%s)', $oCurrentUser->errors[0]->message));
 			$this->halt(sprintf('- Call failed, halting. (%s)', $oCurrentUser->errors[0]->message));
 			return FALSE;
 		}
@@ -155,6 +164,7 @@ class TwitterBot
 
 		//check if remaining calls for search is lower than threshold (after reset: 180)
 		if ($oRateLimit->remaining < $this->iMinRateLimit) {
+			$this->logger(3, sprintf('Rate limit for GET search/tweets hit, waiting until %s', date('Y-m-d H:i:s', $oRateLimit->reset)));
 			$this->halt(sprintf('- Remaining %d/%d calls! Aborting search until next reset at %s.',
 				$oRateLimit->remaining,
 				$oRateLimit->limit,
@@ -167,6 +177,7 @@ class TwitterBot
 
 		//check if remaining calls for blocked users is lower than treshold (after reset: 15)
 		if ($oBlockedLimit->remaining < $this->iMinRateLimit) {
+			$this->logger(3, sprintf('Rate limit for GET blocks/ids hit, waiting until %s', date('Y-m-d H:i:s', $oBlockedLimit->reset)));
 			$this->halt(sprintf('- Remaining %d/%d calls for blocked users! Aborting search until next reset at %s.',
 				$oBlockedLimit->remaining,
 				$oBlockedLimit->limit,
@@ -190,6 +201,7 @@ class TwitterBot
 		$oBlockedUsers = $this->oTwitter->get('blocks/ids');
 
 		if (empty($oBlockedUsers->ids)) {
+			$this->logger(2, sprintf('Twitter API call failed: GET blocks/ids (%s)', $oBlockedUsers->errors[0]->message));
 			$this->halt(sprintf('- Unable to get blocked users, halting. (%s)', $oBlockedUsers->errors[0]->message));
 			return FALSE;
 		} else {
@@ -202,6 +214,7 @@ class TwitterBot
 	private function doSearch($sSearchString, $iIndex) {
 
 		if (empty($sSearchString)) {
+			$this->logger(2, 'No search string set');
 			$this->halt('No search string! Set search string when calling constructor.');
 			return FALSE;
 		}
@@ -219,6 +232,7 @@ class TwitterBot
 		));
 
 		if (empty($oSearch->search_metadata)) {
+			$this->logger(2, sprintf('Twitter API call failed: GET /search/tweets (%s)', $oSearch->errors[0]->message));
 			$this->halt(sprintf('- Unable to get search results, halting. (%s)', $oSearch->errors[0]->message));
 			return FALSE;
 		}
@@ -244,6 +258,7 @@ class TwitterBot
 	private function doRetweets() {
 
 		if (empty($this->aTweets)) {
+			$this->logger(3, 'Nothing to retweet.');
 			$this->halt('Nothing to retweet.');
 			return FALSE;
 		}
@@ -267,7 +282,8 @@ class TwitterBot
 			$oRet = $this->oTwitter->post('statuses/retweet/' . $oTweet->id_str);
 
 			if (!empty($oRet->error)) {
-				$this->halt(sprintf('- Retweet failed, halting. %s', $oRet->error));
+				$this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s)', $oRet->error));
+				$this->halt(sprintf('- Retweet failed, halting. (%s)', $oRet->error));
 				return FALSE;
 			}
 		}
@@ -397,5 +413,39 @@ class TwitterBot
 	private function halt($sMessage = '') {
 		echo $sMessage . '<br><br>Done!<br><br>';
 		return FALSE;
+	}
+
+	private function logger($iLevel, $sMessage) {
+
+		$sLogLine = "%s [%s] %s\n";
+		$sTimestamp = date('Y-m-d H:i:s');
+
+		switch($iLevel) {
+			case 1:
+				$sLevel = 'FATAL';
+				break;
+			case 2:
+				$sLevel = 'ERROR';
+				break;
+			case 3:
+				$sLevel = 'WARN';
+				break;
+			case 4:
+			default:
+				$sLevel = 'INFO';
+				break;
+			case 5:
+				$sLevel = 'DEBUG';
+				break;
+			case 6:
+				$sLevel = 'TRACE';
+				break;
+		}
+
+		$iRet = file_put_contents($this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
+
+		if ($iRet === FALSE) {
+			die($sTimestamp . ' [FATAL] Unable to write to logfile!');
+		}
 	}
 }
