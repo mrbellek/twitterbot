@@ -212,16 +212,11 @@ class TweetBot {
 			}
 		}
 
-		if (strlen($sTweet) > 140) {
-			$this->halt('- Something stupid happened formatting tweet: it\'s too long!');
-			return FALSE;
-		}
-
 		return $sTweet;
 	}
 
 	private function halt($sMessage = '') {
-		echo $sMessage . '<br><br>Done!><br><br>';
+		echo $sMessage . '<br><br>Done!<br><br>';
 		return FALSE;
 	}
 }
