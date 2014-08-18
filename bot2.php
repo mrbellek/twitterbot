@@ -3,6 +3,13 @@ require_once('twitteroauth.php');
 
 class TweetBot {
 
+	private $sUsername;			//username we will be tweeting from
+
+	private $sLogFile;			//where to log stuff
+
+	private $aDbSettings;		//database query settings
+	private $aTweetSettings;	//tweet format settings
+
 	public function __construct($aArgs) {
 
 		//connect to twitter
@@ -25,6 +32,12 @@ class TweetBot {
 			'sFormat'		=> (isset($aArgs['sTweetFormat']) ? $aArgs['sTweetFormat'] : ''),
 			'aTweetVars'	=> (isset($aArgs['aTweetVars']) ? $aArgs['aTweetVars'] : array()),
 		);
+
+		$this->sLogFile			= (!empty($aArgs['sLogFile'])		? $aArgs['sLogFile']			: strtolower($this->sUsername) . '.log');
+
+		if ($this->sLogFile == '.log') {
+			$this->sLogFile = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME) . '.log';
+		}
 	}
 
 	public function run() {
@@ -49,20 +62,23 @@ class TweetBot {
 		echo 'Fetching identify..<br>';
 
 		if (!$this->sUsername) {
+			$this->logger(2, 'No username');
 			$this->halt('- No username! Set username when calling constructor.');
 			return FALSE;
 		}
 
 		$oUser = $this->oTwitter->get('account/verify_credentials');
 
-		if (is_object($oUser)) {
-			if ($oUser->screen_name = $this->sUsername) {
+		if (is_object($oUser) && !empty($oUser->screen_name)) {
+			if ($oUser->screen_name == $this->sUsername) {
 				printf('- Allowed: @%s, continuing.<br><br>', $oUser->screen_name);
 			} else {
+				$this->logger(2, sprintf('Authenticated username was unexpected: %s (expected: %s)', $oUser->screen_name, $this->sUsername));
 				$this->halt(sprintf('- Not alowed: @%s (expected: %s), halting.', $oUser->screen_name, $this->sUsername));
 				return FALSE;
 			}
 		} else {
+			$this->logger(2, sprintf('Twitter API call failed: GET account/verify_credentials (%s)', $oUser->errors[0]->message));
 			$this->halt(sprintf('- Call failed, halting. (%s)', $oUser->errors[0]->message));
 			return FALSE;
 		}
@@ -77,6 +93,7 @@ class TweetBot {
 		if (!defined('DB_HOST') || !defined('DB_NAME') ||
 			!defined('DB_USER') || !defined('DB_PASS')) {
 
+			$this->logger(2, 'MySQL database credentials missing.');
 			$this->halt('- One or more of the MySQL database credentials are missing, halting.');
 			return FALSE;
 		}
@@ -84,6 +101,7 @@ class TweetBot {
 		if (empty($this->aDbSettings) || empty($this->aDbSettings['sTable']) || empty($this->aDbSettings['sIdCol']) || 
 			empty($this->aDbSettings['sCounterCol']) || empty($this->aDbSettings['sTimestampCol'])) {
 
+			$this->logger(2, 'Database table settings missing.');
 			$this->halt('- One or more of the database table settings are missing, halting.');
 			return FALSE;
 		}
@@ -91,7 +109,9 @@ class TweetBot {
 		try {
 			$oPDO = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS);
 		} catch(Exception $e) {
+			$this->logger(2, sprintf('Database connection failed. (%s)', $e->getMessage()));
 			$this->halt(sprintf('- Database connection failed. (%s)', $e->getMessage()));
+			return FALSE;
 		}
 
 		//fetch random record out of those with the lowest counter value
@@ -109,6 +129,7 @@ class TweetBot {
 		));
 
 		if ($sth->execute() == FALSE) {
+			$this->logger(2, sprintf('Select query failed. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
 			$this->halt(sprintf('- Select query failed, halting. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
 			return FALSE;
 		}
@@ -130,6 +151,7 @@ class TweetBot {
 		));
 		$sth->bindValue(':id', $aRecord[$this->aDbSettings['sIdCol']], PDO::PARAM_INT);
 		if ($sth->execute() == FALSE) {
+			$this->logger(2, sprintf('Update query failed. (%d %s)', $stf->errorCode(), $sth->errorInfo()));
 			$this->halt(sprintf('- Update query failed, halting. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
 			return FALSE;
 		}
@@ -150,6 +172,7 @@ class TweetBot {
 		//tweet
 		$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet));
 		if (isset($oRet->errors)) {
+			$this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
 			$this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
 			return FALSE;
 		} else {
@@ -166,6 +189,7 @@ class TweetBot {
 		$iShortUrlLength = 22;	//NB: 1 char more for https links
 
 		if (empty($this->aTweetSettings['sFormat']) || empty($this->aTweetSettings['aTweetVars'])) {
+			$this->logger(2, 'Tweet format settings missing.');
 			$this->halt('- One or more of the tweet format settings are missing, halting.');
 			return FALSE;
 		}
@@ -218,5 +242,39 @@ class TweetBot {
 	private function halt($sMessage = '') {
 		echo $sMessage . '<br><br>Done!<br><br>';
 		return FALSE;
+	}
+
+	private function logger($iLevel, $sMessage) {
+
+		$sLogLine = "%s [%s] %s\n";
+		$sTimestamp = date('Y-m-d H:i:s');
+
+		switch($iLevel) {
+			case 1:
+				$sLevel = 'FATAL';
+				break;
+			case 2:
+				$sLevel = 'ERROR';
+				break;
+			case 3:
+				$sLevel = 'WARN';
+				break;
+			case 4:
+			default:
+				$sLevel = 'INFO';
+				break;
+			case 5:
+				$sLevel = 'DEBUG';
+				break;
+			case 6:
+				$sLevel = 'TRACE';
+				break;
+		}
+
+		$iRet = file_put_contents($this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
+
+		if ($iRet === FALSE) {
+			die($sTimestamp . ' [FATAL] Unable to write to logfile!');
+		}
 	}
 }
