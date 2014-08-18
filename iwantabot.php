@@ -2,7 +2,7 @@
 require_once('iwantabot.inc.php');
 require_once('bot.php');
 
-$oTwitterBot = new TwitterBot(array(
+$oTwitterBot = new RetweetBot(array(
 	'sUsername'			=> 'IWantABot',
 	'sSettingsFile'		=> 'iwantabot.json',
 	'sLastSearchFile'	=> 'iwantabot-last%d.json',

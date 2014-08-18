@@ -1,13 +1,7 @@
 <?php
-/*
- * TODO:
- * - display number of blocked users when getting list
- * - only get rate limit status of relevant calls
- * - rename object to RetweetBot or something
- */
 require_once('twitteroauth.php');
 
-class TwitterBot
+class RetweetBot
 {
 	//stuff we get from twitter
 	private $oTwitter;
@@ -158,7 +152,7 @@ class TwitterBot
 	private function getRateLimitStatus() {
 
 		echo 'Fetching rate limit status..<br>';
-		$oStatus = $this->oTwitter->get('application/rate_limit_status');
+		$oStatus = $this->oTwitter->get('application/rate_limit_status', array('resources' => 'search,blocks'));
 		$oRateLimit = $oStatus->resources->search->{'/search/tweets'};
 		$oBlockedLimit = $oStatus->resources->blocks->{'/blocks/ids'};
 
@@ -205,6 +199,7 @@ class TwitterBot
 			$this->halt(sprintf('- Unable to get blocked users, halting. (%s)', $oBlockedUsers->errors[0]->message));
 			return FALSE;
 		} else {
+			echo '- ' . count($oBlockedUsers->ids) . ' on list<br>';
 			$this->aBlockedUsers = $oBlockedUsers->ids;
 		}
 

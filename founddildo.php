@@ -2,7 +2,7 @@
 require_once('founddildo.inc.php');
 require_once('bot.php');
 
-$oTwitterBot = new TwitterBot(array(
+$oTwitterBot = new RetweetBot(array(
 	'sUsername'			=> 'FoundDildo',
 	'sSettingsFile'		=> 'founddildo.json',
 	'sLastSearchFile'	=> 'founddildo-last%d.json',
