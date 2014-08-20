@@ -1,6 +1,6 @@
 <?php
 require_once('iwantabot.inc.php');
-require_once('bot.php');
+require_once('retweetbot.php');
 
 $oTwitterBot = new RetweetBot(array(
 	'sUsername'			=> 'IWantABot',

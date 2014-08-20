@@ -1,6 +1,6 @@
 <?php
-require_once('bitcoinnotes.inc.php');
-require_once('bot2.php');
+require_once('notesfrombtc.inc.php');
+require_once('tweetbot.php');
 
 $oTwitterBot = new TweetBot(array(
 	'sUsername'		=> 'NotesFromBTC',

@@ -1,6 +1,6 @@
 <?php
 require_once('founddildo.inc.php');
-require_once('bot.php');
+require_once('retweetbot.php');
 
 $oTwitterBot = new RetweetBot(array(
 	'sUsername'			=> 'FoundDildo',
