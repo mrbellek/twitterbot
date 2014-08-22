@@ -358,9 +358,10 @@ class RetweetBot
 		$lProbability = $this->aDiceValues['base'];
 
 		if (!empty($oTweet->entities->media) && count($oTweet->entities->media) > 0 
-			|| strpos('instagram.com/p/', $oTweet->text) !== FALSE) {
+			|| strpos('instagram.com/p/', $oTweet->text) !== FALSE
+			|| strpos('vine.co/v/', $oTweet->text) !== FALSE) {
 
-			//photos are usually funny - certain
+			//photos/videos are usually funny - certain
 			$lProbability = $this->aDiceValues['media'];
 
 		} elseif (!empty($oTweet->entities->urls) && count($oTweet->entities->urls) > 0) {
