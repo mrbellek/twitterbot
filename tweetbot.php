@@ -67,7 +67,7 @@ class TweetBot {
 			return FALSE;
 		}
 
-		$oUser = $this->oTwitter->get('account/verify_credentials');
+		$oUser = $this->oTwitter->get('account/verify_credentials', array('include_entities' => FALSE, 'skip_status' => TRUE));
 
 		if (is_object($oUser) && !empty($oUser->screen_name)) {
 			if ($oUser->screen_name == $this->sUsername) {
@@ -170,7 +170,7 @@ class TweetBot {
 		}
 
 		//tweet
-		$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet));
+		$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
 		if (isset($oRet->errors)) {
 			$this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
 			$this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');

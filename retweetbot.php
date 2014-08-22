@@ -130,7 +130,7 @@ class RetweetBot
 			return FALSE;
 		}
 
-		$oCurrentUser = $this->oTwitter->get('account/verify_credentials');
+		$oCurrentUser = $this->oTwitter->get('account/verify_credentials', array('include_entities' => FALSE, 'skip_status' => TRUE));
 
 		if (is_object($oCurrentUser) && !empty($oCurrentUser->screen_name)) {
 			if ($oCurrentUser->screen_name == $this->sUsername) {
@@ -192,7 +192,8 @@ class RetweetBot
 	private function getBlockedUsers() {
 
 		echo 'Getting blocked users..<br>';
-		$oBlockedUsers = $this->oTwitter->get('blocks/ids');
+		$oBlockedUsers = $this->oTwitter->get('blocks/ids', array('stringify_ids' => TRUE));
+		//note that not providing the 'cursor' param causes pagination in batches of 5000 ids
 
 		if (empty($oBlockedUsers->ids)) {
 			$this->logger(2, sprintf('Twitter API call failed: GET blocks/ids (%s)', $oBlockedUsers->errors[0]->message));
@@ -274,7 +275,7 @@ class RetweetBot
 				$oTweet->user->screen_name,
 				str_replace("\n", ' ', $oTweet->text)
 			);
-			$oRet = $this->oTwitter->post('statuses/retweet/' . $oTweet->id_str);
+			$oRet = $this->oTwitter->post('statuses/retweet/' . $oTweet->id_str, array('trim_user' => TRUE));
 
 			if (!empty($oRet->error)) {
 				$this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s)', $oRet->error));
