@@ -1,7 +1,8 @@
 {
 	"filters": [
 		"@chunkybot",
-		"cloudyapples"
+		"cloudyapples",
+		"pizza-cake"
 	],
 	"dice": {
 		"media": 1.0,
