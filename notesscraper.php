@@ -41,6 +41,9 @@ class NotesScraper {
         'bitcoinsand', 'daily simple interest',
     );
 
+    private $sCsvExport = './notesscraper.csv';
+    private $sSqlExport = './notesscraper.sql';
+
     public function __construct($aAddresses) {
 
         $this->aAddresses = $aAddresses;
@@ -50,9 +53,14 @@ class NotesScraper {
             echo '<pre>';
         }
 
+        //reset export files
         $this->resetFiles();
 
-        $this->spiderAddresses();
+        //parse the blockchain urls of addresses
+        $this->parseAddresses();
+
+        //truncate last comma of sql export
+        $this->finalizeFiles();
 
         echo "done!";
     }
@@ -60,13 +68,23 @@ class NotesScraper {
     private function resetFiles() {
 
         //reset
-        unlink('notesscraper.csv');
-        unlink('notesscraper.sql');
-        file_put_contents('notesscraper.sql', 'INSERT INTO notes(note, tx) VALUES' . "\r\n");
+        @unlink($this->sCsvExport);
+        @unlink($this->sSqlExport);
+        file_put_contents($this->sSqlExport, 'INSERT INTO notes(note, tx) VALUES' . "\r\n");
     }
 
+    private function finalizeFiles() {
 
-    private function spiderAddresses() {
+        //trim last comma (and return carriage) from sql file, if it exists
+        if($oHandle = fopen($this->sSqlExport, 'r+')) {
+
+            $aStat = fstat($oHandle);
+            ftruncate($oHandle, $aStat['size'] - 3);
+            fclose($oHandle); 
+        }
+    }
+
+    private function parseAddresses() {
 
         //loop through addresses
         foreach ($this->aAddresses as $iKey => $sAddress) {
@@ -78,31 +96,15 @@ class NotesScraper {
                 die('file_get_contents failed!');
             }
             
-            //look for public notes
             echo 'checking pages for public notes: ';
-            if (preg_match_all('/<div class="alert note"><b>Public Note:<\/b> (.*?)<\/div>.*?href="(\/tx\/[a-zA-Z0-9]{64})"/', $sHTML, $aMatches)) {
-                echo count($aMatches[1]) . ' ';
+            $this->parseNotes($sHTML);
 
-                $this->parseNotes($aMatches);
-            } else {
-                echo '. ';
-            }
-
-            //get other pages, if any
             $iOffset = 50;
-            //keep going as long as next link is present AND it is not disabled
+            //get next pages, as long as next link is present AND it is not disabled
             while (preg_match('/<li class="next ?">/', $sHTML) && !preg_match('/<li class="next disabled/', $sHTML)) {
 
                 $sHTML = file_get_contents($sAddress . '?offset=' . $iOffset . '&filter=0');
-
-                //look for public notes
-                if (preg_match_all('/<div class="alert note"><b>Public Note:<\/b> (.*?)<\/div>.*?href="(\/tx\/[a-zA-Z0-9]{64})"/', $sHTML, $aMatches)) {
-                    echo count($aMatches[1]) . ' ';
-
-                    $this->parseNotes($aMatches);
-                } else {
-                    echo '. ';
-                }
+                $this->parseNotes($sHTML);
 
                 $iOffset += 50;
             }
@@ -110,28 +112,37 @@ class NotesScraper {
         }
     }
 
-    private function parseNotes($aMatches) {
+    private function parseNotes($sHTML) {
                 
-        //loop through public notes (+ transaction ids)
-        foreach ($aMatches[1] as $iKey2 => $sNote) {
+        //look for public notes
+        if (preg_match_all('/<div class="alert note"><b>Public Note:<\/b> (.*?)<\/div>.*?href="(\/tx\/[a-zA-Z0-9]{64})"/', $sHTML, $aMatches)) {
+            echo count($aMatches[1]) . ' ';
 
-            //apply filters
-            $bFiltered = FALSE;
-            foreach ($this->aFilters as $sFilter) {
-                if (stripos($sNote, $sFilter) !== FALSE) {
-                    //keyword match, don't save
-                    $bFiltered = TRUE;
+            //loop through public notes (+ transaction ids)
+            foreach ($aMatches[1] as $iKey2 => $sNote) {
+
+                //apply filters
+                $bFiltered = FALSE;
+                foreach ($this->aFilters as $sFilter) {
+                    if (stripos($sNote, $sFilter) !== FALSE) {
+                        //keyword match, don't save
+                        $bFiltered = TRUE;
+                    }
+                }
+
+                //write to file
+                if (!$bFiltered) {
+                    //save some space, tweets are short
+                    $sNote = preg_replace('/[a-z0-9]{64}/i', '[transaction]', $sNote);
+                    $sNote = preg_replace('/[a-z0-9]{26,34}/i', '[address]', $sNote);
+
+                    //append line to csv and sql
+                    file_put_contents($this->sCsvExport, '"' . str_replace('"', '\"', $sNote) . '","' . $aMatches[2][$iKey2] . "\"\r\n", FILE_APPEND);
+                    file_put_contents($this->sSqlExport, '("' . str_replace('"', '\"', $sNote) . '","' . $aMatches[2][$iKey2] . "\"),\r\n", FILE_APPEND);
                 }
             }
-
-            //write to file
-            if (!$bFiltered) {
-                $sNote = preg_replace('/[a-z0-9]{64}/i', '[transaction]', $sNote);
-                $sNote = preg_replace('/[a-z0-9]{26,34}/i', '[address]', $sNote);
-                file_put_contents('notesscraper.csv', '"' . str_replace('"', '\"', $sNote) . '","' . $aMatches[2][$iKey2] . "\"\r\n", FILE_APPEND);
-                file_put_contents('notesscraper.sql', '("' . str_replace('"', '\"', $sNote) . '","' . $aMatches[2][$iKey2] . "\"),\r\n", FILE_APPEND);
-                //TODO: remove trailing comma in last line of sql file
-            }
+        } else {
+            echo '. ';
         }
     }
 }
