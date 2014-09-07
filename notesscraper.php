@@ -1,33 +1,8 @@
 <?php
 set_time_limit(0);
 
-//put yer addresses to spider here
-//TODO: google for site:blockchain.info "public note" hits in last 30 days?
-$aAddresses = array(
-    'https://blockchain.info/address/1JvXNLXUJdBnbSye6LH1RsE51ySDH2qQw5',
-    'https://blockchain.info/address/1XeH1kKXWYbzZcFHokGiZ4d3MWW5WyXzU',
-    'https://blockchain.info/address/1uJw4z4UHcGBdpJcwPxWqm9nyUgtsUmPu',
-    'https://blockchain.info/address/1QAHVyRzkmD4j1pU5W89htZ3c6D6E7iWDs',
-    'https://blockchain.info/address/1LBregs3t4goLpvBghbJbFLoyt1rPL3jJh',
-    'https://blockchain.info/address/1K6e5BTPVbzMuyXsysodsubiZPhdubUGFG',
-    'https://blockchain.info/address/1Bc29jnuUKNt1gf1vgLtnFBPy754QcVKhh',
-    'https://blockchain.info/address/1F8tjT7zfXfR5vpwSz9W5FkJuKNBHVRMnS',
-    'https://blockchain.info/address/1nPfxnncZqWvVP4UHT6XLfNzfaik7akQS',
-    'https://blockchain.info/address/1EiNgZmQsFN4rJLZJWt93quMEz3X82FJd2',
-    'https://blockchain.info/address/1EkKs6UgNx2t715ALXdiHfKS1rdrFk1PHA',
-    'https://blockchain.info/address/1FfCDbgmPmbdjrzUyp9s4vnrc5nvLxR7Yh',
-    'https://blockchain.info/address/31oSGBBNrpCiENH3XMZpiP6GTC4tad4bMy',
-    'https://blockchain.info/address/15u8aAPK4jJ5N8wpWJ5gutAyyeHtKX5i18',
-    'https://blockchain.info/address/15Wtrm7ou3p9WaH8YXLtWGXoUnUssppsb9',
-    'https://blockchain.info/address/1EhxrTcRHyFd2LFwbVwHqvhsEx8Fz9EaTA',
-    'https://blockchain.info/address/1M87hiTAa49enJKVeT9gzLjYmJoYh9V98',
-    'https://blockchain.info/address/149tkc36EfESvdhAtkwTsaMjCpP5nd3p8t',
-    'https://blockchain.info/address/1McqPj92jvWfFg5F24dwyDSUptjTosH2EY',
-    'https://blockchain.info/address/134dV6U7gQ6wCFbfHUz2CMh6Dth72oGpgH',
-    'https://blockchain.info/address/1L6Xzog5krZ4KZF344NvGZMRpx2bND7ogE',
-);
-
-$o = new NotesScraper($aAddresses);
+//start the scraper, optionally pass an array of urls to spider in constructor
+$o = new NotesScraper();
 
 class NotesScraper {
 
@@ -35,18 +10,53 @@ class NotesScraper {
 
     //filter out some spam
     private $aFilters = array(
-        'freebitco.in',
-        'peerluck',
-        'btc-dice',
+        '48hourbtc.com',
+        '9bitz.eu',
+        'abitback.com',
+        'adbit.co',
+        'bitads.net',
+        'bitbucks',
+        'bitcoinforest',
+        'bitcoinposter.com',
+        'bitcoins4.me',
         'bitcoinsand', 'daily simple interest',
+        'bitcoinworld.me',
+        'bitonplay',
+        'bitsleep.com',
+        'btc-dice',
+        'btclove.net',
+        'coinad.com',
+        'cryptory.com',
+        'doublebitcoins.com',
+        'elbitcoingratis.es',
+        'eu5.com',
+        'exchanging.ir', 'exchchanging.ir',
+        'fishbitfish.com',
+        'freebitco.in',
+        'freebitcoins.es',
+        'freebitcoinz.com',
+        'gbbg|bitbillions',
+        'invoice #',
+        'kitiwa.com',
+        'leancy.com',
+        'lucky bit',
+        'peerluck',
+        'ptcircle.com',
+        'simplecoin.cz',
+        'win88.me',
+        'winbtc',
+        'withdraw to',
     );
 
     private $sCsvExport = './notesscraper.csv';
     private $sSqlExport = './notesscraper.sql';
 
-    public function __construct($aAddresses) {
+    public function __construct($aAddresses = array()) {
 
         $this->aAddresses = $aAddresses;
+
+        //get public notes from blockchain.info in the past 30 days (week?)
+        $this->searchGoogle();
 
         //if we're running from a browser, make output readable
         if (!empty($_SERVER['DOCUMENT_ROOT'])) {
@@ -91,22 +101,27 @@ class NotesScraper {
 
             //get first page
             printf("fetching address %d/%d..\r\n", $iKey + 1, count($this->aAddresses));
-            $sHTML = file_get_contents($sAddress);
-            if (empty($sHTML)) {
-                die('file_get_contents failed!');
-            }
-            
-            echo 'checking pages for public notes: ';
-            $this->parseNotes($sHTML);
-
-            $iOffset = 50;
-            //get next pages, as long as next link is present AND it is not disabled
-            while (preg_match('/<li class="next ?">/', $sHTML) && !preg_match('/<li class="next disabled/', $sHTML)) {
-
-                $sHTML = file_get_contents($sAddress . '?offset=' . $iOffset . '&filter=0');
+            try {
+                $sHTML = file_get_contents($sAddress);
+                if (empty($sHTML)) {
+                    die('file_get_contents failed!');
+                }
+                
+                echo 'checking pages for public notes: ';
                 $this->parseNotes($sHTML);
 
-                $iOffset += 50;
+                $iOffset = 50;
+                //get next pages, as long as next link is present AND it is not disabled
+                while (preg_match('/<li class="next ?">/', $sHTML) && !preg_match('/<li class="next disabled/', $sHTML)) {
+
+                    $sHTML = file_get_contents($sAddress . '?offset=' . $iOffset . '&filter=0');
+                    $this->parseNotes($sHTML);
+
+                    $iOffset += 50;
+                }
+            } catch (Exception $e) {
+                //got disconnected, just move on
+                echo 'x';
             }
             echo "\r\n\r\n";
         }
@@ -144,5 +159,42 @@ class NotesScraper {
         } else {
             echo '. ';
         }
+    }
+
+    private function searchGoogle() {
+
+        echo 'searching google for recent transactions with public notes';
+
+        //basic search query
+        $sQuery = 'site:blockchain.info "public note"';
+
+        //put in filters as boolean operators from the start, to save traffic and time
+        $sQuery .= ' -"' . implode('" -"', $this->aFilters) . '"';
+
+        //prepare the whole url
+        $sUrl = 'http://google.com/search?q=' . urlencode($sQuery) . '&safe=off&tbs=qdr:m';
+
+        //fetch the first page
+        $sResults = file_get_contents($sUrl);
+        $iOffset = 10;
+        $aAddresses = array();
+
+        //keep going until the 'next page' link is no longer present
+        while (strpos($sResults, '>Next</span>') !== FALSE) {
+
+            //this isn't perfect (urls get truncated) but it'll do
+            if (preg_match_all('/(https:\/\/blockchain.info\/address\/[a-zA-Z0-9]+)/', $sResults, $aMatches)) {
+
+                $aAddresses = array_merge($aAddresses, $aMatches[1]);
+            }
+
+            $sResults = file_get_contents($sUrl . '&start=' . $iOffset);
+            $iOffset += 10;
+            echo '.';
+        }
+
+        //merge into global array of addresses
+        $this->aAddresses = array_values(array_unique(array_merge($this->aAddresses, $aAddresses)));
+        echo "\r\n";
     }
 }
