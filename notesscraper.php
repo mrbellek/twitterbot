@@ -9,51 +9,18 @@ class NotesScraper {
     private $aAddresses = array();
 
     //filter out some spam
-    private $aFilters = array(
-        '48hourbtc.com',
-        '9bitz.eu',
-        'abitback.com',
-        'adbit.co',
-        'bitads.net',
-        'bitbucks',
-        'bitcoinforest',
-        'bitcoinposter.com',
-        'bitcoins4.me',
-        'bitcoinsand', 'daily simple interest',
-        'bitcoinworld.me',
-        'bitonplay',
-        'bitsleep.com',
-        'btc-dice',
-        'btclove.net',
-        'coinad.com',
-        'cryptory.com',
-        'doublebitcoins.com',
-        'elbitcoingratis.es',
-        'eu5.com',
-        'exchanging.ir', 'exchchanging.ir',
-        'fishbitfish.com',
-        'freebitco.in',
-        'freebitcoins.es',
-        'freebitcoinz.com',
-        'gbbg|bitbillions',
-        'invoice #',
-        'kitiwa.com',
-        'leancy.com',
-        'lucky bit',
-        'peerluck',
-        'ptcircle.com',
-        'simplecoin.cz',
-        'win88.me',
-        'winbtc',
-        'withdraw to',
-    );
+    private $aFilters = array();
 
+    private $sSettingsFile = './notesscraper.json';
     private $sCsvExport = './notesscraper.csv';
     private $sSqlExport = './notesscraper.sql';
 
     public function __construct($aAddresses = array()) {
 
         $this->aAddresses = $aAddresses;
+
+        $this->aFilters = json_decode(file_get_contents($this->sSettingsFile), TRUE);
+        $this->aFilters = $this->aFilters['filters'];
 
         //get public notes from blockchain.info in the past 30 days (week?)
         $this->searchGoogle();
@@ -90,7 +57,7 @@ class NotesScraper {
 
             $aStat = fstat($oHandle);
             ftruncate($oHandle, $aStat['size'] - 3);
-            fclose($oHandle); 
+            fclose($oHandle);
         }
     }
 
@@ -106,13 +73,13 @@ class NotesScraper {
                 if (empty($sHTML)) {
                     die('file_get_contents failed!');
                 }
-                
+
                 echo 'checking pages for public notes: ';
                 $this->parseNotes($sHTML);
 
                 $iOffset = 50;
-                //get next pages, as long as next link is present AND it is not disabled
-                while (preg_match('/<li class="next ?">/', $sHTML) && !preg_match('/<li class="next disabled/', $sHTML)) {
+                //get next pages, as long as next link is present AND it is not disabled (max 100 pages)
+                while (preg_match('/<li class="next ?">/', $sHTML) && !preg_match('/<li class="next disabled/', $sHTML) && $iOffset <= 5000) {
 
                     $sHTML = file_get_contents($sAddress . '?offset=' . $iOffset . '&filter=0');
                     $this->parseNotes($sHTML);
@@ -128,7 +95,7 @@ class NotesScraper {
     }
 
     private function parseNotes($sHTML) {
-                
+
         //look for public notes
         if (preg_match_all('/<div class="alert note"><b>Public Note:<\/b> (.*?)<\/div>.*?href="(\/tx\/[a-zA-Z0-9]{64})"/', $sHTML, $aMatches)) {
             echo count($aMatches[1]) . ' ';
@@ -169,7 +136,7 @@ class NotesScraper {
         $sQuery = 'site:blockchain.info "public note"';
 
         //put in filters as boolean operators from the start, to save traffic and time
-        $sQuery .= ' -"' . implode('" -"', $this->aFilters) . '"';
+        $sQuery .= substr(' -"' . implode('" -"', $this->aFilters) . '"', 0, 512);
 
         //prepare the whole url
         $sUrl = 'http://google.com/search?q=' . urlencode($sQuery) . '&safe=off&tbs=qdr:m';
