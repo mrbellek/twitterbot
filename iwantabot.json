@@ -1,9 +1,9 @@
 {
 	"filters": [
-		"@iwantabot",
+		"@iwantabot"
 	],
 	"userfilters": [
-		"bot",
+		"bot"
 	],
 	"dice": {
 		"media": 1.0,
