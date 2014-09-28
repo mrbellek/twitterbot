@@ -1,6 +1,7 @@
 {
 	"filters": [
-		"@iwantabot"
+		"@iwantabot",
+        "#bot"
 	],
 	"userfilters": [
 		"bot"
