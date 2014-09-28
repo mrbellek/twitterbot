@@ -1,7 +1,9 @@
 {
 	"filters": [
 		"@iwantabot",
-        "#bot"
+        "#bot",
+        "twitch",
+        "toothbrush"
 	],
 	"userfilters": [
 		"bot"
