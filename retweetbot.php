@@ -101,6 +101,9 @@ class RetweetBot
 				//retrieve list of all blocked users
 				if ($this->getBlockedUsers()) {
 
+                    //check messages & reply if needed
+                    $this->checkMentions();
+
 					//loop through all search strings
 					$this->aSearchStrings = (is_array($this->aSearchStrings) ? $this->aSearchStrings : array(1 => $this->aSearchStrings));
 					foreach ($this->aSearchStrings as $iIndex => $sSearchString) {
@@ -155,6 +158,7 @@ class RetweetBot
 		$oStatus = $this->oTwitter->get('application/rate_limit_status', array('resources' => 'search,blocks'));
 		$oRateLimit = $oStatus->resources->search->{'/search/tweets'};
 		$oBlockedLimit = $oStatus->resources->blocks->{'/blocks/ids'};
+        $this->oRateLimitStatus = $oStatus;
 
 		//check if remaining calls for search is lower than threshold (after reset: 180)
 		if ($oRateLimit->remaining < $this->iMinRateLimit) {
@@ -200,7 +204,7 @@ class RetweetBot
 			$this->halt(sprintf('- Unable to get blocked users, halting. (%s)', $oBlockedUsers->errors[0]->message));
 			return FALSE;
 		} else {
-			echo '- ' . count($oBlockedUsers->ids) . ' on list<br>';
+            printf('- %d on list<br><br>', count($oBlockedUsers->ids));
 			$this->aBlockedUsers = $oBlockedUsers->ids;
 		}
 
@@ -224,7 +228,7 @@ class RetweetBot
 			'q'				=> $sSearchString,
 			'result_type'	=> 'mixed',
 			'count'			=> $this->iSearchMax,
-			'since_id'		=> ($aLastSearch && !empty($aLastSearch['max_id']) ? $aLastSearch['max_id'] : FALSE),
+			'since_id'		=> ($aLastSearch && !empty($aLastSearch['max_id']) ? $aLastSearch['max_id'] : 1),
 		));
 
 		if (empty($oSearch->search_metadata)) {
@@ -246,7 +250,8 @@ class RetweetBot
 			return FALSE;
 
 		} else {
-			$this->aTweets = $oSearch->statuses;
+            //make sure we parse oldest tweets first
+			$this->aTweets = array_reverse($oSearch->statuses);
 			return TRUE;
 		}
 	}
@@ -383,6 +388,137 @@ class RetweetBot
 
 		return TRUE;
 	}
+
+    private function checkMentions() {
+
+		$aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . sprintf($this->sLastSearchFile, 1)), TRUE);
+        printf('Checking mentions since %s for commands..<br>', $aLastSearch['timestamp']);
+
+        //fetch new mentions since last run
+        $aMentions = $this->oTwitter->get('statuses/mentions_timeline', array(
+            'count'         => 10,
+			'since_id'		=> ($aLastSearch && !empty($aLastSearch['max_id']) ? $aLastSearch['max_id'] : 1),
+        ));
+
+        if (is_object($aMentions) && !empty($aMentions->errors[0]->message)) {
+            $this->logger(2, sprintf('Twitter API call failed: GET statuses/mentions_timeline (%s)', $aMentions->errors[0]->message));
+            $this->halt(sprintf('- Failed getting mentions, halting. (%s)', $aMentions->errors[0]->message));
+        }
+
+        //if we have mentions, get friends for auth (we will only respond to commands from people we follow)
+        if (count($aMentions) > 0) {
+            $oRet = $this->oTwitter->get('friends/ids', array('screen_name' => $this->sUsername, 'stringify_ids' => TRUE));
+            if (!empty($oRet->errors[0]->message)) {
+                $this->logger(2, sprintf('Twitter API call failed: GET friends/ids (%s)', $aMentions->errors[0]->message));
+                $this->halt(sprintf('- Failed getting friends, halting. (%s)', $aMentions->errors[0]->message));
+            }
+            $aFollowing = $oRet->ids;
+
+        } else {
+            echo '- no new mentions.<br><br>';
+            return FALSE;
+        }
+
+        foreach ($aMentions as $oMention) {
+
+            //only reply to friends (people we are following)
+            if (in_array($oMention->user->id_str, $aFollowing)) {
+
+                $bRet = $this->parseCommand($oMention);
+                if (!$bRet) {
+                    break;
+                }
+            }
+        }
+        printf('- replied to %d commands<br><br>', count($aMentions));
+
+        return TRUE;
+    }
+
+    private function parseCommand($oMention) {
+
+        //reply to commands from friends (people we follow) in DMs
+        $sId = $oMention->id_str;
+        $sCommand = str_replace('@' . strtolower($this->sUsername) . ' ', '', strtolower($oMention->text));
+        printf('Parsing command %s from %s..<br>', $sCommand, $oMention->user->screen_name);
+
+        switch ($sCommand) {
+            case 'help':
+                return $this->replyToCommand($oMention, 'Commands: help lastrun lastlog ratelimit. Only replies to friends. Lag varies, be patient.');
+
+            case 'lastrun':
+                $aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . sprintf($this->sLastSearchFile, 1)), TRUE);
+
+                return $this->replyToCommand($oMention, sprintf('Last script run was: %s', (!empty($aLastSearch['timestamp']) ? $aLastSearch['timestamp'] : 'never')));
+
+            case 'lastlog':
+                $aLogFile = @file($this->sLogFile, FILE_IGNORE_NEW_LINES);
+
+                return $this->replyToCommand($oMention, ($aLogFile ? $aLogFile[count($aLogFile) - 1] : 'Log file is empty'));
+
+            case 'ratelimit':
+                if (!empty($this->oRateLimitStatus)) {
+                    $oRateLimit = $this->oRateLimitStatus->resources->search->{'/search/tweets'};
+                    $oBlockedLimit = $this->oRateLimitStatus->resources->blocks->{'/blocks/ids'};
+
+                    return $this->replyToCommand($oMention, sprintf('Rate limit status: search %d/%d (next reset at %s), blocks %d/%d (next reset at %s)',
+                        $oRateLimit->remaining, $oRateLimit->limit, date('H:i:s', $oRateLimit->reset),
+                        $oBlockedLimit->remaining, $oBlockedLimit->limit, date('H:i:s', $oBlockedLimit->reset)
+                    ));
+                } else {
+
+                    return $this->replyToCommand($oMention, 'Rate limit status: not available (API call failed?)');
+                }
+
+            default:
+                echo '- command unknown.<br>';
+                return FALSE;
+        }
+    }
+
+    private function replyToCommand($oMention, $sReply) {
+
+        //check friendship between bot and command sender
+        $oRet = $this->oTwitter->get('friendships/show', array('source_screen_name' => $this->sUsername, 'target_screen_name' => $oMention->user->screen_name));
+        if (!empty($oRet->errors)) {
+            $this->logger(2, sprintf('Twitter API call failed: GET friendships/show (%s)', $oRet->errors[0]->message));
+            $this->halt(sprintf('- Failed to check friendship, halting. (%s)', $oRet->errors[0]->message));
+            return FALSE;
+        }
+
+        //if we can DM the source of the command, do that
+        if ($oRet->relationship->source->can_dm) {
+
+            $oRet = $this->oTwitter->post('direct_messages/new', array('user_id' => $oMention->user->id_str, 'text' => substr($sReply, 0, 140)));
+
+            if (!empty($oRet->errors)) {
+                $this->logger(2, sprintf('Twitter API call failed: POST direct_messages/new (%s)', $oRet->errors[0]->message));
+                $this->halt(sprintf('- Failed to send DM, halting. (%s)', $oRet->errors[0]->message));
+                return FALSE;
+            }
+
+        } else {
+            //otherwise, use public reply
+
+            $oRet = $this->oTwitter->post('statuses/update', array(
+                'in_reply_to_status_id' => $oMention->id_str,
+                'trim_user' => TRUE,
+                'status' => sprintf('@%s %s',
+                    $oMention->user->screen_name,
+                    substr($sReply, 0, 140 - 2 - strlen($oMention->user->screen_name))
+                )
+            ));
+
+            if (!empty($oRet->errors)) {
+                $this->logger(2, sprintf('Twitter API call failed: POST statuses/update (%s)', $oRet->errors[0]->message));
+                $this->halt(sprintf('- Failed to reply, halting. (%s)', $oRet->errors[0]->message));
+                return FALSE;
+            }
+        }
+
+        printf('- Replied: %s<br>', $sReply);
+        return TRUE;
+    }
 
 	/*
 	 * shortened urls are listed in their expanded form in 'entities' node, under entities/urls and entities/media
