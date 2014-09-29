@@ -8,7 +8,6 @@ class NotesScraper {
 
     private $aAddresses = array();
 
-    //filter out some spam
     private $aFilters = array();
 
     private $sSettingsFile = './notesscraper.json';
@@ -71,21 +70,24 @@ class NotesScraper {
             try {
                 $sHTML = file_get_contents($sAddress);
                 if (empty($sHTML)) {
-                    die('file_get_contents failed!');
-                }
+                    //got disconnected, just move on
+                    echo 'x';
 
-                echo 'checking pages for public notes: ';
-                $this->parseNotes($sHTML);
-
-                $iOffset = 50;
-                //get next pages, as long as next link is present AND it is not disabled (max 100 pages)
-                while (preg_match('/<li class="next ?">/', $sHTML) && !preg_match('/<li class="next disabled/', $sHTML) && $iOffset <= 5000) {
-
-                    $sHTML = file_get_contents($sAddress . '?offset=' . $iOffset . '&filter=0');
+                } else {
+                    echo 'checking pages for public notes: ';
                     $this->parseNotes($sHTML);
 
-                    $iOffset += 50;
+                    $iOffset = 50;
+                    //get next pages, as long as next link is present AND it is not disabled (max 100 pages)
+                    while (preg_match('/<li class="next ?">/', $sHTML) && !preg_match('/<li class="next disabled/', $sHTML) && $iOffset <= 5000) {
+
+                        $sHTML = file_get_contents($sAddress . '?offset=' . $iOffset . '&filter=0');
+                        $this->parseNotes($sHTML);
+
+                        $iOffset += 50;
+                    }
                 }
+
             } catch (Exception $e) {
                 //got disconnected, just move on
                 echo 'x';
@@ -111,6 +113,8 @@ class NotesScraper {
                         $bFiltered = TRUE;
                     }
                 }
+
+                //TODO: check database for duplicates here
 
                 //write to file
                 if (!$bFiltered) {
