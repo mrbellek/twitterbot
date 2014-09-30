@@ -11,6 +11,7 @@ $oTwitterBot = new TweetBot(array(
         'sTimestampCol' => 'lasttimestamp',
     ),
     'sTweetFormat'  => ':tweet',
+    'bPostOnlyOnce' => TRUE,
     'aTweetVars'    => array(
         array('sVar' => ':tweet', 'sRecordField' => 'tweet'),
     ),

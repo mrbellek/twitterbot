@@ -31,6 +31,7 @@ class TweetBot {
 		$this->aTweetSettings = array(
 			'sFormat'		=> (isset($aArgs['sTweetFormat']) ? $aArgs['sTweetFormat'] : ''),
 			'aTweetVars'	=> (isset($aArgs['aTweetVars']) ? $aArgs['aTweetVars'] : array()),
+            'bPostOnlyOnce' => (isset($aArgs['bPostOnlyOnce']) ? $aArgs['bPostOnlyOnce'] : FALSE),
 		);
 
 		$this->sLogFile			= (!empty($aArgs['sLogFile'])		? $aArgs['sLogFile']			: strtolower($this->sUsername) . '.log');
@@ -114,19 +115,33 @@ class TweetBot {
 			return FALSE;
 		}
 
-		//fetch random record out of those with the lowest counter value
-		$sth = $oPDO->prepare(sprintf('
-			SELECT *
-			FROM %1$s
-			WHERE %2$s = (
-				SELECT MIN(%2$s)
-				FROM %1$s
-			)
-			ORDER BY RAND()
-			LIMIT 1',
-			$this->aDbSettings['sTable'],
-			$this->aDbSettings['sCounterCol']
-		));
+        if ($this->aTweetSettings['bPostOnlyOnce'] == FALSE) {
+            //fetch random record out of those that haven't been posted yet
+            $sth = $oPDO->prepare(sprintf('
+                SELECT *
+                FROM %1$s
+                WHERE %2$s = 0
+                ORDER BY RAND()
+                LIMIT 1',
+                $this->aDbSettings['sTable'],
+                $this->aDbSettings['sCounterCol']
+            ));
+        } else {
+
+            //fetch random record out of those with the lowest counter value
+            $sth = $oPDO->prepare(sprintf('
+                SELECT *
+                FROM %1$s
+                WHERE %2$s = (
+                    SELECT MIN(%2$s)
+                    FROM %1$s
+                )
+                ORDER BY RAND()
+                LIMIT 1',
+                $this->aDbSettings['sTable'],
+                $this->aDbSettings['sCounterCol']
+            ));
+        }
 
 		if ($sth->execute() == FALSE) {
 			$this->logger(2, sprintf('Select query failed. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
@@ -134,29 +149,35 @@ class TweetBot {
 			return FALSE;
 		}
 
-		$aRecord = $sth->fetch(PDO::FETCH_ASSOC);
-		printf('- Found record that has been posted %d times before.<br>', $aRecord['postcount']);
+        if ($aRecord = $sth->fetch(PDO::FETCH_ASSOC)) {
+            printf('- Found record that has been posted %d times before.<br>', $aRecord['postcount']);
 
-		//update record with postcount and timestamp of last post
-		$sth = $oPDO->prepare(sprintf('
-			UPDATE %1$s
-			SET %3$s = %3$s + 1,
-				%4$s = NOW()
-			WHERE %2$s = :id
-			LIMIT 1',
-			$this->aDbSettings['sTable'],
-			$this->aDbSettings['sIdCol'],
-			$this->aDbSettings['sCounterCol'],
-			$this->aDbSettings['sTimestampCol']
-		));
-		$sth->bindValue(':id', $aRecord[$this->aDbSettings['sIdCol']], PDO::PARAM_INT);
-		if ($sth->execute() == FALSE) {
-			$this->logger(2, sprintf('Update query failed. (%d %s)', $stf->errorCode(), $sth->errorInfo()));
-			$this->halt(sprintf('- Update query failed, halting. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
-			return FALSE;
-		}
+            //update record with postcount and timestamp of last post
+            $sth = $oPDO->prepare(sprintf('
+                UPDATE %1$s
+                SET %3$s = %3$s + 1,
+                    %4$s = NOW()
+                WHERE %2$s = :id
+                LIMIT 1',
+                $this->aDbSettings['sTable'],
+                $this->aDbSettings['sIdCol'],
+                $this->aDbSettings['sCounterCol'],
+                $this->aDbSettings['sTimestampCol']
+            ));
+            $sth->bindValue(':id', $aRecord[$this->aDbSettings['sIdCol']], PDO::PARAM_INT);
+            if ($sth->execute() == FALSE) {
+                $this->logger(2, sprintf('Update query failed. (%d %s)', $stf->errorCode(), $sth->errorInfo()));
+                $this->halt(sprintf('- Update query failed, halting. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
+                return FALSE;
+            }
 
-		return $aRecord;
+            return $aRecord;
+
+        } else {
+            $this->logger(3, 'Query yielded no results. (%d %s)', $sth->errorCode(), $sth->errorInfo());
+            $this->halt(sprintf('- Select query yielded no records, halting. (%d %s)', $sth->errorCode, $sth->errorInfo()));
+            return FALSE;
+        }
 	}
 
 	private function postMessage($aRecord) {
