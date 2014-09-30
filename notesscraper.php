@@ -4,6 +4,11 @@ set_time_limit(0);
 //start the scraper, optionally pass an array of urls to spider in constructor
 $o = new NotesScraper();
 
+/*
+ * TODO:
+ * - do not fetch address transactions older than ~1 month
+ */
+
 class NotesScraper {
 
     private $aAddresses = array();

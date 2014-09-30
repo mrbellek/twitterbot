@@ -18,13 +18,13 @@ if ($_POST) {
         $sNoteText = substr($sNote, 1, strpos($sNote, '","') - 1);
 
         //check by transaction id and note text
-        $sth = $oPDO->prepare('
+        $sQuery = '
             SELECT id
             FROM notes
             WHERE tx = :tx
             OR note = :note
             LIMIT 1'
-        );
+        $sth = $oPDO->prepare($sQuery);
         $sth->bindParam(':tx', $sTransaction, PDO::PARAM_STR);
         $sth->bindParam(':note', $sNoteText, PDO::PARAM_STR);
 
@@ -33,7 +33,7 @@ if ($_POST) {
         }
 
         if ($sth->fetch()) {
-            printf('note already in database: %s' . "\r\n", $sNote);
+            //printf('note already in database: %s' . "\r\n", $sNote);
             unset($aNotes[$key]);
             $i++;
         }

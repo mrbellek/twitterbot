@@ -135,7 +135,7 @@ class TweetBot {
 		}
 
 		$aRecord = $sth->fetch(PDO::FETCH_ASSOC);
-		printf('- Found note that has been posted %d times before.<br>', $aRecord['postcount']);
+		printf('- Found record that has been posted %d times before.<br>', $aRecord['postcount']);
 
 		//update record with postcount and timestamp of last post
 		$sth = $oPDO->prepare(sprintf('
@@ -169,15 +169,39 @@ class TweetBot {
 			return FALSE;
 		}
 
-		//tweet
-		$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
-		if (isset($oRet->errors)) {
-			$this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
-			$this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
-			return FALSE;
-		} else {
-			printf('- <b>%s</b><br>', utf8_decode($sTweet));
-		}
+        //check if message is tweet url
+        if (preg_match('/https:\/\/twitter\.com\/[^\/]+\/status\/\d+/', $sTweet)) {
+
+            //retweet
+            $aTweetUrls = explode("\n", $sTweet);
+            foreach ($aTweetUrls as $sTweetUrl) {
+                if (preg_match('/https:\/\/twitter\.com\/[^\/]+\/status\/(\d+)/', $sTweetUrl, $m)) {
+
+                    //do retweet
+                    $oRet = $this->oTwitter->post('statuses/retweet/' . $m[1], array('trim_user' => TRUE));
+
+                    if (!empty($oRet->error)) {
+                        $this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s)', $oRet->error));
+                        $this->halt(sprintf('- Retweet failed, halting. (*%s)', $oRet->error));
+                        return FALSE;
+                    } else {
+                        printf('- Retweeted: <b>%s</b><br>', $sTweetUrl);
+                    }
+                }
+            }
+
+        } else {
+
+            //tweet
+            $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
+            if (isset($oRet->errors)) {
+                $this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
+                $this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
+                return FALSE;
+            } else {
+                printf('- <b>%s</b><br>', utf8_decode($sTweet));
+            }
+        }
 
 		return TRUE;
 	}
