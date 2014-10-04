@@ -12,6 +12,8 @@
  * - attach image posts as twitter attachment?
  */
 
+set_time_limit(15 * 60);
+
 require_once('twitteroauth.php');
 
 class RssBot {
@@ -137,8 +139,8 @@ class RssBot {
             $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
             if (isset($oRet->errors)) {
                 $this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
-                $this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
-                return FALSE;
+                //$this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
+                //return FALSE;
             } else {
                 printf('- <b>%s</b><br>', utf8_decode($sTweet) . ' - ' . $oItem->pubDate);
             }
