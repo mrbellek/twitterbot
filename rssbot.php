@@ -10,8 +10,6 @@
  * v run every 15 mins
  * v bug: duplicate statuses, timestamp not saved correctly? (fixed, reddit rss feed aren't chronological)
  * - attach image posts as twitter attachment?
- * - change rbuttcoin icon to reflect difference from @buttcoin
- * - update rbuttcoin to include link type
  */
 
 set_time_limit(15 * 60);
@@ -74,7 +72,7 @@ class RssBot {
 
     private function getIdentity() {
 
-        echo 'Fetching identify..<br>';
+        echo 'Fetching identity..<br>';
 
         if (!$this->sUsername) {
             $this->logger(2, 'No username');
@@ -118,7 +116,6 @@ class RssBot {
 
             //save newest item to set timestamp for next run
             if (!$oNewestItem || strtotime($oItem->$sTimestampVar) > strtotime($oNewestItem->$sTimestampVar)) {
-                echo('saving item with newest pubdate ' . $oItem->pubDate . '<br>');
                 $oNewestItem = $oItem;
             }
 
@@ -126,7 +123,6 @@ class RssBot {
             $sVar = $this->aTweetSettings['sTimestampXml'];
             if (!empty($oItem->$sVar)) {
                 if (strtotime($oItem->$sVar) <= $aLastSearch['timestamp']) {
-                    echo 'not parsing "' . $oItem->title . '" because timestamp is ' . $oItem->pubDate . '<br>';
                     continue;
                 }
             }
@@ -141,8 +137,8 @@ class RssBot {
             $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
             if (isset($oRet->errors)) {
                 $this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
-                //$this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
-                //return FALSE;
+                $this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
+                return FALSE;
             } else {
                 printf('- <b>%s</b><br>', utf8_decode($sTweet) . ' - ' . $oItem->pubDate);
             }
@@ -153,7 +149,6 @@ class RssBot {
             $aLastItem = array(
                 'timestamp' => strtotime($oNewestItem->$sTimestampVar),
             );
-            echo 'saving timestamp of first item to disk: ' . $oNewestItem->pubDate . '<br>';
             file_put_contents(MYPATH . '/' . $this->sLastRunFile, json_encode($aLastItem));
 
         } else {
@@ -273,13 +268,22 @@ class RssBot {
             switch($sValue) {
                 //determines type of linked resource in reddit post
                 case 'special:redditmediatype':
-                    if (preg_match('/reddit\.com/', $sText)) {
+
+                    //get self subreddit from url
+                    $sSelfReddit = '';
+                    if (preg_match('/reddit\.com\/r\/(.+?)\//i', $this->sUrl, $aMatches)) {
+                        $sSelfReddit = $aMatches[1];
+                    }
+
+                    if ($sSelfReddit && stripos($sText, $sSelfReddit) !== FALSE) {
+                        $sResult = 'self';
+                    } elseif (preg_match('/reddit\.com/i', $sText)) {
                         $sResult = 'internal';
-                    } elseif (preg_match('/\.png$|\.gif$|\.jpe?g$/', $sText)) {
+                    } elseif (preg_match('/\.png$|\.gif$|\.jpe?g$/i', $sText)) {
                         $sResult = 'image';
-                    } elseif (preg_match('/imgur\.com\/a\//', $sText)) {
+                    } elseif (preg_match('/imgur\.com\/a\//i', $sText) || preg_match('/imgur\.com\/.[^\/]/i', $sText)) {
                         $sResult = 'gallery';
-                    } elseif (preg_match('/youtube\.com/', $sText)) {
+                    } elseif (preg_match('/youtube\.com/i', $sText)) {
                         $sResult = 'youtube';
                     } else {
                         $sResult = 'external';
