@@ -26,6 +26,8 @@ class RssBot {
     private $sTweetFormat;
     private $aTweetVars;
 
+    private $sMediaId = FALSE;
+
     public function __construct($aArgs) {
 
         //connect to twitter
@@ -134,7 +136,13 @@ class RssBot {
                 continue;
             }
 
-            $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
+            if ($this->sMediaId) {
+                $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE, 'media_ids' => $this->sMediaId));
+                $this->sMediaId = FALSE;
+            } else {
+                $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
+                $oRet = TRUE;
+            }
             if (isset($oRet->errors)) {
                 $this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
                 $this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
@@ -165,6 +173,7 @@ class RssBot {
         //should get this by API (GET /help/configuration ->short_url_length) but it rarely changes
         $iMaxTweetLength = 140;
         $iShortUrlLength = 22;   //NB: 1 char more for https links
+        $iMediaUrlLength = 23;
 
         $sTweet = $this->aTweetSettings['sFormat'];
 
@@ -193,6 +202,11 @@ class RssBot {
 
                 //placeholder will get replaced, so add that to char limit
                 $iTruncateLimit += strlen($aVar['sVar']);
+
+                //if media is present, substract that plus a space
+                if ($this->sMediaId) {
+                    $iTruncateLimit -= ($iMediaUrlLength + 1);
+                }
 
                 $sVarValue = $aVar['sValue'];
                 $sText = '';
@@ -255,9 +269,17 @@ class RssBot {
 
         //get the value of the variable we're working on
         $sText = '';
+        $bAttachImage = FALSE;
         foreach ($this->aTweetSettings['aVars'] as $aVar) {
             if ($aVar['sVar'] == $sSubject) {
+
+                //get value
                 $sText = $this->getVariable($oItem, $aVar);
+
+                //check if 'attach if image' option is set
+                if (!empty($aVar['bAttachImage']) && $aVar['bAttachImage']) {
+                    $bAttachImage = TRUE;
+                }
                 break;
             }
         }
@@ -281,6 +303,9 @@ class RssBot {
                         $sResult = 'internal';
                     } elseif (preg_match('/\.png$|\.gif$|\.jpe?g$/i', $sText)) {
                         $sResult = 'image';
+                        if ($bAttachImage) {
+                            $this->uploadImage($sText);
+                        }
                     } elseif (preg_match('/imgur\.com\/a\//i', $sText) || preg_match('/imgur\.com\/.[^\/]/i', $sText)) {
                         $sResult = 'gallery';
                     } elseif (preg_match('/youtube\.com/i', $sText)) {
@@ -295,6 +320,26 @@ class RssBot {
         } else {
             return FALSE;
         }
+    }
+
+    private function uploadImage($sImage) {
+
+        $sImageBinary = base64_encode(file_get_contents($sImage));
+        if ($sImageBinary) {
+            $oRet = $this->oTwitter->upload('media/upload', array('media' => $sImageBinary));
+            if (isset($oRet->errors)) {
+                $this->logger(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message));
+                $this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
+                return FALSE;
+            } else {
+                $this->sMediaId = $oRet->media_id_string;
+                printf('- uploaded %s to attach to tweet<br>', $sImage);
+            }
+
+            return TRUE;
+        }
+
+        return FALSE;
     }
 
     private function halt($sMessage = '') {
