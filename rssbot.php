@@ -301,7 +301,7 @@ class RssBot {
                         $sResult = 'self';
                     } elseif (preg_match('/reddit\.com/i', $sText)) {
                         $sResult = 'internal';
-                    } elseif (preg_match('/\.png$|\.gif$|\.jpe?g$/i', $sText)) {
+                    } elseif (preg_match('/\.png|\.gif|\.jpe?g/i', $sText)) {
                         $sResult = 'image';
                         if ($bAttachImage) {
                             $this->uploadImage($sText);
