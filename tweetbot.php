@@ -1,6 +1,11 @@
 <?php
 require_once('twitteroauth.php');
 
+/*
+ * TODO:
+ * - for bPostOnlyOnce=TRUE, notification when no more tweets available
+ */
+
 class TweetBot {
 
 	private $sUsername;			//username we will be tweeting from

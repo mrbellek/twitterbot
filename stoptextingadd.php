@@ -44,7 +44,15 @@ if ($_POST && !empty($_POST['input'])) {
         }
     }
 
-    $sMsg = sprintf('Done, inserted %d tweets into database out of %d submitted.', ($iSubmitCount - $iDupeCount), $iSubmitCount);
+    $sQuery = 'SELECT COUNT(*) AS `count` FROM stoptexting WHERE postcount = 0';
+    $sth = $oPDO->prepare($sQuery);
+    if ($sth->execute() == FALSE) {
+        die(sprintf('query failed: %s', $sQuery));
+    }
+    $aRecord = $sth->fetch(PDO::FETCH_ASSOC);
+    $iPostCount = $aRecord['count'];
+
+    $sMsg = sprintf('Done, inserted %d tweets into database out of %d submitted. %d total unposted tweets.', ($iSubmitCount - $iDupeCount), $iSubmitCount, $iPostCount);
 }
 ?>
 <html>
