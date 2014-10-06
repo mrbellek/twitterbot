@@ -10,6 +10,8 @@
  * v run every 15 mins
  * v bug: duplicate statuses, timestamp not saved correctly? (fixed, reddit rss feed aren't chronological)
  * - attach image posts as twitter attachment?
+ * - change rbuttcoin icon to reflect difference from @buttcoin
+ * - update rbuttcoin to include link type
  */
 
 set_time_limit(15 * 60);
