@@ -9,7 +9,8 @@
  *   v post based on domain of rss feed url
  * v run every 15 mins
  * v bug: duplicate statuses, timestamp not saved correctly? (fixed, reddit rss feed aren't chronological)
- * - attach image posts as twitter attachment?
+ * v attach image posts as twitter attachment
+ * - change 'youtube' media type to 'video', add better detection for videos
  */
 
 set_time_limit(15 * 60);
