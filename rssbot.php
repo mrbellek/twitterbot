@@ -307,10 +307,10 @@ class RssBot {
                         if ($bAttachImage) {
                             $this->uploadImage($sText);
                         }
-                    } elseif (preg_match('/imgur\.com\/a\//i', $sText) || preg_match('/imgur\.com\/.[^\/]/i', $sText)) {
+                    } elseif (preg_match('/imgur\.com\/a\/|imgur\.com\/.[^\/]/i', $sText)) {
                         $sResult = 'gallery';
-                    } elseif (preg_match('/youtube\.com/i', $sText)) {
-                        $sResult = 'youtube';
+                    } elseif (preg_match('/youtube\.com\/|youtu\.be\/|vine\.co\/|vimeo\.com\/|liveleak\.com\//i', $sText)) {
+                        $sResult = 'video';
                     } else {
                         $sResult = 'external';
                     }
