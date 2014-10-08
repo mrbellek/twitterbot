@@ -1,21 +1,8 @@
 <?php
-/*
- * TODO:
- * v Robot Sending Stuff
- * v spider rss feed
- * v post format: [type] title [link] [reddit post?]
- * v keep track of last item posted (id)
- * v check mimetype (link, post, image, gallery)
- *   v post based on domain of rss feed url
- * v run every 15 mins
- * v bug: duplicate statuses, timestamp not saved correctly? (fixed, reddit rss feed aren't chronological)
- * v attach image posts as twitter attachment
- * - change 'youtube' media type to 'video', add better detection for videos
- */
-
-set_time_limit(15 * 60);
-
 require_once('twitteroauth.php');
+
+//runs every 15 minutes, mirroring & attaching images might take a while
+set_time_limit(15 * 60);
 
 class RssBot {
 
@@ -142,7 +129,6 @@ class RssBot {
                 $this->sMediaId = FALSE;
             } else {
                 $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
-                $oRet = TRUE;
             }
             if (isset($oRet->errors)) {
                 $this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
@@ -187,6 +173,11 @@ class RssBot {
 
                 //get variable value from xml object
                 $sValue = $this->getVariable($oItem, $aVar);
+
+                //if field is image AND bAttachImage is TRUE, don't put the image url in the tweet since it will be included as a pic.twitter.com link
+                if (!empty($aVar['bAttachImage']) && $aVar['bAttachImage'] == TRUE && $this->sMediaId) {
+                    $sValue = '';
+                }
 
                 $sTweet = str_replace($aVar['sVar'], $sValue, $sTweet);
             }
@@ -326,7 +317,10 @@ class RssBot {
     private function uploadImage($sImage) {
 
         $sImageBinary = base64_encode(file_get_contents($sImage));
-        if ($sImageBinary) {
+        if ($sImageBinary && (
+                (preg_match('/\.gif/i', $sImage) && strlen($sImageBinary) < 3 * 1024^2) ||      //max size is 3MB for gif
+                (preg_match('/\.png|\.jpe?g/i', $sImage) && strlen($sImageBinary) < 5 * 1024^2) //max size is 5MB for png or jpeg
+                )) {
             $oRet = $this->oTwitter->upload('media/upload', array('media' => $sImageBinary));
             if (isset($oRet->errors)) {
                 $this->logger(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message));
@@ -334,7 +328,7 @@ class RssBot {
                 return FALSE;
             } else {
                 $this->sMediaId = $oRet->media_id_string;
-                printf('- uploaded %s to attach to tweet<br>', $sImage);
+                printf('- uploaded %s to attach to next tweet<br>', $sImage);
             }
 
             return TRUE;

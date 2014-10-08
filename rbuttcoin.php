@@ -9,10 +9,10 @@ $oTwitterBot = new RssBot(array(
     'sTweetFormat'  => ':title (by :author) [:type] :link',
     'aTweetVars'    => array(
         array('sVar' => ':title', 'sValue' => 'title', 'bTruncate' => TRUE),
-        array('sVar' => ':link', 'sValue' => 'link'),
-        array('sVar' => ':source', 'sValue' => 'description', 'sRegex' => '/<a href="([^"]+)">\[link\]<\/a>/', 'bAttachImage' => TRUE),
-        array('sVar' => ':type', 'sValue' => 'special:redditmediatype', 'sSubject' => ':source'),
         array('sVar' => ':author', 'sValue' => 'description', 'sRegex' => '/submitted by <a href="\S+?"> ?(\S+) ?<\/a>/i', 'sDefault' => '?'),
+        array('sVar' => ':link', 'sValue' => 'link'),
+        array('sVar' => ':type', 'sValue' => 'special:redditmediatype', 'sSubject' => ':source'),
+        array('sVar' => ':source', 'sValue' => 'description', 'sRegex' => '/<a href="([^"]+)">\[link\]<\/a>/', 'bAttachImage' => TRUE),
         //array('sVar' => ':commentcount', 'sValue' => 'description', 'sRegex' => '/<a href="[^"]+">\[(\d+ comments)\]<\/a>/', 'sDefault' => '0 comments'),
     ),
     'sTimestampXml' => 'pubDate',
