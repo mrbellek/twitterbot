@@ -4,11 +4,6 @@ set_time_limit(0);
 //start the scraper, optionally pass an array of urls to spider in constructor
 $o = new NotesScraper();
 
-/*
- * TODO:
- * - do not fetch address transactions older than ~1 month
- */
-
 class NotesScraper {
 
     private $aAddresses = array();
@@ -19,6 +14,8 @@ class NotesScraper {
     private $sCsvExport = './notesscraper.csv';
     private $sSqlExport = './notesscraper.sql';
 
+    private $iNoteAgeThreshold = 15552000; //3600 * 24 * 30 * 6
+
     public function __construct($aAddresses = array()) {
 
         $this->aAddresses = $aAddresses;
@@ -26,24 +23,29 @@ class NotesScraper {
         $this->aFilters = json_decode(file_get_contents($this->sSettingsFile), TRUE);
         $this->aFilters = $this->aFilters['filters'];
 
-        //get public notes from blockchain.info in the past 30 days (week?)
-        $this->searchGoogle();
-
         //if we're running from a browser, make output readable
         if (!empty($_SERVER['DOCUMENT_ROOT'])) {
             echo '<pre>';
         }
 
-        //reset export files
-        $this->resetFiles();
+        //get public notes from blockchain.info in the past 30 days (week?)
+        $this->searchGoogle();
 
-        //parse the blockchain urls of addresses
-        $this->parseAddresses();
+        if ($this->aAddresses) {
 
-        //truncate last comma of sql export
-        $this->finalizeFiles();
+            //reset export files
+            $this->resetFiles();
 
-        echo "done!";
+            //parse the blockchain urls of addresses
+            $this->parseAddresses();
+
+            //truncate last comma of sql export
+            $this->finalizeFiles();
+
+            echo "done!";
+        } else {
+            echo "searchGoogle() failed! bot throttling?";
+        }
     }
 
     private function resetFiles() {
@@ -67,27 +69,39 @@ class NotesScraper {
 
     private function parseAddresses() {
 
+        //sort by newest first
+        $sArgs = '?sort=0';
+
         //loop through addresses
         foreach ($this->aAddresses as $iKey => $sAddress) {
 
             //get first page
             printf("fetching address %d/%d..\r\n", $iKey + 1, count($this->aAddresses));
             try {
-                $sHTML = file_get_contents($sAddress);
+                $sHTML = file_get_contents($sAddress . $sArgs);
                 if (empty($sHTML)) {
                     //got disconnected, just move on
                     echo 'x';
 
                 } else {
                     echo 'checking pages for public notes: ';
-                    $this->parseNotes($sHTML);
+                    $bRet = $this->parseNotes($sHTML);
+                    if (!$bRet) {
+                        //note found that is older than treshold, skip to next address
+                        echo "\r\n\r\n";
+                        continue;
+                    }
 
                     $iOffset = 50;
                     //get next pages, as long as next link is present AND it is not disabled (max 100 pages)
                     while (preg_match('/<li class="next ?">/', $sHTML) && !preg_match('/<li class="next disabled/', $sHTML) && $iOffset <= 5000) {
 
                         $sHTML = file_get_contents($sAddress . '?offset=' . $iOffset . '&filter=0');
-                        $this->parseNotes($sHTML);
+                        $bRet = $this->parseNotes($sHTML);
+                        if (!$bRet) {
+                            //note found that is older than treshold, break out of loop and go to next address
+                            break;
+                        }
 
                         $iOffset += 50;
                     }
@@ -104,11 +118,19 @@ class NotesScraper {
     private function parseNotes($sHTML) {
 
         //look for public notes
-        if (preg_match_all('/<div class="alert note"><b>Public Note:<\/b> (.*?)<\/div>.*?href="(\/tx\/[a-zA-Z0-9]{64})"/', $sHTML, $aMatches)) {
+        if (preg_match_all('/<div class="alert note"><b>Public Note:<\/b> (.*?)<\/div>.*?href="(\/tx\/[a-zA-Z0-9]{64})">.+?"pull-right">(.+?)<\/span>/', $sHTML, $aMatches)) {
             echo count($aMatches[1]) . ' ';
 
             //loop through public notes (+ transaction ids)
             foreach ($aMatches[1] as $iKey2 => $sNote) {
+
+                //check note age
+                if ($aMatches[3][$iKey2] && strtotime($aMatches[3][$iKey2])) {
+                    if (strtotime($aMatches[3][$iKey2]) < time() - $this->iNoteAgeThreshold) {
+                        //note is too old, stop
+                        return FALSE;
+                    }
+                }
 
                 //apply filters
                 $bFiltered = FALSE;
@@ -135,6 +157,8 @@ class NotesScraper {
         } else {
             echo '. ';
         }
+
+        return TRUE;
     }
 
     private function searchGoogle() {
