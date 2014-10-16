@@ -1,6 +1,11 @@
 <?php
 set_time_limit(0);
 
+/*
+ * TODO:
+ * - indication for cause of halt of spidering address (out of pages, too old, too many pages, disconnect etc)
+ */
+
 //start the scraper, optionally pass an array of urls to spider in constructor
 $o = new NotesScraper();
 
@@ -14,9 +19,11 @@ class NotesScraper {
     private $sCsvExport = './notesscraper.csv';
     private $sSqlExport = './notesscraper.sql';
 
-    private $iNoteAgeThreshold = 15552000; //3600 * 24 * 30 * 6
+    private $iNoteAgeThreshold;
 
     public function __construct($aAddresses = array()) {
+
+        $this->iNoteAgeThreshold = 3600 * 24 * 30 * 6;
 
         $this->aAddresses = $aAddresses;
 
@@ -88,7 +95,7 @@ class NotesScraper {
                     $bRet = $this->parseNotes($sHTML);
                     if (!$bRet) {
                         //note found that is older than treshold, skip to next address
-                        echo "\r\n\r\n";
+                        echo "A\r\n\r\n";
                         continue;
                     }
 
@@ -100,6 +107,7 @@ class NotesScraper {
                         $bRet = $this->parseNotes($sHTML);
                         if (!$bRet) {
                             //note found that is older than treshold, break out of loop and go to next address
+                            echo "A\r\n\r\n";
                             break;
                         }
 
