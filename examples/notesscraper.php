@@ -95,7 +95,7 @@ class NotesScraper {
                     $bRet = $this->parseNotes($sHTML);
                     if (!$bRet) {
                         //note found that is older than treshold, skip to next address
-                        echo "A\r\n\r\n";
+                        echo "a\r\n\r\n";
                         continue;
                     }
 
@@ -107,11 +107,18 @@ class NotesScraper {
                         $bRet = $this->parseNotes($sHTML);
                         if (!$bRet) {
                             //note found that is older than treshold, break out of loop and go to next address
-                            echo "A\r\n\r\n";
+                            echo 'a';
                             break;
                         }
 
                         $iOffset += 50;
+                    }
+                    if ($bRet) {
+                        if ($iOffset > 5000) {
+                            echo 'p'; //too many pages
+                        } else {
+                            echo 's'; //no more pages
+                        }
                     }
                 }
 
@@ -154,8 +161,8 @@ class NotesScraper {
                 //write to file
                 if (!$bFiltered) {
                     //save some space, tweets are short
-                    $sNote = preg_replace('/[a-z0-9]{64}/i', '[transaction]', $sNote);
-                    $sNote = preg_replace('/[a-z0-9]{26,34}/i', '[address]', $sNote);
+                    $sNote = preg_replace('/[a-f0-9]{64}/i', '[transaction]', $sNote);
+                    $sNote = preg_replace('/1[a-z0-9]{25,33}/i', '[address]', $sNote);
 
                     //append line to csv and sql
                     file_put_contents($this->sCsvExport, '"' . str_replace('"', '\"', $sNote) . '","' . $aMatches[2][$iKey2] . "\"\r\n", FILE_APPEND);
