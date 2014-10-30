@@ -88,14 +88,14 @@ class NotesScraper {
                 $sHTML = file_get_contents($sAddress . $sArgs);
                 if (empty($sHTML)) {
                     //got disconnected, just move on
-                    echo 'x';
+                    echo '/dc';
 
                 } else {
                     echo 'checking pages for public notes: ';
                     $bRet = $this->parseNotes($sHTML);
                     if (!$bRet) {
                         //note found that is older than treshold, skip to next address
-                        echo "a\r\n\r\n";
+                        echo "/age\r\n\r\n";
                         continue;
                     }
 
@@ -107,7 +107,7 @@ class NotesScraper {
                         $bRet = $this->parseNotes($sHTML);
                         if (!$bRet) {
                             //note found that is older than treshold, break out of loop and go to next address
-                            echo 'a';
+                            echo '/age';
                             break;
                         }
 
@@ -115,16 +115,16 @@ class NotesScraper {
                     }
                     if ($bRet) {
                         if ($iOffset > 5000) {
-                            echo 'p'; //too many pages
+                            echo '/max'; //too many pages
                         } else {
-                            echo 's'; //no more pages
+                            echo '/end'; //no more pages
                         }
                     }
                 }
 
             } catch (Exception $e) {
                 //got disconnected, just move on
-                echo 'x';
+                echo '/dc';
             }
             echo "\r\n\r\n";
         }
@@ -184,7 +184,9 @@ class NotesScraper {
         $sQuery = 'site:blockchain.info "public note"';
 
         //put in filters as boolean operators from the start, to save traffic and time
-        $sQuery .= substr(' -"' . implode('" -"', $this->aFilters) . '"', 0, 512);
+        $aFilters = $this->aFilters;
+        shuffle($aFilters);
+        $sQuery .= substr(' -"' . implode('" -"', $aFilters) . '"', 0, 512);
 
         //prepare the whole url
         $sUrl = 'http://google.com/search?q=' . urlencode($sQuery) . '&safe=off&tbs=qdr:m';

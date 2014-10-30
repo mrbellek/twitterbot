@@ -1,6 +1,12 @@
 <?php
 require_once('twitteroauth.php');
 
+/*
+ * TODO:
+ * - commands through mentions, replies through mentions/DMs like retweetbot
+ * - somehow r/buttcoin items are sometimes posted multiple times - bug? does the timestamp of items change?
+ */
+
 //runs every 15 minutes, mirroring & attaching images might take a while
 set_time_limit(15 * 60);
 
@@ -98,57 +104,74 @@ class RssBot {
 
     private function postTweets() {
 
-        $oNewestItem = FALSE;
-        $sTimestampVar = $this->aTweetSettings['sTimestampXml'];
-        $aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . sprintf($this->sLastRunFile, 1)), TRUE);
+        try {
+            $oNewestItem = FALSE;
+            $sTimestampVar = $this->aTweetSettings['sTimestampXml'];
+            $aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . sprintf($this->sLastRunFile, 1)), TRUE);
 
-        foreach ($this->oFeed->channel->item as $oItem) {
+            foreach ($this->oFeed->channel->item as $oItem) {
 
-            //save newest item to set timestamp for next run
-            if (!$oNewestItem || strtotime($oItem->$sTimestampVar) > strtotime($oNewestItem->$sTimestampVar)) {
-                $oNewestItem = $oItem;
-            }
+                //save newest item to set timestamp for next run
+                if (!$oNewestItem || strtotime($oItem->$sTimestampVar) > strtotime($oNewestItem->$sTimestampVar)) {
+                    $oNewestItem = $oItem;
+                }
 
-            //don't tweet items we've already done last in run
-            $sVar = $this->aTweetSettings['sTimestampXml'];
-            if (!empty($oItem->$sVar)) {
-                if (strtotime($oItem->$sVar) <= $aLastSearch['timestamp']) {
+                //don't tweet items we've already done last in run
+                $sVar = $this->aTweetSettings['sTimestampXml'];
+                if (!empty($oItem->$sVar)) {
+                    if (strtotime($oItem->$sVar) <= $aLastSearch['timestamp']) {
+                        continue;
+                    }
+                }
+
+                //convert xml item into tweet
+                $sTweet = $this->formatTweet($oItem);
+                if (!$sTweet) {
+                    //return FALSE;
                     continue;
+                }
+
+                printf('- <b>%s</b><br>', utf8_decode($sTweet) . ' - ' . $oItem->pubDate);
+
+                if ($this->sMediaId) {
+                    $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE, 'media_ids' => $this->sMediaId));
+                    $this->sMediaId = FALSE;
+                } else {
+                    $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
+                }
+                if (isset($oRet->errors)) {
+                    $this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
+                    $this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
+                    return FALSE;
                 }
             }
 
-            //convert xml item into tweet
-            $sTweet = $this->formatTweet($oItem);
-            if (!$sTweet) {
-                //return FALSE;
-                continue;
-            }
+            //save timestamp of last item to disk
+            if (!empty($oNewestItem->$sTimestampVar)) {
+                $aLastItem = array(
+                    'timestamp' => strtotime($oNewestItem->$sTimestampVar),
+                );
+                file_put_contents(MYPATH . '/' . $this->sLastRunFile, json_encode($aLastItem));
 
-            if ($this->sMediaId) {
-                $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE, 'media_ids' => $this->sMediaId));
-                $this->sMediaId = FALSE;
             } else {
-                $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
-            }
-            if (isset($oRet->errors)) {
-                $this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
-                $this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
+                //very bad
+                $this->halt('No timestamp found on XML item, halting.');
                 return FALSE;
-            } else {
-                printf('- <b>%s</b><br>', utf8_decode($sTweet) . ' - ' . $oItem->pubDate);
             }
-        }
 
-        //save timestamp of last item to disk
-        if (!empty($oNewestItem->$sTimestampVar)) {
-            $aLastItem = array(
-                'timestamp' => strtotime($oNewestItem->$sTimestampVar),
-            );
-            file_put_contents(MYPATH . '/' . $this->sLastRunFile, json_encode($aLastItem));
+        } catch(Exception $e) {
 
-        } else {
-            //very bad
-            $this->halt('No timestamp found on XML item, halting.');
+            $this->logger(2, sprintf('Caught fatal error in postTweets(): %s', $e->getMessage()));
+            $this->halt(sprintf('- Fatal error in postTweets(): %s', $e->getMessage()));
+
+            //save timestamp of last item to disk
+            if (!empty($oNewestItem->$sTimestampVar)) {
+                $aLastItem = array(
+                    'timestamp' => strtotime($oNewestItem->$sTimestampVar),
+                );
+                file_put_contents(MYPATH . '/' . $this->sLastRunFile, json_encode($aLastItem));
+            }
+
             return FALSE;
         }
 

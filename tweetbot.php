@@ -4,11 +4,13 @@ require_once('twitteroauth.php');
 /*
  * TODO:
  * - for bPostOnlyOnce=TRUE, notification when no more tweets available
+ * - commands through mentions, replies through mentions/DMs like retweetbot
  */
 
 class TweetBot {
 
 	private $sUsername;			//username we will be tweeting from
+    private $oPDO;
 
 	private $sLogFile;			//where to log stuff
 
@@ -18,11 +20,22 @@ class TweetBot {
 	public function __construct($aArgs) {
 
 		//connect to twitter
-		$this->oTwitter = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
-		$this->oTwitter->host = "https://api.twitter.com/1.1/";
+		//$this->oTwitter = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
+		//$this->oTwitter->host = "https://api.twitter.com/1.1/";
+
+        //connect to database
+		try {
+			//$this->oPDO = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS);
+		} catch(Exception $e) {
+			$this->logger(2, sprintf('Database connection failed. (%s)', $e->getMessage()));
+			$this->halt(sprintf('- Database connection failed. (%s)', $e->getMessage()));
+			return FALSE;
+		}
 
 		//load args
 		$this->parseArgs($aArgs);
+
+        die(var_dump($this->getStats()));
 	}
 
 	private function parseArgs($aArgs) {
@@ -50,6 +63,9 @@ class TweetBot {
 
 		//verify current twitter user is correct
 		if ($this->getIdentity()) {
+
+            //check messages & reply if needed
+            $this->checkMentions();
 
 			//fetch database record
 			if ($aRecord = $this->getRecord()) {
@@ -112,17 +128,9 @@ class TweetBot {
 			return FALSE;
 		}
 
-		try {
-			$oPDO = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS);
-		} catch(Exception $e) {
-			$this->logger(2, sprintf('Database connection failed. (%s)', $e->getMessage()));
-			$this->halt(sprintf('- Database connection failed. (%s)', $e->getMessage()));
-			return FALSE;
-		}
-
         if ($this->aTweetSettings['bPostOnlyOnce'] == FALSE) {
             //fetch random record out of those that haven't been posted yet
-            $sth = $oPDO->prepare(sprintf('
+            $sth = $this->oPDO->prepare(sprintf('
                 SELECT *
                 FROM %1$s
                 WHERE %2$s = 0
@@ -134,7 +142,7 @@ class TweetBot {
         } else {
 
             //fetch random record out of those with the lowest counter value
-            $sth = $oPDO->prepare(sprintf('
+            $sth = $this->oPDO->prepare(sprintf('
                 SELECT *
                 FROM %1$s
                 WHERE %2$s = (
@@ -158,7 +166,7 @@ class TweetBot {
             printf('- Found record that has been posted %d times before.<br>', $aRecord['postcount']);
 
             //update record with postcount and timestamp of last post
-            $sth = $oPDO->prepare(sprintf('
+            $sth = $this->oPDO->prepare(sprintf('
                 UPDATE %1$s
                 SET %3$s = %3$s + 1,
                     %4$s = NOW()
@@ -288,6 +296,154 @@ class TweetBot {
 
 		return $sTweet;
 	}
+
+    private function checkMentions() {
+
+		$aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . sprintf($this->sLastSearchFile, 1)), TRUE);
+        printf('Checking mentions since %s for commands..<br>', $aLastSearch['timestamp']);
+
+        //fetch new mentions since last run
+        $aMentions = $this->oTwitter->get('statuses/mentions_timeline', array(
+            'count'         => 10,
+			'since_id'		=> ($aLastSearch && !empty($aLastSearch['max_id']) ? $aLastSearch['max_id'] : 1),
+        ));
+
+        if (is_object($aMentions) && !empty($aMentions->errors[0]->message)) {
+            $this->logger(2, sprintf('Twitter API call failed: GET statuses/mentions_timeline (%s)', $aMentions->errors[0]->message));
+            $this->halt(sprintf('- Failed getting mentions, halting. (%s)', $aMentions->errors[0]->message));
+        }
+
+        //if we have mentions, get friends for auth (we will only respond to commands from people we follow)
+        if (count($aMentions) > 0) {
+            $oRet = $this->oTwitter->get('friends/ids', array('screen_name' => $this->sUsername, 'stringify_ids' => TRUE));
+            if (!empty($oRet->errors[0]->message)) {
+                $this->logger(2, sprintf('Twitter API call failed: GET friends/ids (%s)', $aMentions->errors[0]->message));
+                $this->halt(sprintf('- Failed getting friends, halting. (%s)', $aMentions->errors[0]->message));
+            }
+            $aFollowing = $oRet->ids;
+
+        } else {
+            echo '- no new mentions.<br><br>';
+            return FALSE;
+        }
+
+        foreach ($aMentions as $oMention) {
+
+            //only reply to friends (people we are following)
+            if (in_array($oMention->user->id_str, $aFollowing)) {
+
+                $bRet = $this->parseCommand($oMention);
+                if (!$bRet) {
+                    break;
+                }
+            }
+        }
+        printf('- replied to %d commands<br><br>', count($aMentions));
+
+        return TRUE;
+    }
+
+    private function parseCommand($oMention) {
+
+        //reply to commands from friends (people we follow) in DMs
+        $sId = $oMention->id_str;
+        $sCommand = str_replace('@' . strtolower($this->sUsername) . ' ', '', strtolower($oMention->text));
+        printf('Parsing command %s from %s..<br>', $sCommand, $oMention->user->screen_name);
+
+        switch ($sCommand) {
+            case 'help':
+                return $this->replyToCommand($oMention, 'Commands: help lastrun lastlog. Only replies to friends. Lag varies, be patient.');
+
+            case 'lastrun':
+                $aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . sprintf($this->sLastSearchFile, 1)), TRUE);
+
+                return $this->replyToCommand($oMention, sprintf('Last script run was: %s', (!empty($aLastSearch['timestamp']) ? $aLastSearch['timestamp'] : 'never')));
+
+            case 'lastlog':
+                $aLogFile = @file($this->sLogFile, FILE_IGNORE_NEW_LINES);
+
+                return $this->replyToCommand($oMention, ($aLogFile ? $aLogFile[count($aLogFile) - 1] : 'Log file is empty'));
+
+            case 'stats':
+
+                $aStats = $this->getStats();
+
+                return $this->replyToCommand($oMention, sprintf('Total records: %d, %d aren\'t posted yet.', $aStats['total'], $aStats['unposted']));
+
+            default:
+                echo '- command unknown.<br>';
+                return FALSE;
+        }
+    }
+
+    private function replyToCommand($oMention, $sReply) {
+
+        //check friendship between bot and command sender
+        $oRet = $this->oTwitter->get('friendships/show', array('source_screen_name' => $this->sUsername, 'target_screen_name' => $oMention->user->screen_name));
+        if (!empty($oRet->errors)) {
+            $this->logger(2, sprintf('Twitter API call failed: GET friendships/show (%s)', $oRet->errors[0]->message));
+            $this->halt(sprintf('- Failed to check friendship, halting. (%s)', $oRet->errors[0]->message));
+            return FALSE;
+        }
+
+        //if we can DM the source of the command, do that
+        if ($oRet->relationship->source->can_dm) {
+
+            $oRet = $this->oTwitter->post('direct_messages/new', array('user_id' => $oMention->user->id_str, 'text' => substr($sReply, 0, 140)));
+
+            if (!empty($oRet->errors)) {
+                $this->logger(2, sprintf('Twitter API call failed: POST direct_messages/new (%s)', $oRet->errors[0]->message));
+                $this->halt(sprintf('- Failed to send DM, halting. (%s)', $oRet->errors[0]->message));
+                return FALSE;
+            }
+
+        } else {
+            //otherwise, use public reply
+
+            $oRet = $this->oTwitter->post('statuses/update', array(
+                'in_reply_to_status_id' => $oMention->id_str,
+                'trim_user' => TRUE,
+                'status' => sprintf('@%s %s',
+                    $oMention->user->screen_name,
+                    substr($sReply, 0, 140 - 2 - strlen($oMention->user->screen_name))
+                )
+            ));
+
+            if (!empty($oRet->errors)) {
+                $this->logger(2, sprintf('Twitter API call failed: POST statuses/update (%s)', $oRet->errors[0]->message));
+                $this->halt(sprintf('- Failed to reply, halting. (%s)', $oRet->errors[0]->message));
+                return FALSE;
+            }
+        }
+
+        printf('- Replied: %s<br>', $sReply);
+        return TRUE;
+    }
+
+    private function getStats() {
+
+        $sth = $this->oPDO->prepare(sprintf('
+            SELECT (
+             SELECT COUNT(*) FROM %1$s
+            ) AS total, (
+             SELECT COUNT(*) FROM %1$s WHERE %2$s = 0
+            ) AS unposted',
+            $this->aDbSettings['sTable'],
+            $this->aDbSettings['sCounterCol']
+        ));
+        if ($sth->execute() == FALSE) {
+            $this->logger(2, sprintf('Stats query failed. (%d %s)', $stf->errorCode(), $sth->errorInfo()));
+            $this->halt(sprintf('- Stats query failed, halting. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
+            return FALSE;
+        }
+
+        //get total number of records, as well as records with postcount 0
+        if ($aStats = $sth->fetch(PDO::FETCH_ASSOC)) {
+            return $aStats;
+        } else {
+            return array('total' => 0, 'unposted' => 0);
+        }
+    }
 
 	private function halt($sMessage = '') {
 		echo $sMessage . '<br><br>Done!<br><br>';
