@@ -7,7 +7,8 @@ I've used two files (twitteroauth.php and OAuth.php) of Abraham's
 twitteroauth project to create this app. It works on OAuth, so
 no need to enter your twitter password.
 
-Instruction to use this script can be found here - http://www.prasannasp.net/how-to-create-a-twitter-bot/
+Instruction to use this script can be found here:
+http://www.prasannasp.net/how-to-create-a-twitter-bot/
 ```
 
 This repository has several different types of Twitter bots with live examples:
@@ -22,11 +23,11 @@ All scripts assume a basic knowledge of PHP. Every of these bots is used by crea
 
 Each of these bots is constructed differently, but there are common steps. They are:
 
-### Create a Twitter account and app for the bot ###
+#### Create a Twitter account and app for the bot ####
 
 [Sign up for Twitter](https://twitter.com/signup) with a new account that will be used to post tweets from. Then, go to [apps.twitter.com](https://apps.twitter.com) and **create a new app**. Enter whatever you want for Name/Description/Website and create the app. Now go to **Permissions** and change it to Read and Write. Finally, go to the **Keys and Access Tokens** tab and copy your Consumer Key and Secret. Click the button to generate Access Tokens and copy those too.
 
-## Create a PHP script ###
+#### Create a PHP script ####
 
 Next, start a blank PHP file and define constants for **CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN and ACCESS_TOKEN_SECRET**. Also, create a **MYPATH** constant with the path the script will run from (especially important on shared hosting).
 
@@ -54,8 +55,8 @@ Optional arguments:
 * **iSearchMax** - maximum number of tweets to fetch during each search query (default 5)
 * **iMinRateLimit** - the threshold that will stop the bot from tweeting if the rate limit falls below this, and wait until the rate limit reset (default 5)
 * **sSettingsFile** - filename of the .json file with settings: keyword filters, username filters, probability values (default blank)
-* **sLastSearchFile** - filename of the .json file that stores what tweet was last parsed, to continue from in the next run (default <username>-last<num>.json)
-* **sLogFile** - filename of the .log file holding and logger messages that are generated (default <username>.log)
+* **sLastSearchFile** - filename of the .json file that stores what tweet was last parsed, to continue from in the next run (default `<username>-last<num>.json`)
+* **sLogFile** - filename of the .log file holding and logger messages that are generated (default `<username>.log`)
 
 The search strings array allows for multiple search queries for a single bot, all of which will be executed during a run. For instance, if you want your bot to retweet anything mentioning *apples* OR *oranges*, you could pass it `array(1 => 'apples', 2 => 'oranges')`.
 
@@ -102,14 +103,14 @@ Required arguments:
 * **aTweetVars** - an array specifying which placeholder in the tweet format will be filled by which RSS variable
 
 Optional arguments:
-* **sLastRunFile** - filename of the .json file that stores what item was last parsed, to continue from in the next run (default <username>-last.json)
+* **sLastRunFile** - filename of the .json file that stores what item was last parsed, to continue from in the next run (default `<username>-last.json`)
 * **sTimestampXml** - name of the XML field in the RSS feed that specifying when the item was published (default *pubDate*)
 
 The *sTweetFormat* string contains the generic tweet format with colon placeholders, e.g. if your bot tweets the title, link and timestamp from every item in an RSS feed, the format could look like `:title :link (published on :date)`. These names do not have to be the same as the XML fields in the RSS feed.
 
-The *aTweetVars* array ties the placeholders in the tweet format to the XML fields in the RSS feed. Regular expressions can be used to grab specific parts of XML fields and tie them to placeholders, or entire contents of an XML field can be used. If a tweet turns out too long, a single variable can be marked for truncating if need be. For instance, if the RSS feed lists <item> nodes that contain <title>, <pubDate> and <source> nodes, your array could look like `array( array( 'sVar' => ':title', 'sValue' => 'title'), array('sVar' => ':link', 'sValue' => 'source'), array('sVar' => ':date', 'sValue' => 'pubDate'))`. (Nested nodes are not supported yet.)
+The *aTweetVars* array ties the placeholders in the tweet format to the XML fields in the RSS feed. Regular expressions can be used to grab specific parts of XML fields and tie them to placeholders, or entire contents of an XML field can be used. If a tweet turns out too long, a single variable can be marked for truncating if need be. For instance, if the RSS feed lists `<item>` nodes that contain `<title>`, `<pubDate>` and `<source>` nodes, your array could look like `array( array( 'sVar' => ':title', 'sValue' => 'title'), array('sVar' => ':link', 'sValue' => 'source'), array('sVar' => ':date', 'sValue' => 'pubDate'))`. (Nested nodes are not supported yet.)
 
-However, if the <source> node, for whatever reason, instead of just the link has the text '<a href="http://....'>click here!</a>', you would want just the link and not the whole node text. To accomplish this, the variable would change to e.g. `array('sVar' => ':link', 'sValue' => 'source', **'sRegex' => '/href="(.+?)">/'**)`.
+However, if the `<source>` node, for whatever reason, instead of just the link has the text `<a href="http://....'>click here!</a>`, you would want just the link and not the whole node text. To accomplish this, the variable would change to e.g. `array('sVar' => ':link', 'sValue' => 'source', **'sRegex' => '/href="(.+?)">/'**)`.
 
 A special value can be passed to the `sValue` key, to further process another variable into a result that fills the placeholder. Right now, the only value is *special:redditmediatype*, which determines if the value of a variable with a link is an image, a video, a self post or a cross-link. This only applies to Reddit RSS feeds. For example, to add another variable in our example that would fill a placeholder with the link type: `array('sVar' => ':type', 'sValue' => 'special:redditmediatype', 'sSubject' => ':link')`. After this, adding `:type` in the tweet format would fill it with the type of link in the `:link` placeholder.
 
