@@ -10,6 +10,9 @@ require_once('./dstbot.inc.php');
  * - reply to command: when is next DST in (country)?
  * - reply to command: what time is it now in (country)?
  *   - or get country from profile
+ *
+ * SPECIAL CASES:
+ * - brazil dst end is delayed by 1 week during carnival week, so would be 4th sunday of february instead of 3rd
  */
 
 $o = new DstBot(array('sUsername' => 'DaylightSavings'));
@@ -20,13 +23,78 @@ class DstBot {
     private $sUsername;
     private $sLogFile;
 
+    /*
+     * GROUPS:
+     * - Europe, except Armenia, Belarus, Georgia, Iceland, Russia (and Crimea of Ukrain)
+     *   - also includes Lebanon, Morocco, Western Sahara
+     * - North America, except Mexico and Greenland
+     *   - also includes Cuba, Haiti, Turks and Caicos
+     * - Jordan, Palestine, Syria
+     * - Samoa, New Zealand
+     * - everything else single countries
+     * - no DST group
+     */
+
     // all taken from http://en.wikipedia.org/wiki/Daylight_saving_time_by_country
+    private $aBetterSettings = array(
+        'europe' => array(
+            'includes' => array(
+                'austria',
+                'belgium',
+                'etc'
+            ),
+            'excludes' => array(
+                'armenia',
+                'belarus',
+                'etc'
+            ),
+            'start' => 'last sunday of march',
+            'end' => 'last sunday of october',
+        ),
+        'north america' => array(
+            'includes' => array(
+                'bahamas',
+                'bermuda',
+                'canada',
+                'saint pierre and miquelon',
+                'united states',
+            ),
+            'excludes' => array(
+                'cuba',
+                'haiti',
+                'turks and caicos',
+            ),
+            'start' => 'second sunday of march',
+            'end' => 'first sunday of november',
+        ),
+        //'palestine' => array(
+        //'syria' => array(
+        'jordan' => array(
+            'start' => 'last friday march',
+            'end' => 'last friday october',
+        ),
+        //'new zealand' => array(
+        'samoa' => array(
+            'start' => 'last sunday september',
+            'end' => 'first sunday april',
+        ),
+        'no dst' => array(
+            'includes' => array(
+                'afghanistan',
+                'algeria',
+                'american samoa',
+                'etc'
+            ),
+        ),
+    );
+
     private $aSettings = array(
         'afghanistan' => array(
             'continent' => 'asia',
             'dst' => FALSE,
         ),
         'akrotiri and dhekelia' => array(
+            'group' => 'europe',
             'continent' => 'europe',
             'hemisphere' => 'north',
             'dst' => array(
@@ -35,6 +103,7 @@ class DstBot {
             ),
         ),
         'albania' => array(
+            'group' => 'europe',
             'continent' => 'europe',
             'hemisphere' => 'north',
             'dst' => array(
@@ -53,6 +122,7 @@ class DstBot {
             'dst' => FALSE,
         ),
         'andorra' => array(
+            'group' => 'europe',
             'continent' => 'europe',
             'hemisphere' => 'north',
             'dst' => array(
@@ -69,222 +139,196 @@ class DstBot {
             'continent' => 'central america',
             'dst' => FALSE,
         ),
-    );
-
-    public function __construct($aArgs) {
-
-        //connect to twitter
-        $this->oTwitter = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
-        $this->oTwitter->host = "https://api.twitter.com/1.1/";
-
-        //load args
-        $this->parseArgs($aArgs);
-    }
-
-    private function parseArgs($aArgs) {
-
-        $this->sUsername = (!empty($aArgs['sUsername']) ? $aArgs['sUsername'] : '');
-        $this->sLogFile         = (!empty($aArgs['sLogFile'])      ? $aArgs['sLogFile']         : strtolower($this->sUsername) . '.log');
-
-        if ($this->sLogFile == '.log') {
-            $this->sLogFile = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME) . '.log';
-        }
-    }
-
-    public function run() {
-
-        //check if auth is ok
-        if ($this->getIdentity()) {
-
-            //check for upcoming DST changes and tweet about it
-            $this->checkDST();
-
-            //check for menions and reply
-            $this->checkMentions();
-
-            $this->halt('Done.');
-        }
-    }
-
-    private function getIdentity() {
-
-        //DEBUG
-        return true;
-
-        echo 'Fetching identity..<br>';
-
-        if (!$this->sUsername) {
-            $this->logger(2, 'No username');
-            $this->halt('- No username! Set username when calling constructor.');
-            return FALSE;
-        }
-
-        $oCurrentUser = $this->oTwitter->get('account/verify_credentials', array('include_entities' => FALSE, 'skip_status' => TRUE));
-
-        if (is_object($oCurrentUser) && !empty($oCurrentUser->screen_name)) {
-            if ($oCurrentUser->screen_name == $this->sUsername) {
-                printf('- Allowed: @%s, continuing.<br><br>', $oCurrentUser->screen_name);
-            } else {
-                $this->logger(2, sprintf('Authenticated username was unexpected: %s (expected: %s)', $oCurrentUser->screen_name, $this->sUsername));
-                $this->halt(sprintf('- Not allowed: @%s (expected: %s), halting.', $oCurrentUser->screen_name, $this->sUsername));
-                return FALSE;
-            }
-        } else {
-            $this->logger(2, sprintf('Twitter API call failed: GET account/verify_credentials (%s)', $oCurrentUser->errors[0]->message));
-            $this->halt(sprintf('- Call failed, halting. (%s)', $oCurrentUser->errors[0]->message));
-            return FALSE;
-        }
-
-        return TRUE;
-    }
-
-    private function checkDST() {
-
-        //check if any of the countries are switching to DST (summer time) NOW
-        if ($aCountries = $this->checkDSTStart(time())) {
-
-            $this->postTweetDSTStart($aCountries, 'now');
-        }
-
-        die('stop');
-
-        //check if any of the countries are switching to DST (summer time) in 24 hours
-        if ($aCountries = $this->checkDSTStart(time() + 24 * 3600)) {
-
-            $this->postTweetDSTStart($aCountries, '24 hours');
-        }
-
-        //check if any of the countries are switching to DST (summer time) in 7 days
-        if ($aCountries = $this->checkDSTStart(time() + 7 * 24 * 3600)) {
-
-            $this->postTweetDSTStart($aCountries, '1 week');
-        }
-
-        //check if any of the countries are switching from DST (winter time) NOW
-        $this->checkDSTEnd(time());
-
-        //check if any of the countries are switching from DST (winter time) in 24 hours
-        $this->checkDSTEnd(time() + 24 * 3600);
-
-        //check if any of the countries are switching from DST (winter time) in 7 days
-        $this->checkDSTEnd(time() + 7 * 24 * 3600);
-
-        return TRUE;
-    }
-
-    //check if DST starts (summer time start) for any of the countries
-    private function checkDSTStart($iTimestamp) {
-
-        $aCountriesDSTStart = array();
-        foreach ($this->aSettings as $sCountry => $aSetting) {
-
-            if ($aSetting['dst']) {
-
-                //convert 'last sunday of march 2014' to timestamp
-                $iDSTStart = strtotime($aSetting['dst']['start'] . ' ' . date('Y'));
-
-                //error margin of 1 minute
-                if ($iDSTStart >= $iTimestamp - 60 && $iDSTStart <= $iTimestamp + 60) {
-
-                    //DST will start here
-                    $aCountriesDSTStart[] = $sCountry;
-                }
-            }
-        }
-
-        return ($aCountriesDSTStart ? $aCountriesDSTStart : FALSE);
-    }
-
-    //check if DST ends (winter time start) for any of the countries
-    private function checkDSTEnd($iTimestamp) {
-    }
-
-    private function halt($sMessage = '') {
-        echo $sMessage . '<br><br>Done!<br><br>';
-        return FALSE;
-    }
-
-    private function logger($iLevel, $sMessage) {
-
-        $sLogLine = "%s [%s] %s\n";
-        $sTimestamp = date('Y-m-d H:i:s');
-
-        switch($iLevel) {
-        case 1:
-            $sLevel = 'FATAL';
-            break;
-        case 2:
-            $sLevel = 'ERROR';
-            break;
-        case 3:
-            $sLevel = 'WARN';
-            break;
-        case 4:
-        default:
-            $sLevel = 'INFO';
-            break;
-        case 5:
-            $sLevel = 'DEBUG';
-            break;
-        case 6:
-            $sLevel = 'TRACE';
-            break;
-        }
-
-        $iRet = file_put_contents($this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
-
-        if ($iRet === FALSE) {
-            die($sTimestamp . ' [FATAL] Unable to write to logfile!');
-        }
-    }
-}
-        /*'' => array(
-            'continent' => '',
+        'antigua and barbuda' => array(
+            'continent' => 'central america',
+            'dst' => FALSE,
+        ),
+        'argentina' => array(
+            'continent' => 'south america',
+            'dst' => FALSE,
+            'since' => 2009,
+        ),
+        'armenia' => array(
+            'group' => 'europe',
+            'continent' => 'europe',
+            'dst' => FALSE,
+            'since' => 2011,
+        ),
+        'aruba' => array(
+            'continent' => 'central america',
+            'dst' => FALSE,
+        ),
+        'australia' => array(
+            'aliases' => array(
+                'australian capital territory',
+                'victoria',
+                'new south wales',
+                'tasmania',
+                'south australia',
+                'lord howe island',
+            ),
+            'continent' => 'oceania',
+            'hemisphere' => 'south',
+            'dst' => array(
+                'start' => 'first sunday of october',
+                'end' => 'first sunday of april',
+            ),
+        ),
+        'austria' => array(
+            'group' => 'europe',
+            'continent' => 'europe',
             'hemisphere' => 'north',
             'dst' => array(
-                'start' => '',
-                'end' => '',
+                'start' => 'last sunday of march',
+                'end' => 'last sunday of october',
             ),
-            'since' => ,
+            'since' => 1980,
+        ),
+        'azerbaijan' => array(
+            'group' => 'europe',
+            'continent' => 'europe',
+            'hemisphere' => 'north',
+            'dst' => array(
+                'start' => 'last sunday of march',
+                'end' => 'last sunday of october',
+            ),
+            'since' => 1996,
+        ),
+        'bahamas' => array(
+            'group' => 'north america',
+            'continent' => 'north america',
+            'hemisphere' => 'north',
+            'dst' => array(
+                'start' => 'second sunday of march',
+                'end' => 'first sunday of november',
+            ),
+            'since' => 1964,
+        ),
+        'bahrain' => array(
+            'continent' => 'asia',
+            'dst' => FALSE,
+        ),
+        'bangladesh' => array(
+            'continent' => 'asia',
+            'dst' => FALSE,
+            'since' => 2009,
+        ),
+        'barbados' => array(
+            'continent' => 'central america',
+            'dst' => FALSE,
+            'since' => 1980,
+        ),
+        'belarus' => array(
+            'continent' => 'europe',
+            'dst' => FALSE,
+            'since' => 2010,
+        ),
+        'belgium' => array(
+            'group' => 'europe',
+            'continent' => 'europe',
+            'hemisphere' => 'north',
+            'dst' => array(
+                'start' => 'last sunday of march',
+                'end' => 'last sunday of october',
+            ),
+            'since' => 1977,
+        ),
+        'belize' => array(
+            'continent' => 'central america',
+            'dst' => FALSE,
+            'since' => 1983,
+        ),
+        'benin' => array(
+            'continent' => 'africa',
+            'dst' => FALSE,
+        ),
+        'bermuda' => array(
+            'group' => 'north america',
+            'continent' => 'north america',
+            'hemisphere' => 'north',
+            'dst' => array(
+                'start' => 'second sunday of march',
+                'end' => 'first sunday of november',
+            ),
+            'since' => 1974,
+        ),
+        'bhutan' => array(
+            'continent' => 'asia',
+            'dst' => FALSE,
+        ),
+        'bolovia' => array(
+            'continent' => 'south america',
+            'dst' => FALSE,
+            'since' => 1932,
+        ),
+        'bonaire' => array(
+            'continent' => 'central america',
+            'dst' => FALSE,
+        ),
+        'bosnia and herzegovina' => array(
+            'group' => 'europe',
+            'continent' => 'europe',
+            'hemisphere' => 'north',
+            'dst' => array(
+                'start' => 'last sunday of march',
+                'end' => 'last sunday of october',
+            ),
+            'since' => 1983,
+        ),
+        'botswana' => array(
+            'continent' => 'africa',
+            'dst' => FALSE,
+            'since' => 1944,
+        ),
+        'brazil' => array(
+            //TODO: DST end is delayed by one week (4th sunday of february) during Carnival Week
+            'continent' => 'south america',
+            'hemisphere' => 'south',
+            'dst' => array(
+                'start' => 'third sunday of october',
+                'end' => 'third sunday of february',
+            ),
+        ),
+        'british virgin islands' => array(
+            'continent' => 'central america',
+            'dst' => FALSE,
+        ),
+        'brunei' => array(
+            'continent' => 'asia',
+            'dst' => FALSE,
+        ),
+        'bulgaria' => array(
+            'group' => 'europe',
+            'continent' => 'europe',
+            'hemisphere' => 'north',
+            'dst' => array(
+                'start' => 'last sunday of march',
+                'end' => 'last sunday of october',
+            ),
+            'since' => 1979,
+        ),
+        'burkina fasso' => array(
+            'continent' => 'africa',
+            'dst' => FALSE,
+        ),
+        'burma' => array(
+            'continent' => 'asia',
+            'dst' => FALSE,
+        ),
+        'burundi' => array(
+            'continent' => 'africa',
+            'dst' => FALSE,
+        ),
+        'cambodia' => array(
+            'continent' => 'asia',
+            'dst' => FALSE,
+        ),
+        'cameroon' => array(
+            'continent' => 'africa',
+            'dst' => FALSE,
         ),
 
-    Antigua and Barbuda   Central America   -   -   -   Does not use DST
-    Argentina   South America   -   -   -   Observed DST in 1930-1969, 1974, 1988-2000, 2007-2009.
-    Armenia   Europe   -   -   -   Observed DST in 1981-1995, 1997-2011.[2]
-    Aruba (NL)   Central America   -   -   -   Does not use DST
-    Australia   Oceania   Austral/South   First Sunday October   First Sunday April
-    Main article: Daylight saving time in Australia
-    DST used only in Australian Capital Territory, Victoria, New South Wales, Tasmania, South Australia and Lord Howe Island.
-
-    Austria   Europe   Boreal/North   01:00 UTC on last Sunday March   01:00 UTC on last Sunday October   Observed DST in 1916-1918, 1920, 1940-1948 and since 1980.
-    Azerbaijan   Europe   Boreal/North   Last Sunday March   Last Sunday October   Observed DST in 1981-1992 and since 1996. Nagorno-Karabakh abolished DST in 2012.[3]
-    Bahamas   North America   Boreal/North   Second Sunday March   First Sunday November   Observed DST since 1964.
-    Bahrain   Asia   -   -   -   Does not use DST
-    Bangladesh   Asia   -   -   -   Observed DST in 2009.
-    Barbados   Central America   -   -   -   Observed DST from 1977-1980.
-    Belarus   Europe   -   -   -   Observed DST in 1941-1944, 1981-2010.
-    Belgium   Europe   Boreal/North   01:00 UTC on last Sunday March   01:00 UTC on last Sunday October   Observed DST in 1916-1940, 1942-1946 and since 1977.
-    Belize   Central America   -   -   -   Observed DST in 1973-1974 and 1982-1983.
-    Benin   Africa   -   -   -   Does not use DST
-    Bermuda (UK)   North America   Boreal/North   Second Sunday March   First Sunday November   Observed DST since 1974.
-    Bhutan   Asia   -   -   -   Does not use DST
-    Bolivia   South America   -   -   -   Observed DST in 1931-1932.
-    Bonaire (NL)   Central America   -   -   -   Does not use DST
-    Bosnia and Herzegovina   Europe   Boreal/North   Last Sunday March   Last Sunday October   Observed DST in 1941-1945 and since 1983.
-    Botswana   Africa   -   -   -   Observed DST in 1943-1944.
-    Brazil   South America   Austral/South   Third Sunday October   Third Sunday February
-    Main article: Daylight saving time in Brazil
-    DST end delays one week during Carnival week. Only these south and central states use DST: São Paulo, Rio de Janeiro, Federal District Brasilia, Santa Catarina, Paraná, Goiás, Rio Grande do Sul, Mato Grosso do Sul, Espírito Santo, Minas Gerais and Mato Grosso (some exceptions).[4]
-
-    British Virgin Islands (UK)   Central America   -   -   -   Does not use DST
-    Brunei   Asia   -   -   -   Does not use DST
-    Bulgaria   Europe   Boreal/North   01:00 UTC on last Sunday March   01:00 UTC on last Sunday October   Observed DST in 1943-1944 and since 1979.
-    Burkina Faso   Africa   -   -   -   Does not use DST
-    Burma   Asia   -   -   -   Does not use DST
-    Burundi   Africa   -   -   -   Does not use DST
-    Cambodia   Asia   -   -   -   Does not use DST
-    Cameroon   Africa   -   -   -   Does not use DST
-    Canada   North America   Boreal/North   Second Sunday March   First Sunday November
+    /*Canada   North America   Boreal/North   Second Sunday March   First Sunday November
     Main article: Daylight saving time in Canada
     Some regions in Quebec, east of 63° west longitude, most of Saskatchewan, Southampton Island and some areas in British Columbia do not observe DST. Saskatchewan however, observes Central Time even though it is located in the Mountain Time Zone, meaning it effectively observes DST year round.[5]
 
@@ -511,3 +555,175 @@ class DstBot {
     Zambia   Africa   -   -   -   Does not use DST
     Zimbabwe   Africa   -   -   -   Does not use DST
          */
+    );
+
+    public function __construct($aArgs) {
+
+        //connect to twitter
+        $this->oTwitter = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
+        $this->oTwitter->host = "https://api.twitter.com/1.1/";
+
+        //load args
+        $this->parseArgs($aArgs);
+    }
+
+    private function parseArgs($aArgs) {
+
+        $this->sUsername = (!empty($aArgs['sUsername']) ? $aArgs['sUsername'] : '');
+        $this->sLogFile         = (!empty($aArgs['sLogFile'])      ? $aArgs['sLogFile']         : strtolower($this->sUsername) . '.log');
+
+        if ($this->sLogFile == '.log') {
+            $this->sLogFile = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME) . '.log';
+        }
+    }
+
+    public function run() {
+
+        file_put_contents('dstbot.json', json_encode($this->aSettings, JSON_PRETTY_PRINT));
+        die('satop');
+
+        //check if auth is ok
+        if ($this->getIdentity()) {
+
+            //check for upcoming DST changes and tweet about it
+            $this->checkDST();
+
+            //check for menions and reply
+            $this->checkMentions();
+
+            $this->halt('Done.');
+        }
+    }
+
+    private function getIdentity() {
+
+        //DEBUG
+        return true;
+
+        echo 'Fetching identity..<br>';
+
+        if (!$this->sUsername) {
+            $this->logger(2, 'No username');
+            $this->halt('- No username! Set username when calling constructor.');
+            return FALSE;
+        }
+
+        $oCurrentUser = $this->oTwitter->get('account/verify_credentials', array('include_entities' => FALSE, 'skip_status' => TRUE));
+
+        if (is_object($oCurrentUser) && !empty($oCurrentUser->screen_name)) {
+            if ($oCurrentUser->screen_name == $this->sUsername) {
+                printf('- Allowed: @%s, continuing.<br><br>', $oCurrentUser->screen_name);
+            } else {
+                $this->logger(2, sprintf('Authenticated username was unexpected: %s (expected: %s)', $oCurrentUser->screen_name, $this->sUsername));
+                $this->halt(sprintf('- Not allowed: @%s (expected: %s), halting.', $oCurrentUser->screen_name, $this->sUsername));
+                return FALSE;
+            }
+        } else {
+            $this->logger(2, sprintf('Twitter API call failed: GET account/verify_credentials (%s)', $oCurrentUser->errors[0]->message));
+            $this->halt(sprintf('- Call failed, halting. (%s)', $oCurrentUser->errors[0]->message));
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+
+    private function checkDST() {
+
+        //check if any of the countries are switching to DST (summer time) NOW
+        if ($aCountries = $this->checkDSTStart(time())) {
+
+            $this->postTweetDSTStart($aCountries, 'now');
+        }
+
+        die('stop');
+
+        //check if any of the countries are switching to DST (summer time) in 24 hours
+        if ($aCountries = $this->checkDSTStart(time() + 24 * 3600)) {
+
+            $this->postTweetDSTStart($aCountries, '24 hours');
+        }
+
+        //check if any of the countries are switching to DST (summer time) in 7 days
+        if ($aCountries = $this->checkDSTStart(time() + 7 * 24 * 3600)) {
+
+            $this->postTweetDSTStart($aCountries, '1 week');
+        }
+
+        //check if any of the countries are switching from DST (winter time) NOW
+        $this->checkDSTEnd(time());
+
+        //check if any of the countries are switching from DST (winter time) in 24 hours
+        $this->checkDSTEnd(time() + 24 * 3600);
+
+        //check if any of the countries are switching from DST (winter time) in 7 days
+        $this->checkDSTEnd(time() + 7 * 24 * 3600);
+
+        return TRUE;
+    }
+
+    //check if DST starts (summer time start) for any of the countries
+    private function checkDSTStart($iTimestamp) {
+
+        $aCountriesDSTStart = array();
+        foreach ($this->aSettings as $sCountry => $aSetting) {
+
+            if ($aSetting['dst']) {
+
+                //convert 'last sunday of march 2014' to timestamp
+                $iDSTStart = strtotime($aSetting['dst']['start'] . ' ' . date('Y'));
+
+                //error margin of 1 minute
+                if ($iDSTStart >= $iTimestamp - 60 && $iDSTStart <= $iTimestamp + 60) {
+
+                    //DST will start here
+                    $aCountriesDSTStart[] = $sCountry;
+                }
+            }
+        }
+
+        return ($aCountriesDSTStart ? $aCountriesDSTStart : FALSE);
+    }
+
+    //check if DST ends (winter time start) for any of the countries
+    private function checkDSTEnd($iTimestamp) {
+    }
+
+    private function halt($sMessage = '') {
+        echo $sMessage . '<br><br>Done!<br><br>';
+        return FALSE;
+    }
+
+    private function logger($iLevel, $sMessage) {
+
+        $sLogLine = "%s [%s] %s\n";
+        $sTimestamp = date('Y-m-d H:i:s');
+
+        switch($iLevel) {
+        case 1:
+            $sLevel = 'FATAL';
+            break;
+        case 2:
+            $sLevel = 'ERROR';
+            break;
+        case 3:
+            $sLevel = 'WARN';
+            break;
+        case 4:
+        default:
+            $sLevel = 'INFO';
+            break;
+        case 5:
+            $sLevel = 'DEBUG';
+            break;
+        case 6:
+            $sLevel = 'TRACE';
+            break;
+        }
+
+        $iRet = file_put_contents($this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
+
+        if ($iRet === FALSE) {
+            die($sTimestamp . ' [FATAL] Unable to write to logfile!');
+        }
+    }
+}

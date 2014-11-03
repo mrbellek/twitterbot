@@ -1,0 +1,239 @@
+{
+    "afghanistan": {
+        "continent": "asia",
+        "dst": false
+    },
+    "akrotiri and dhekelia": {
+        "group": "europe",
+        "continent": "europe",
+        "hemisphere": "north",
+        "dst": {
+            "start": "last sunday of march",
+            "end": "last sunday of october"
+        }
+    },
+    "albania": {
+        "group": "europe",
+        "continent": "europe",
+        "hemisphere": "north",
+        "dst": {
+            "start": "last sunday of march",
+            "end": "last sunday of october"
+        },
+        "since": 1974
+    },
+    "algeria": {
+        "continent": "africa",
+        "dst": false,
+        "since": 1981
+    },
+    "american samoa": {
+        "continent": "oceania",
+        "dst": false
+    },
+    "andorra": {
+        "group": "europe",
+        "continent": "europe",
+        "hemisphere": "north",
+        "dst": {
+            "start": "last sunday of march",
+            "end": "last sunday of october"
+        },
+        "since": 1985
+    },
+    "angola": {
+        "continent": "africa",
+        "dst": false
+    },
+    "anguilla": {
+        "continent": "central america",
+        "dst": false
+    },
+    "antigua and barbuda": {
+        "continent": "central america",
+        "dst": false
+    },
+    "argentina": {
+        "continent": "south america",
+        "dst": false,
+        "since": 2009
+    },
+    "armenia": {
+        "group": "europe",
+        "continent": "europe",
+        "dst": false,
+        "since": 2011
+    },
+    "aruba": {
+        "continent": "central america",
+        "dst": false
+    },
+    "australia": {
+        "aliases": [
+            "australian capital territory",
+            "victoria",
+            "new south wales",
+            "tasmania",
+            "south australia",
+            "lord howe island"
+        ],
+        "continent": "oceania",
+        "hemisphere": "south",
+        "dst": {
+            "start": "first sunday of october",
+            "end": "first sunday of april"
+        }
+    },
+    "austria": {
+        "group": "europe",
+        "continent": "europe",
+        "hemisphere": "north",
+        "dst": {
+            "start": "last sunday of march",
+            "end": "last sunday of october"
+        },
+        "since": 1980
+    },
+    "azerbaijan": {
+        "group": "europe",
+        "continent": "europe",
+        "hemisphere": "north",
+        "dst": {
+            "start": "last sunday of march",
+            "end": "last sunday of october"
+        },
+        "since": 1996
+    },
+    "bahamas": {
+        "group": "north america",
+        "continent": "north america",
+        "hemisphere": "north",
+        "dst": {
+            "start": "second sunday of march",
+            "end": "first sunday of november"
+        },
+        "since": 1964
+    },
+    "bahrain": {
+        "continent": "asia",
+        "dst": false
+    },
+    "bangladesh": {
+        "continent": "asia",
+        "dst": false,
+        "since": 2009
+    },
+    "barbados": {
+        "continent": "central america",
+        "dst": false,
+        "since": 1980
+    },
+    "belarus": {
+        "continent": "europe",
+        "dst": false,
+        "since": 2010
+    },
+    "belgium": {
+        "group": "europe",
+        "continent": "europe",
+        "hemisphere": "north",
+        "dst": {
+            "start": "last sunday of march",
+            "end": "last sunday of october"
+        },
+        "since": 1977
+    },
+    "belize": {
+        "continent": "central america",
+        "dst": false,
+        "since": 1983
+    },
+    "benin": {
+        "continent": "africa",
+        "dst": false
+    },
+    "bermuda": {
+        "group": "north america",
+        "continent": "north america",
+        "hemisphere": "north",
+        "dst": {
+            "start": "second sunday of march",
+            "end": "first sunday of november"
+        },
+        "since": 1974
+    },
+    "bhutan": {
+        "continent": "asia",
+        "dst": false
+    },
+    "bolovia": {
+        "continent": "south america",
+        "dst": false,
+        "since": 1932
+    },
+    "bonaire": {
+        "continent": "central america",
+        "dst": false
+    },
+    "bosnia and herzegovina": {
+        "group": "europe",
+        "continent": "europe",
+        "hemisphere": "north",
+        "dst": {
+            "start": "last sunday of march",
+            "end": "last sunday of october"
+        },
+        "since": 1983
+    },
+    "botswana": {
+        "continent": "africa",
+        "dst": false,
+        "since": 1944
+    },
+    "brazil": {
+        "continent": "south america",
+        "hemisphere": "south",
+        "dst": {
+            "start": "third sunday of october",
+            "end": "third sunday of february"
+        }
+    },
+    "british virgin islands": {
+        "continent": "central america",
+        "dst": false
+    },
+    "brunei": {
+        "continent": "asia",
+        "dst": false
+    },
+    "bulgaria": {
+        "group": "europe",
+        "continent": "europe",
+        "hemisphere": "north",
+        "dst": {
+            "start": "last sunday of march",
+            "end": "last sunday of october"
+        },
+        "since": 1979
+    },
+    "burkina fasso": {
+        "continent": "africa",
+        "dst": false
+    },
+    "burma": {
+        "continent": "asia",
+        "dst": false
+    },
+    "burundi": {
+        "continent": "africa",
+        "dst": false
+    },
+    "cambodia": {
+        "continent": "asia",
+        "dst": false
+    },
+    "cameroon": {
+        "continent": "africa",
+        "dst": false
+    }
+}
