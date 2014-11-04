@@ -1,239 +1,283 @@
 {
-    "afghanistan": {
-        "continent": "asia",
-        "dst": false
+    "candyland": {
+        "name": "Candyland!",
+        "start": "first tuesday of november",
+        "end": "first wednesday of november"
     },
-    "akrotiri and dhekelia": {
-        "group": "europe",
-        "continent": "europe",
-        "hemisphere": "north",
-        "dst": {
-            "start": "last sunday of march",
-            "end": "last sunday of october"
-        }
-    },
-    "albania": {
-        "group": "europe",
-        "continent": "europe",
-        "hemisphere": "north",
-        "dst": {
-            "start": "last sunday of march",
-            "end": "last sunday of october"
-        },
-        "since": 1974
-    },
-    "algeria": {
-        "continent": "africa",
-        "dst": false,
-        "since": 1981
-    },
-    "american samoa": {
-        "continent": "oceania",
-        "dst": false
-    },
-    "andorra": {
-        "group": "europe",
-        "continent": "europe",
-        "hemisphere": "north",
-        "dst": {
-            "start": "last sunday of march",
-            "end": "last sunday of october"
-        },
-        "since": 1985
-    },
-    "angola": {
-        "continent": "africa",
-        "dst": false
-    },
-    "anguilla": {
-        "continent": "central america",
-        "dst": false
-    },
-    "antigua and barbuda": {
-        "continent": "central america",
-        "dst": false
-    },
-    "argentina": {
-        "continent": "south america",
-        "dst": false,
-        "since": 2009
-    },
-    "armenia": {
-        "group": "europe",
-        "continent": "europe",
-        "dst": false,
-        "since": 2011
-    },
-    "aruba": {
-        "continent": "central america",
-        "dst": false
-    },
-    "australia": {
-        "aliases": [
-            "australian capital territory",
-            "victoria",
-            "new south wales",
-            "tasmania",
-            "south australia",
-            "lord howe island"
+    "europe": {
+        "name": "Europe, Lebanon, Morocco, Western Sahara",
+        "includes": [
+            "akrotiri and dhekelia",
+            "albania",
+            "andorra",
+            "austria",
+            "azerbaijan",
+            "belgium",
+            "bosnia and herzegovina",
+            "bulgaria",
+            "croatia",
+            "cyprus",
+            "czech republic",
+            "denmark",
+            "estonia",
+            "faroe islands",
+            "finland",
+            "france",
+            "germany",
+            "greece",
+            "guernsey",
+            "holy see",
+            "hungary",
+            "ireland",
+            "isle of man",
+            "italy",
+            "italy",
+            "jersey",
+            "kosovo",
+            "latvia",
+            "lebanon",
+            "liechtenstein",
+            "lithuania",
+            "luxembourg",
+            "macedonia",
+            "malta",
+            "moldova",
+            "monaco",
+            "montenegro",
+            "morocco",
+            "netherlands",
+            "norway",
+            "poland",
+            "portugal",
+            "romania",
+            "san Marino",
+            "serbia",
+            "slovakia",
+            "slovenia",
+            "spain",
+            "sweden",
+            "switzerland",
+            "turkey",
+            "ukraine",
+            "united kingdom",
+            "western sahara"
         ],
-        "continent": "oceania",
-        "hemisphere": "south",
-        "dst": {
-            "start": "first sunday of october",
-            "end": "first sunday of april"
-        }
+        "excludes": [
+            "armenia",
+            "belarus",
+            "georgia",
+            "iceland",
+            "russia"
+        ],
+        "start": "last sunday of march",
+        "end": "last sunday of october"
     },
-    "austria": {
-        "group": "europe",
-        "continent": "europe",
-        "hemisphere": "north",
-        "dst": {
-            "start": "last sunday of march",
-            "end": "last sunday of october"
-        },
-        "since": 1980
+    "north america": {
+        "name": "North America, Cuba, Haiti, Turks and Caicos",
+        "includes": [
+            "bahamas",
+            "bermuda",
+            "canada",
+            "saint pierre and miquelon",
+            "united states"
+        ],
+        "excludes": [
+            "cuba",
+            "haiti",
+            "turks and caicos"
+        ],
+        "start": "last sunday of march",
+        "end": "last sunday of october"
     },
-    "azerbaijan": {
-        "group": "europe",
-        "continent": "europe",
-        "hemisphere": "north",
-        "dst": {
-            "start": "last sunday of march",
-            "end": "last sunday of october"
-        },
-        "since": 1996
+    "jordan": {
+        "start": "last friday of march",
+        "end": "last friday of october"
     },
-    "bahamas": {
-        "group": "north america",
-        "continent": "north america",
-        "hemisphere": "north",
-        "dst": {
-            "start": "second sunday of march",
-            "end": "first sunday of november"
-        },
-        "since": 1964
+    "palestine": {
+        "start": "last friday of march",
+        "end": "last friday of october"
     },
-    "bahrain": {
-        "continent": "asia",
-        "dst": false
+    "syria": {
+        "start": "last friday of march",
+        "end": "last friday of october"
     },
-    "bangladesh": {
-        "continent": "asia",
-        "dst": false,
-        "since": 2009
+    "new zealand": {
+        "start": "last sunday of september",
+        "end": "last sunday of april"
     },
-    "barbados": {
-        "continent": "central america",
-        "dst": false,
-        "since": 1980
+    "samoa": {
+        "start": "last sunday of september",
+        "end": "last sunday of april"
     },
-    "belarus": {
-        "continent": "europe",
-        "dst": false,
-        "since": 2010
-    },
-    "belgium": {
-        "group": "europe",
-        "continent": "europe",
-        "hemisphere": "north",
-        "dst": {
-            "start": "last sunday of march",
-            "end": "last sunday of october"
-        },
-        "since": 1977
-    },
-    "belize": {
-        "continent": "central america",
-        "dst": false,
-        "since": 1983
-    },
-    "benin": {
-        "continent": "africa",
-        "dst": false
-    },
-    "bermuda": {
-        "group": "north america",
-        "continent": "north america",
-        "hemisphere": "north",
-        "dst": {
-            "start": "second sunday of march",
-            "end": "first sunday of november"
-        },
-        "since": 1974
-    },
-    "bhutan": {
-        "continent": "asia",
-        "dst": false
-    },
-    "bolovia": {
-        "continent": "south america",
-        "dst": false,
-        "since": 1932
-    },
-    "bonaire": {
-        "continent": "central america",
-        "dst": false
-    },
-    "bosnia and herzegovina": {
-        "group": "europe",
-        "continent": "europe",
-        "hemisphere": "north",
-        "dst": {
-            "start": "last sunday of march",
-            "end": "last sunday of october"
-        },
-        "since": 1983
-    },
-    "botswana": {
-        "continent": "africa",
-        "dst": false,
-        "since": 1944
-    },
-    "brazil": {
-        "continent": "south america",
-        "hemisphere": "south",
-        "dst": {
-            "start": "third sunday of october",
-            "end": "third sunday of february"
-        }
-    },
-    "british virgin islands": {
-        "continent": "central america",
-        "dst": false
-    },
-    "brunei": {
-        "continent": "asia",
-        "dst": false
-    },
-    "bulgaria": {
-        "group": "europe",
-        "continent": "europe",
-        "hemisphere": "north",
-        "dst": {
-            "start": "last sunday of march",
-            "end": "last sunday of october"
-        },
-        "since": 1979
-    },
-    "burkina fasso": {
-        "continent": "africa",
-        "dst": false
-    },
-    "burma": {
-        "continent": "asia",
-        "dst": false
-    },
-    "burundi": {
-        "continent": "africa",
-        "dst": false
-    },
-    "cambodia": {
-        "continent": "asia",
-        "dst": false
-    },
-    "cameroon": {
-        "continent": "africa",
-        "dst": false
+    "no dst": {
+        "includes": [
+            "afghanistan",
+            "algeria",
+            "american samoa",
+            "angola",
+            "anguilla",
+            "antigua and barbuda",
+            "argentina",
+            "armenia",
+            "aruba",
+            "bahrain",
+            "bangladesh",
+            "barbados",
+            "belarus",
+            "belize",
+            "benin",
+            "bhutan",
+            "bolivia",
+            "bonaire",
+            "botswana",
+            "british virgin islands",
+            "brunei",
+            "burkina faso",
+            "burma",
+            "burundi",
+            "cambodia",
+            "cameroon",
+            "cape verde",
+            "cayman islands",
+            "central african republic",
+            "chad",
+            "china",
+            "christmas island",
+            "cocos island",
+            "colombia",
+            "comoros",
+            "congo",
+            "cook islands",
+            "costa rica",
+            "curacao",
+            "democratic republic of congo",
+            "djibouti",
+            "dominica",
+            "dominican republic",
+            "east timor",
+            "ecuador",
+            "el salvador",
+            "equatorial guinea",
+            "eritrea",
+            "ethiopia",
+            "falkland islands",
+            "french guyana",
+            "french polynesia",
+            "french southern and antarctic lands",
+            "gabon",
+            "gambia",
+            "georgia",
+            "ghana",
+            "grenada",
+            "guadeloupe",
+            "guam",
+            "guatemala",
+            "guinea",
+            "guinea-bissau",
+            "guyana",
+            "heard and mcdonald islands",
+            "honduras",
+            "hong kong",
+            "iceland",
+            "india",
+            "indonesia",
+            "iraq",
+            "ivory coast",
+            "jamaica",
+            "japan",
+            "kazakhstan",
+            "kenya",
+            "kiribati",
+            "kuwait",
+            "kyrgyzistan",
+            "laos",
+            "lesotho",
+            "liberia",
+            "libya",
+            "macao",
+            "madagascar",
+            "malawi",
+            "malaysia",
+            "maldives",
+            "mali",
+            "marshall islands",
+            "martinica",
+            "mauritania",
+            "mauritius",
+            "micronesia",
+            "midway",
+            "mongolia",
+            "montserrat",
+            "mozambique",
+            "nauru",
+            "nepal",
+            "new caledonia",
+            "nicaragua",
+            "niger",
+            "nigeria",
+            "niue",
+            "north korea",
+            "northern mariana islands",
+            "oman",
+            "pakistan",
+            "palau",
+            "panama",
+            "papua new guinea",
+            "peru",
+            "philippines",
+            "pitcairn islands",
+            "puerto rico",
+            "qatar",
+            "russia",
+            "rwanda",
+            "saba",
+            "saint barthélemy",
+            "saint helena, ascension and tristan da cunha",
+            "saint kitts and nevis",
+            "saint lucia",
+            "saint martin",
+            "saint vincent and the grenadines",
+            "sao tome and príncipe",
+            "saudi arabia",
+            "senegal",
+            "seychelles",
+            "sierra leone",
+            "singapore",
+            "sint eustatius",
+            "sint maarten",
+            "solomon islands",
+            "somalia",
+            "south africa",
+            "south georgia islands",
+            "south korea",
+            "south sandwich islands",
+            "south sudan",
+            "sri lanka",
+            "sudan",
+            "suriname",
+            "swaziland",
+            "taiwan",
+            "tajikistan",
+            "tanzania",
+            "thailand",
+            "togo",
+            "tokelau",
+            "tonga",
+            "trinidad and tobago",
+            "tunisia",
+            "turkmenistan",
+            "tuvalu",
+            "uganda",
+            "united arab emirates",
+            "united states virgin islands",
+            "uzbekistan",
+            "vanuatu",
+            "venezuela",
+            "vietnam",
+            "wallis and futuna",
+            "yemen",
+            "zambia",
+            "zimbabwe"
+        ]
     }
 }
