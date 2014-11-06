@@ -4,9 +4,14 @@ require_once('./dstbot.inc.php');
 
 /*
  * TODO:
- * . get data for all dst settings per country
- * - tweet warning about DST clock change 7 days, 1 day in advance + moment of change
- * - apply for multiple countries, timezones (?)
+ * V get data for all dst settings per country
+ *   - aliases per country
+ *   - year since start of use DST or stop use of DST
+ *   - timezone offset
+ *   - notes for special cases (like brazil with carnival)
+ * V tweet warning about DST clock change 7 days, 1 day in advance
+ *   - moment of change, with proper timezone
+ *   - update checkDSTStart() to take timezones into account
  * - reply to command: when is next DST in (country)?
  * - reply to command: what time is it now in (country)?
  *   - or get country from profile
@@ -31,7 +36,7 @@ class DstBot {
      *   - also includes Cuba, Haiti, Turks and Caicos
      * - Jordan, Palestine, Syria
      * - Samoa, New Zealand
-     * - everything else single countries
+     * - [everything else, single countries]
      * - no DST group
      */
 
@@ -81,14 +86,11 @@ class DstBot {
             //check for menions and reply
             $this->checkMentions();
 
-            $this->halt('Done.');
+            $this->halt();
         }
     }
 
     private function getIdentity() {
-
-        //DEBUG
-        return true;
 
         echo "Fetching identity..\n";
 
@@ -123,36 +125,39 @@ class DstBot {
         echo "Checking for DST start..\n";
         if ($aGroups = $this->checkDSTStart(time())) {
 
-            $this->postTweetDSTStart($aGroups, 'now');
+            $this->postTweetDST('starting', $aGroups, 'now');
         }
 
-        die('stop');
-
         //check if any of the countries are switching to DST (summer time) in 24 hours
-        echo "Checking for DST start in 24 hours..\n";
         if ($aGroups = $this->checkDSTStart(time() + 24 * 3600)) {
 
-            $this->postTweetDSTStart($aGroups, '24 hours');
+            $this->postTweetDST('starting', $aGroups, 'in 24 hours');
         }
 
         //check if any of the countries are switching to DST (summer time) in 7 days
-        echo "Checking for DST start in 1 week..\n";
         if ($aGroups = $this->checkDSTStart(time() + 7 * 24 * 3600)) {
 
-            $this->postTweetDSTStart($aGroups, '1 week');
+            $this->postTweetDST('starting', $aGroups, 'in 1 week');
         }
 
         //check if any of the countries are switching from DST (winter time) NOW
         echo "Checking for DST end..\n";
-        $this->checkDSTEnd(time());
+        if ($aGroups = $this->checkDSTEnd(time())) {
+
+            $this->postTweetDST('ending', $aGroups, 'now');
+        }
 
         //check if any of the countries are switching from DST (winter time) in 24 hours
-        echo "Checking for DST end in 24 hours..\n";
-        $this->checkDSTEnd(time() + 24 * 3600);
+        if ($aGroups = $this->checkDSTEnd(time() + 24 * 3600)) {
+
+            $this->postTweetDST('ending', $aGroups, 'in 24 hours');
+        }
 
         //check if any of the countries are switching from DST (winter time) in 7 days
-        echo "Checking for DST end in 1 week..\n";
-        $this->checkDSTEnd(time() + 7 * 24 * 3600);
+        if ($aGroups = $this->checkDSTEnd(time() + 7 * 24 * 3600)) {
+
+            $this->postTweetDST('ending', $aGroups, 'in 1 week');
+        }
 
         return TRUE;
     }
@@ -182,12 +187,50 @@ class DstBot {
 
     //check if DST ends (winter time start) for any of the countries
     private function checkDSTEnd($iTimestamp) {
+
+        $aGroupsDSTEnd = array();
+        foreach ($this->aSettings as $sGroup => $aSetting) {
+
+            if ($sGroup != 'no dst') {
+
+                //convert 'last sunday of march 2014' to timestamp
+                $iDSTEnd = strtotime($aSetting['end'] . ' ' . date('Y'));
+
+                //error margin of 1 minute
+                if ($iDSTEnd >= $iTimestamp - 60 && $iDSTEnd <= $iTimestamp + 60) {
+
+                    //DST will end here
+                    $aGroupsDSTEnd[] = $sGroup;
+                }
+            }
+        }
+
+        return ($aGroupsDSTEnd ? $aGroupsDSTEnd : FALSE);
     }
 
-    private function postTweetDSTStart($aGroups) {
+    private function postTweetDST($sEvent, $aGroups, $sDelay) {
+
+        foreach ($aGroups as $sGroupName) {
+
+            foreach ($this->aSettings as $sGroup => $aGroup) {
+                if ($sGroup == $sGroupName) {
+                    $sCountries = (isset($aGroup['name']) ? $aGroup['name'] : ucwords($sGroup));
+
+                    $sTweet = sprintf('Daylight Savings Time %s %s in %s.', $sEvent, $sDelay, $sCountries);
+                    $this->postTweet($sTweet);
+                    break;
+                }
+            }
+        }
     }
 
-    private function postTweetDSTEnd($aGroups) {
+    private function postTweet($sTweet) {
+
+        printf("- [%d] %s\n", strlen($sTweet), $sTweet);
+    }
+
+    private function checkMentions() {
+
     }
 
     private function halt($sMessage = '') {

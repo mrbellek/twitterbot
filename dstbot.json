@@ -1,11 +1,11 @@
 {
     "candyland": {
         "name": "Candyland!",
-        "start": "first tuesday of november",
+        "start": "first thursday of november",
         "end": "first wednesday of november"
     },
     "europe": {
-        "name": "Europe, Lebanon, Morocco, Western Sahara",
+        "name": "Europe (except Armenia, Belarus, Georgia, Iceland, Russia), Lebanon, Morocco, Western Sahara",
         "includes": [
             "akrotiri and dhekelia",
             "albania",
@@ -73,18 +73,20 @@
         "end": "last sunday of october"
     },
     "north america": {
-        "name": "North America, Cuba, Haiti, Turks and Caicos",
+        "name": "North America (except Mexico and Greenland), Cuba, Haiti, Turks and Caicos",
         "includes": [
             "bahamas",
             "bermuda",
             "canada",
             "saint pierre and miquelon",
-            "united states"
-        ],
-        "excludes": [
+            "united states",
             "cuba",
             "haiti",
             "turks and caicos"
+        ],
+        "excludes": [
+            "mexico",
+            "greenland"
         ],
         "start": "last sunday of march",
         "end": "last sunday of october"
@@ -108,6 +110,54 @@
     "samoa": {
         "start": "last sunday of september",
         "end": "last sunday of april"
+    },
+    "mexico": {
+        "start": "first sunday of april",
+        "end": "last sunday of october"
+    },
+    "fiji": {
+        "start": "first sunday of november",
+        "end": "third sunday of january"
+    },
+    "australia": {
+        "start": "first sunday of october",
+        "end": "first sunday of april"
+    },
+    "paraguay": {
+        "start": "first sunday of october",
+        "end": "fourth sunday of april"
+    },
+    "uruguay": {
+        "start": "first sunday of october",
+        "end": "second sunday of march"
+    },
+    "namibia": {
+        "start": "first sunday of september",
+        "end": "first sunday of april"
+    },
+    "israel": {
+        "start": "friday before last sunday of march",
+        "end": "last sunday of october"
+    },
+    "egypt": {
+        "start": "last friday of april",
+        "end": "last friday of september"
+    },
+    "iran": {
+        "start": "march 21st",
+        "end": "september 21st"
+    },
+    "greenland": {
+        "start": "saturday before last sunday of march",
+        "end": "saturday before last sunday of october"
+    },
+    "chile": {
+        "start": "second sunday of september",
+        "end": "last sunday of april"
+    },
+    "brazil": {
+        "start": "third sunday of october",
+        "end": "third sunday of february"
     },
     "no dst": {
         "includes": [
