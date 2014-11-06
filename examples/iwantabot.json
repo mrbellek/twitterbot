@@ -8,7 +8,8 @@
         "hug bot", "hugbotph"
 	],
 	"userfilters": [
-		"bot"
+		"bot",
+        "ebook"
 	],
 	"dice": {
 		"media": 1.0,

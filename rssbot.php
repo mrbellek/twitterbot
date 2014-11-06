@@ -28,6 +28,11 @@ class RssBot {
         $this->oTwitter = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
         $this->oTwitter->host = "https://api.twitter.com/1.1/";
 
+        //make output visible in browser
+        if (!empty($_SERVER['HTTP_HOST'])) {
+            echo '<pre>';
+        }
+
         //load args
         $this->parseArgs($aArgs);
     }
@@ -68,7 +73,10 @@ class RssBot {
 
     private function getIdentity() {
 
-        echo 'Fetching identity..<br>';
+        //DEBUG
+        return TRUE;
+
+        echo "Fetching identity..\n";
 
         if (!$this->sUsername) {
             $this->logger(2, 'No username');
@@ -80,7 +88,7 @@ class RssBot {
 
         if (is_object($oUser) && !empty($oUser->screen_name)) {
             if ($oUser->screen_name == $this->sUsername) {
-                printf('- Allowed: @%s, continuing.<br><br>', $oUser->screen_name);
+                printf("- Allowed: @%s, continuing.\n\n", $oUser->screen_name);
             } else {
                 $this->logger(2, sprintf('Authenticated username was unexpected: %s (expected: %s)', $oUser->screen_name, $this->sUsername));
                 $this->halt(sprintf('- Not alowed: @%s (expected: %s), halting.', $oUser->screen_name, $this->sUsername));
@@ -316,14 +324,14 @@ class RssBot {
                         $sResult = 'self';
                     } elseif (preg_match('/reddit\.com/i', $sText)) {
                         $sResult = 'internal';
-                    } elseif (preg_match('/\.png|\.gif|\.jpe?g/i', $sText)) {
+                    } elseif (preg_match('/\.png|\.gif$|\.jpe?g/i', $sText)) {
                         $sResult = 'image';
                         if ($bAttachImage) {
                             $this->uploadImage($sText);
                         }
                     } elseif (preg_match('/imgur\.com\/a\/|imgur\.com\/.[^\/]/i', $sText)) {
                         $sResult = 'gallery';
-                    } elseif (preg_match('/youtube\.com\/|youtu\.be\/|vine\.co\/|vimeo\.com\/|liveleak\.com\//i', $sText)) {
+                    } elseif (preg_match('/\.gifv|youtube\.com\/|youtu\.be\/|vine\.co\/|vimeo\.com\/|liveleak\.com\//i', $sText)) {
                         $sResult = 'video';
                     } else {
                         $sResult = 'external';
@@ -351,7 +359,7 @@ class RssBot {
                 return FALSE;
             } else {
                 $this->sMediaId = $oRet->media_id_string;
-                printf('- uploaded %s to attach to next tweet<br>', $sImage);
+                printf("- uploaded %s to attach to next tweet\n", $sImage);
             }
 
             return TRUE;
@@ -361,7 +369,7 @@ class RssBot {
     }
 
     private function halt($sMessage = '') {
-        echo $sMessage . '<br><br>Done!<br><br>';
+        echo $sMessage . "\n\nDone!\n\n";
         return FALSE;
     }
 
