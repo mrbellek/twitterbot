@@ -73,9 +73,6 @@ class RssBot {
 
     private function getIdentity() {
 
-        //DEBUG
-        return TRUE;
-
         echo "Fetching identity..\n";
 
         if (!$this->sUsername) {
