@@ -59,9 +59,10 @@ class DstBot {
 
     private function parseArgs($aArgs) {
 
-        $this->sUsername        = (!empty($aArgs['sUsername'])      ? $aArgs['sUsername']       : '');
-        $this->sSettingsFile    = (!empty($aArgs['sSettingsFile'])  ? $aArgs['sSettingsFile']   : strtolower(__CLASS__) . '.json');
-        $this->sLogFile         = (!empty($aArgs['sLogFile'])       ? $aArgs['sLogFile']        : strtolower(__CLASS__) . '.log');
+        $this->sUsername        = (!empty($aArgs['sUsername'])          ? $aArgs['sUsername']       : '');
+        $this->sSettingsFile    = (!empty($aArgs['sSettingsFile'])      ? $aArgs['sSettingsFile']   : strtolower(__CLASS__) . '.json');
+        $this->sLastMentionFile = (!empty($aArgs['sLastMentionFile'])   ? $aArgs['sLastMentionFile'] : strtolower(__CLASS__) . '-last.json');
+        $this->sLogFile         = (!empty($aArgs['sLogFile'])           ? $aArgs['sLogFile']        : strtolower(__CLASS__) . '.log');
 
         $this->aSettings = @json_decode(file_get_contents($this->sSettingsFile), TRUE);
         if (!$this->aSettings) {
@@ -125,38 +126,50 @@ class DstBot {
         echo "Checking for DST start..\n";
         if ($aGroups = $this->checkDSTStart(time())) {
 
-            $this->postTweetDST('starting', $aGroups, 'now');
+            if (!$this->postTweetDST('starting', $aGroups, 'now')) {
+                return FALSE;
+            }
         }
 
         //check if any of the countries are switching to DST (summer time) in 24 hours
         if ($aGroups = $this->checkDSTStart(time() + 24 * 3600)) {
 
-            $this->postTweetDST('starting', $aGroups, 'in 24 hours');
+            if (!$this->postTweetDST('starting', $aGroups, 'in 24 hours')) {
+                return FALSE;
+            }
         }
 
         //check if any of the countries are switching to DST (summer time) in 7 days
         if ($aGroups = $this->checkDSTStart(time() + 7 * 24 * 3600)) {
 
-            $this->postTweetDST('starting', $aGroups, 'in 1 week');
+            if (!$this->postTweetDST('starting', $aGroups, 'in 1 week')) {
+                return FALSE;
+            }
         }
 
         //check if any of the countries are switching from DST (winter time) NOW
         echo "Checking for DST end..\n";
         if ($aGroups = $this->checkDSTEnd(time())) {
 
-            $this->postTweetDST('ending', $aGroups, 'now');
+            if (!$this->postTweetDST('ending', $aGroups, 'now')) {
+                return FALSE;
+            }
         }
 
         //check if any of the countries are switching from DST (winter time) in 24 hours
         if ($aGroups = $this->checkDSTEnd(time() + 24 * 3600)) {
 
-            $this->postTweetDST('ending', $aGroups, 'in 24 hours');
+            if (!$this->postTweetDST('ending', $aGroups, 'in 24 hours')) {
+                return FALSE;
+            }
         }
 
         //check if any of the countries are switching from DST (winter time) in 7 days
         if ($aGroups = $this->checkDSTEnd(time() + 7 * 24 * 3600)) {
 
-            $this->postTweetDST('ending', $aGroups, 'in 1 week');
+            if (!$this->postTweetDST('ending', $aGroups, 'in 1 week')) {
+                return FALSE;
+            }
         }
 
         return TRUE;
@@ -217,20 +230,134 @@ class DstBot {
                     $sCountries = (isset($aGroup['name']) ? $aGroup['name'] : ucwords($sGroup));
 
                     $sTweet = sprintf('Daylight Savings Time %s %s in %s.', $sEvent, $sDelay, $sCountries);
-                    $this->postTweet($sTweet);
+                    if (!$this->postTweet($sTweet)) {
+                        return FALSE;
+                    }
                     break;
                 }
             }
         }
+
+        return TRUE;
     }
 
     private function postTweet($sTweet) {
 
         printf("- [%d] %s\n", strlen($sTweet), $sTweet);
+        return TRUE;
+
+        $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
+        if (isset($oRet->errors)) {
+            $this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
+            $this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
+            return FALSE;
+        }
     }
 
     private function checkMentions() {
 
+		$aLastMention = json_decode(@file_get_contents(MYPATH . '/' . $this->sLastMentionFile), TRUE);
+        printf("Checking mentions since %s..\n", ($aLastMention ? $aLastMention['timestamp'] : 'never'));
+
+        //fetch new mentions since last run
+        $aMentions = $this->oTwitter->get('statuses/mentions_timeline', array(
+            'count'         => 10, //TODO: increase?
+			'since_id'		=> ($aLastMention && !empty($aLastMention['max_id']) ? $aLastMention['max_id'] : 1),
+        ));
+
+        if (is_object($aMentions) && !empty($aMentions->errors[0]->message)) {
+            $this->logger(2, sprintf('Twitter API call failed: GET statuses/mentions_timeline (%s)', $aMentions->errors[0]->message));
+            $this->halt(sprintf('- Failed getting mentions, halting. (%s)', $aMentions->errors[0]->message));
+        }
+
+        if (count($aMentions) == 0) {
+            echo "- no new mentions.\n\n";
+            return FALSE;
+        }
+
+        //reply to everyone
+        $sMaxId = '0';
+        foreach ($aMentions as $oMention) {
+            if ($oMention->id_str > $sMaxId) {
+                $sMaxId = $oMention->id_str;
+            }
+
+            $bRet = $this->parseMention($oMention);
+            if (!$bRet) {
+                break;
+            }
+        }
+        printf("- replied to %d commands\n\n", count($aMentions));
+
+		//save data for next run
+		$aThisCheck = array(
+			'max_id'	=> $sMaxId,
+			'timestamp'	=> date('Y-m-d H:i:s'),
+		);
+		file_put_contents(MYPATH . '/' . sprintf($this->sLastMentionFile, $iIndex), json_encode($aThisCheck));
+
+        return TRUE;
+    }
+
+    private function parseMention($oMention) {
+
+        //reply to commands from everyon in DMs if possible, mention otherwise
+        $sId = $oMention->id_str;
+        $sCommand = str_replace('@' . strtolower($this->sUsername) . ' ', '', strtolower($oMention->text));
+        printf("Parsing question %s from %s..\n", $sCommand, $oMention->user->screen_name);
+
+        switch ($sCommand) {
+            case 'help':
+                return $this->replyToQuestion($oMention, 'Commands: help lastrun lastlog ratelimit. Only replies to friends. Lag varies, be patient.');
+
+            default:
+                echo "- can't understand question.\n";
+                return FALSE;
+        }
+    }
+
+    private function replyToQuestion($oMention, $sReply) {
+
+        //check friendship between bot and sender
+        $oRet = $this->oTwitter->get('friendships/show', array('source_screen_name' => $this->sUsername, 'target_screen_name' => $oMention->user->screen_name));
+        if (!empty($oRet->errors)) {
+            $this->logger(2, sprintf('Twitter API call failed: GET friendships/show (%s)', $oRet->errors[0]->message));
+            $this->halt(sprintf('- Failed to check friendship, halting. (%s)', $oRet->errors[0]->message));
+            return FALSE;
+        }
+
+        //if we can DM the source of the command, do that
+        if ($oRet->relationship->source->can_dm) {
+
+            $oRet = $this->oTwitter->post('direct_messages/new', array('user_id' => $oMention->user->id_str, 'text' => substr($sReply, 0, 140)));
+
+            if (!empty($oRet->errors)) {
+                $this->logger(2, sprintf('Twitter API call failed: POST direct_messages/new (%s)', $oRet->errors[0]->message));
+                $this->halt(sprintf('- Failed to send DM, halting. (%s)', $oRet->errors[0]->message));
+                return FALSE;
+            }
+
+        } else {
+            //otherwise, use public reply
+
+            $oRet = $this->oTwitter->post('statuses/update', array(
+                'in_reply_to_status_id' => $oMention->id_str,
+                'trim_user' => TRUE,
+                'status' => sprintf('@%s %s',
+                    $oMention->user->screen_name,
+                    substr($sReply, 0, 140 - 2 - strlen($oMention->user->screen_name))
+                )
+            ));
+
+            if (!empty($oRet->errors)) {
+                $this->logger(2, sprintf('Twitter API call failed: POST statuses/update (%s)', $oRet->errors[0]->message));
+                $this->halt(sprintf('- Failed to reply, halting. (%s)', $oRet->errors[0]->message));
+                return FALSE;
+            }
+        }
+
+        printf("- Replied: %s\n", $sReply);
+        return TRUE;
     }
 
     private function halt($sMessage = '') {
