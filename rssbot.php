@@ -113,17 +113,22 @@ class RssBot {
             $oNewestItem = FALSE;
             $sTimestampVar = $this->aTweetSettings['sTimestampXml'];
             $aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . sprintf($this->sLastRunFile, 1)), TRUE);
+            $this->logger(5, sprintf('Starting postTweets() on %d items in XML feed, last search was %s', count($this->oFeed->channel->item), date('Y-m-d H:i:s', $aLastSearch['timestamp'])));
 
+            $i = 0;
             foreach ($this->oFeed->channel->item as $oItem) {
+                $i++;
 
                 //save newest item to set timestamp for next run
                 if (!$oNewestItem || strtotime($oItem->$sTimestampVar) > strtotime($oNewestItem->$sTimestampVar)) {
+                    $this->logger(5, sprintf('Item %d has timestamp %s, currently newest item', $i, date('Y-m-d H:i:s', strtotime($oItem->$sTimestampVar))));
                     $oNewestItem = $oItem;
                 }
 
                 //don't tweet items we've already done last in run
                 if (!empty($oItem->$sTimestampVar)) {
                     if (strtotime($oItem->$sTimestampVar) <= $aLastSearch['timestamp']) {
+                        $this->logger(5, sprintf('Item %d is older (%s) than newest item from last run, skipping', $i, date('Y-m-d H:i:s', strtotime($oItem->$sTimestampVar))));
                         continue;
                     }
                 }
@@ -133,13 +138,16 @@ class RssBot {
                 if (!$sTweet) {
                     continue;
                 }
+                $this->logger(5, sprintf('Formatted item %d into tweet "%s"', $i, $sTweet));
 
                 printf("- %s\n", utf8_decode($sTweet) . ' - ' . $oItem->pubDate);
 
                 if ($this->sMediaId) {
+                    $this->logger(5, sprintf('Posting item %d (with picture attached) to Twitter', $i));
                     $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE, 'media_ids' => $this->sMediaId));
                     $this->sMediaId = FALSE;
                 } else {
+                    $this->logger(5, sprintf('Posting item %d to Twitter', $i));
                     $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
                 }
                 if (isset($oRet->errors)) {
@@ -151,13 +159,19 @@ class RssBot {
 
             //save timestamp of last item to disk
             if (!empty($oNewestItem->$sTimestampVar)) {
-                $aLastItem = array(
-                    'timestamp' => strtotime($oNewestItem->$sTimestampVar),
-                );
-                file_put_contents(MYPATH . '/' . $this->sLastRunFile, json_encode($aLastItem));
+                if(strtotime($oNewestItem->$sTimestampVar) > $aLastSearch['timestamp']) {
+                    $this->logger(5, sprintf('Saving timestamp %s of newest item to disk', date('Y-m-d H:i:s', strtotime($oNewestItem->$sTimestampVar))));
+                    $aLastItem = array(
+                        'timestamp' => strtotime($oNewestItem->$sTimestampVar),
+                    );
+                    file_put_contents(MYPATH . '/' . $this->sLastRunFile, json_encode($aLastItem));
+                } else {
+                    $this->logger(5, 'No new items, not updating last search json file');
+                }
 
             } else {
                 //very bad
+                $this->logger(2, 'Newest item foundu has no timestamp field?!');
                 $this->halt('No timestamp found on XML item, halting.');
                 return FALSE;
             }
@@ -168,6 +182,7 @@ class RssBot {
             $this->halt(sprintf('- Fatal error in postTweets(): %s', $e->getMessage()));
 
             //save timestamp of last item to disk
+            $this->logger(5, sprintf('[Exception] Saving timestamp %s of newest item to disk', date('Y-m-d H:i:s', strtotime($oNewestItem->$sTimestampVar))));
             if (!empty($oNewestItem->$sTimestampVar)) {
                 $aLastItem = array(
                     'timestamp' => strtotime($oNewestItem->$sTimestampVar),
