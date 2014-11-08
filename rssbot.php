@@ -65,7 +65,7 @@ class RssBot {
 
                 if ($this->postTweets()) {
 
-                    $this->halt('Done.');
+                    $this->halt();
                 }
             }
         }
@@ -122,9 +122,8 @@ class RssBot {
                 }
 
                 //don't tweet items we've already done last in run
-                $sVar = $this->aTweetSettings['sTimestampXml'];
-                if (!empty($oItem->$sVar)) {
-                    if (strtotime($oItem->$sVar) <= $aLastSearch['timestamp']) {
+                if (!empty($oItem->$sTimestampVar)) {
+                    if (strtotime($oItem->$sTimestampVar) <= $aLastSearch['timestamp']) {
                         continue;
                     }
                 }
@@ -132,11 +131,10 @@ class RssBot {
                 //convert xml item into tweet
                 $sTweet = $this->formatTweet($oItem);
                 if (!$sTweet) {
-                    //return FALSE;
                     continue;
                 }
 
-                printf('- <b>%s</b><br>', utf8_decode($sTweet) . ' - ' . $oItem->pubDate);
+                printf("- %s\n", utf8_decode($sTweet) . ' - ' . $oItem->pubDate);
 
                 if ($this->sMediaId) {
                     $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE, 'media_ids' => $this->sMediaId));
