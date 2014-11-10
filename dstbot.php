@@ -93,6 +93,9 @@ class DstBot {
 
     private function getIdentity() {
 
+        //DEBUG
+        return true;
+
         echo "Fetching identity..\n";
 
         if (!$this->sUsername) {
@@ -124,7 +127,8 @@ class DstBot {
 
         //check if any of the countries are switching to DST (summer time) NOW
         echo "Checking for DST start..\n";
-        if ($aGroups = $this->checkDSTStart(time())) {
+        //if ($aGroups = $this->checkDSTStart(time())) {
+        if ($aGroups = $this->checkDSTStart(strtotime(date('Y-m-d 00:00:00')))) {
 
             if (!$this->postTweetDST('starting', $aGroups, 'now')) {
                 return FALSE;
@@ -294,26 +298,73 @@ class DstBot {
 			'max_id'	=> $sMaxId,
 			'timestamp'	=> date('Y-m-d H:i:s'),
 		);
-		file_put_contents(MYPATH . '/' . sprintf($this->sLastMentionFile, $iIndex), json_encode($aThisCheck));
+		file_put_contents(MYPATH . '/' . $this->sLastMentionFile, json_encode($aThisCheck));
 
         return TRUE;
     }
 
     private function parseMention($oMention) {
 
-        //reply to commands from everyon in DMs if possible, mention otherwise
+        $sDefaultReply = 'I didn\'t understand your question! You can ask when DST starts or ends in any country, or since when it was/wasn\'t used.';
+
+        //reply to questions from everyon in DMs if possible, mention otherwise
         $sId = $oMention->id_str;
-        $sCommand = str_replace('@' . strtolower($this->sUsername) . ' ', '', strtolower($oMention->text));
-        printf("Parsing question %s from %s..\n", $sCommand, $oMention->user->screen_name);
+        $sQuestion = str_replace('@' . strtolower($this->sUsername) . ' ', '', strtolower($oMention->text));
+        printf("Parsing question %s from %s..\n", $sQuestion, $oMention->user->screen_name);
 
-        switch ($sCommand) {
-            case 'help':
-                return $this->replyToQuestion($oMention, 'Commands: help lastrun lastlog ratelimit. Only replies to friends. Lag varies, be patient.');
-
-            default:
-                echo "- can't understand question.\n";
-                return FALSE;
+        //try to find country in tweet
+        $aCountryInfo = $this->findCountryInQuestion($oMention->text);
+        if (!$aCountryInfo) {
+            //try to find country name in 'location' field of user profile
+            $aCountryInfo = $this->findCountryInQuestion($oMention->location);
         }
+
+        if (!$aCountryInfo) {
+            return $this->replyToQuestion($oMention, $sDefaultReply);
+        }
+
+        $sEvent = '';
+        $aKeywords = array(
+            'start' => array('start', 'begin'),
+            'end' => array('stop', 'end' , 'over'),
+            'since' => array('since', 'when'),
+        );
+
+        //TODO: figure out best order for checking keywords for start/end/since
+        if ($this->stringContainsWord($sQuestion, $aKeywords['start'])) {
+            //user wants to know about start of DST period
+            $sEvent = 'start';
+        } elseif ($this->stringContainsWord($sQuestion, $aKeywords['end'])) {
+            //user wants to know about end of DST period
+            $sEvent = 'end';
+        } elseif ($this->stringContainsWord($sQuestion, $aKeywords['since'])) {
+            //user wants to know about DST period for given country
+            $sEvent = 'since';
+        }
+
+        if (!$sEvent) {
+            return $this->replyToQuestion($oMention, $sDefaultReply);
+        }
+
+        if ($sEvent == 'start' || $sEvent == 'end') {
+            //example: DST will start in Belgium on the last sunday of march (2014-03-21)
+            $this->replyToQuestion($oMention, sprintf('DST will %s in %s on the %s (%s)',
+                $sEvent,
+                $aCountryInfo['name'],
+                $aCountryInfo[$sEvent],
+                $aCountryInfo[$sEvent . 'ts']
+            ));
+        } else {
+            //example: DST has not been observed in Russia since 1947
+            //TODO: if no DST, add if country is in permanent summer/winter time?
+            $this->replyToQuestion($oMention, sprintf('DST has %s been observed in %s since %s.',
+                ($aCountryInfo['group'] == 'no dst' ? 'not' : ''),
+                $aCountryInfo['name'],
+                $aCountryInfo['since']
+            ));
+        }
+
+        return TRUE;
     }
 
     private function replyToQuestion($oMention, $sReply) {
@@ -358,6 +409,64 @@ class DstBot {
 
         printf("- Replied: %s\n", $sReply);
         return TRUE;
+    }
+
+    private function findCountryInQuestion($sQuestion) {
+
+        $aCountryInfo = array();
+
+        //try to find country in text
+        foreach ($this->aSettings as $sGroupName => $aGroup) {
+
+            //check for group name
+            if (stripos($sQuestion, $sGroupName) !== FALSE) {
+                $aCountryInfo = array(
+                    'group' => $sGroupName,
+                    'name' => (isset($aGroup['name']) ? $aGroup['name'] : ucwords($sGroupname)),
+                    'start' => str_replace(' Of ', ' of ', ucwords($aGroup['start'])),
+                    'startts' => date('Y-m-d', strtotime($aGroup['start'] . ' ' . date('Y'))),
+                    'end' => str_replace(' Of ', ' of ', ucwords($aGroup['end'])),
+                    'endts' => date('Y-m-d', strtotime($aGroup['end'] . ' ' . date('Y'))),
+                    //'since' => ...
+                );
+
+                return $aCountryInfo;
+            }
+
+            //check 'includes' array
+            if (isset($aGroup['includes'])) {
+                foreach ($aGroup['includes'] as $sInclude) {
+                    if (stripos($sQuestion, $sInclude) !== FALSE) {
+                        $aCountryInfo = array(
+                            'group' => $sGroupName,
+                            'name' => ucwords($sInclude),
+                            'start' => str_replace(' Of ', ' of ', ucwords($aGroup['start'])),
+                            'startts' => date('Y-m-d', strtotime($aGroup['start'] . ' ' . date('Y'))),
+                            'end' => str_replace(' Of', ' of ', ucwords($aGroup['end'])),
+                            'endts' => date('Y-m-d', strtotime($aGroup['end'] . ' ' . date('Y'))),
+                            //'since' => ..
+                        );
+
+                        return $aCountryInfo;
+                    }
+                }
+            }
+
+            //TODO: aliases
+        }
+
+        return FALSE;
+    }
+
+    private function stringContainsWord($sString, $aWords) {
+
+        foreach ($aWords as $sWord) {
+            if (stripos($sString, $sWord) !== FALSE) {
+                return TRUE;
+            }
+        }
+
+        return FALSE;
     }
 
     private function halt($sMessage = '') {
