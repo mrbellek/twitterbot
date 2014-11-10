@@ -9,7 +9,8 @@
 	],
 	"userfilters": [
 		"bot",
-        "ebook"
+        "ebook",
+        "worst_user"
 	],
 	"dice": {
 		"media": 1.0,
