@@ -358,12 +358,27 @@ class DstBot {
                 $aCountryInfo[$sEvent . 'ts']
             ));
         } else {
+
+            $sExtra = '';
+            if (isset($aCountryInfo['info'])) {
+                //some coutries are complicated, and have their own wiki page with more info
+                $sExtra = 'More info: ' . $aCountryInfo['info'];
+
+            } elseif (isset($aCountryInfo['permanent'])) {
+                //some countries have permanent DST in effect
+                if ($aCountryInfo['permanent'] == TRUE) {
+                    $sExtra = 'DST is permanently in effect.';
+                } else {
+                    //just in case, never used
+                    $sExtra = 'DST is permanently not in effect.';
+                }
+            }
             //example: DST has not been observed in Russia since 1947
-            //TODO: if no DST, add if country is in permanent summer/winter time?
-            $this->replyToQuestion($oMention, sprintf('#DST has %s been observed in %s since %s.',
+            $this->replyToQuestion($oMention, sprintf('#DST has %s been observed in %s since %s. %s',
                 ($aCountryInfo['group'] == 'no dst' ? 'not' : ''),
                 $aCountryInfo['name'],
-                $aCountryInfo['since']
+                $aCountryInfo['since'],
+                $sExtra
             ));
         }
 
