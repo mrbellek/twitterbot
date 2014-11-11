@@ -8,16 +8,19 @@ require_once('./dstbot.inc.php');
  *   - aliases per country
  *   - year since start of use DST or stop use of DST
  *   - timezone offset
- *   - notes for special cases (like brazil with carnival)
+ *   - notes for special cases
+ *     - brazil delays DST by one week if it coincides with carnival
+ *     - azerbaijan uses DST, province nagorno-karabakh does not
+ *     - ukrain uses DST, province crimea does not
+ *     - easter island starts 1 day earlier than chile to stay in sync (timezones)
+ *     - egypt, morocco, western sahara do not observe DST during Ramadan
+ *     - permanent DST (e.g. Falkland Islands)
  * V tweet warning about DST clock change 7 days, 1 day in advance
  *   - moment of change, with proper timezone
  *   - update checkDSTStart() to take timezones into account
- * - reply to command: when is next DST in (country)?
- * - reply to command: what time is it now in (country)?
- *   - or get country from profile
- *
- * SPECIAL CASES:
- * - brazil dst end is delayed by 1 week during carnival week, so would be 4th sunday of february instead of 3rd
+ * v reply to command: when is next DST in (country)?
+ * v reply to command: what time is it now in (country)?
+ *   v or get country from profile
  */
 
 $o = new DstBot(array('sUsername' => 'DSTnotify'));
@@ -233,7 +236,7 @@ class DstBot {
                 if ($sGroup == $sGroupName) {
                     $sCountries = (isset($aGroup['name']) ? $aGroup['name'] : ucwords($sGroup));
 
-                    $sTweet = sprintf('Daylight Savings Time %s %s in %s.', $sEvent, $sDelay, $sCountries);
+                    $sTweet = sprintf('Daylight Savings Time %s %s in %s. #DST', $sEvent, $sDelay, $sCountries);
                     if (!$this->postTweet($sTweet)) {
                         return FALSE;
                     }
@@ -305,7 +308,7 @@ class DstBot {
 
     private function parseMention($oMention) {
 
-        $sDefaultReply = 'I didn\'t understand your question! You can ask when DST starts or ends in any country, or since when it was/wasn\'t used.';
+        $sDefaultReply = 'I didn\'t understand your question! You can ask when #DST starts or ends in any country, or since when it was/wasn\'t used.';
 
         //reply to questions from everyon in DMs if possible, mention otherwise
         $sId = $oMention->id_str;
@@ -348,7 +351,7 @@ class DstBot {
 
         if ($sEvent == 'start' || $sEvent == 'end') {
             //example: DST will start in Belgium on the last sunday of march (2014-03-21)
-            $this->replyToQuestion($oMention, sprintf('DST will %s in %s on the %s (%s)',
+            $this->replyToQuestion($oMention, sprintf('#DST will %s in %s on the %s (%s)',
                 $sEvent,
                 $aCountryInfo['name'],
                 $aCountryInfo[$sEvent],
@@ -357,7 +360,7 @@ class DstBot {
         } else {
             //example: DST has not been observed in Russia since 1947
             //TODO: if no DST, add if country is in permanent summer/winter time?
-            $this->replyToQuestion($oMention, sprintf('DST has %s been observed in %s since %s.',
+            $this->replyToQuestion($oMention, sprintf('#DST has %s been observed in %s since %s.',
                 ($aCountryInfo['group'] == 'no dst' ? 'not' : ''),
                 $aCountryInfo['name'],
                 $aCountryInfo['since']
