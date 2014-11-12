@@ -5,8 +5,9 @@ require_once('./dstbot.inc.php');
 /*
  * TODO:
  * V get data for all dst settings per country
- *   - aliases per country
- *   - year since start of use DST or stop use of DST
+ *   v aliases per country
+ *     - exclude 'american samoa' being detected as 'samoa'?
+ *   V year since start of use DST or stop use of DST
  *   - timezone offset
  *   - notes for special cases
  *     - brazil delays DST by one week if it coincides with carnival
