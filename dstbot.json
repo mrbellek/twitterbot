@@ -9,57 +9,57 @@
         "name": "Europe (except Armenia, Belarus, Georgia, Iceland, Russia), Lebanon, Morocco, Western Sahara",
         "includes": {
             "akrotiri and dhekelia":            { "alias": [ "akrotiri", "dhekelia" ] },
-            "albania":                          { "since": "1974" },
-            "andorra":                          { "since": "1985" },
-            "austria":                          { "since": "1980" },
-            "azerbaijan":                       { "since": "1996" },
-            "belgium":                          { "since": "1977" },
-            "bosnia and herzegovina":           { "since": "1983", "alias": [ "bosnia", "herzegovina" ] },
-            "bulgaria":                         { "since": "1979" },
-            "croatia":                          { "since": "1983" },
-            "cyprus":                           { "since": "1975" },
-            "czech republic":                   { "since": "1979", "alias": [ "czech" ] },
-            "denmark":                          { "since": "1980" },
-            "estonia":                          { "since": "1981" },
+            "albania":                          { "since": "1974", "timezone": "+0100" },
+            "andorra":                          { "since": "1985", "timezone": "+0100" },
+            "austria":                          { "since": "1980", "timezone": "+0100" },
+            "azerbaijan":                       { "since": "1996", "timezone": "+0400" },
+            "belgium":                          { "since": "1977", "timezone": "+0100" },
+            "bosnia and herzegovina":           { "since": "1983", "alias": [ "bosnia", "herzegovina" ], "timezone": "+0100" },
+            "bulgaria":                         { "since": "1979", "timezone": "+0200" },
+            "croatia":                          { "since": "1983", "timezone": "+0100" },
+            "cyprus":                           { "since": "1975", "timezone": "+0200" },
+            "czech republic":                   { "since": "1979", "alias": [ "czech" ], "timezone": "+0100" },
+            "denmark":                          { "since": "1980", "timezone": "+0100" },
+            "estonia":                          { "since": "1981", "timezone": "+0200" },
             "faroe islands":                    { "since": "1981" },
-            "finland":                          { "since": "1981", "alias": [ "suomi" ] },
-            "france":                           { "since": "1976" },
-            "germany":                          { "since": "1980" },
-            "greece":                           { "since": "1971" },
+            "finland":                          { "since": "1981", "alias": [ "suomi" ], "timezone": "+0200" },
+            "france":                           { "since": "1976", "timezone": "+0100" },
+            "germany":                          { "since": "1980", "timezone": "+0100" },
+            "greece":                           { "since": "1971", "timezone": "+0200" },
             "guernsey":                         { "since": "1972" },
             "holy see":                         { "since": "1966" },
-            "hungary":                          { "since": "1980" },
-            "ireland":                          { "since": "1972" },
+            "hungary":                          { "since": "1980", "timezone": "+0100" },
+            "ireland":                          { "since": "1972", "timezone": "+0000" },
             "isle of man":                      { "since": "1972" },
-            "italy":                            { "since": "1966" },
+            "italy":                            { "since": "1966", "timezone": "+0100", "alias": [ "vatican", "vatican city" ] },
             "jersey":                           { "since": "1971" },
             "kosovo":                           { "since": "1983" },
-            "latvia":                           { "since": "1981" },
-            "lebanon":                          { "since": "1984" },
-            "liechtenstein":                    {},
-            "lithuania":                        {},
-            "luxembourg":                       { "since": "1977", "alias": [ "luxemburg" ] },
-            "macedonia":                        { "since": "1983" },
-            "malta":                            { "since": "1966" },
-            "moldova":                          { "since": "1991" },
-            "monaco":                           { "since": "1976" },
-            "montenegro":                       { "since": "1983" },
-            "morocco":                          { "since": "2008" },
-            "netherlands":                      { "since": "1977", "alias": [ "holland" ] },
-            "norway":                           { "since": "1980" },
-            "poland":                           { "since": "1977" },
-            "portugal":                         { "since": "1977" },
-            "romania":                          { "since": "1979" },
-            "san marino":                       { "since": "1966" },
-            "serbia":                           { "since": "1983" },
-            "slovakia":                         { "since": "1979" },
-            "slovenia":                         { "since": "1983" },
-            "spain":                            { "since": "1974" },
-            "sweden":                           { "since": "1980" },
-            "switzerland":                      { "since": "1980" },
-            "turkey":                           { "since": "1985" },
-            "ukraine":                          { "since": "1992" },
-            "united kingdom":                   { "since": "1971", "info": "http://en.wikipedia.org/wiki/British_Summer_Time", "alias": [ "the uk", "england" ] },
+            "latvia":                           { "since": "1981", "timezone": "+0200" },
+            "lebanon":                          { "since": "1984", "timezone": "+0200" },
+            "liechtenstein":                    { "timezone": "+0100" },
+            "lithuania":                        { "timezone": "+0200" },
+            "luxembourg":                       { "since": "1977", "alias": [ "luxemburg" ], "timezone": "+0100" },
+            "macedonia":                        { "since": "1983", "timezone": "+0100" },
+            "malta":                            { "since": "1966", "timezone": "+0100" },
+            "moldova":                          { "since": "1991", "timezone": "+0200" },
+            "monaco":                           { "since": "1976", "timezone": "+0100" },
+            "montenegro":                       { "since": "1983", "timezone": "+0100" },
+            "morocco":                          { "since": "2008", "timezone": "+0000" },
+            "netherlands":                      { "since": "1977", "alias": [ "holland" ], "timezone": "+0100" },
+            "norway":                           { "since": "1980", "timezone": "+0100" },
+            "poland":                           { "since": "1977", "timezone": "+0100" },
+            "portugal":                         { "since": "1977", "timezone": "+0000" },
+            "romania":                          { "since": "1979", "timezone": "+0200" },
+            "san marino":                       { "since": "1966", "timezone": "+0100" },
+            "serbia":                           { "since": "1983", "timezone": "+0100" },
+            "slovakia":                         { "since": "1979", "timezone": "+0100" },
+            "slovenia":                         { "since": "1983", "timezone": "+0100" },
+            "spain":                            { "since": "1974", "timezone": "+0100" },
+            "sweden":                           { "since": "1980", "timezone": "+0100" },
+            "switzerland":                      { "since": "1980", "timezone": "+0100" },
+            "turkey":                           { "since": "1985", "timezone": "+0200" },
+            "ukraine":                          { "since": "1992", "timezone": "+0200" },
+            "united kingdom":                   { "since": "1971", "info": "http://en.wikipedia.org/wiki/British_Summer_Time", "alias": [ "the uk", "england" ], "timezone": "+0000" },
             "western sahara":                   { "since": "2008" }
         },
         "excludes": {
@@ -75,13 +75,13 @@
     "north america": {
         "name": "North America (except Mexico and Greenland), Cuba, Haiti, Turks and Caicos",
         "includes": {
-            "bahamas":                          { "since": "1964" },
+            "bahamas":                          { "since": "1964", "timezone": "-0500" },
             "bermuda":                          { "since": "1974" },
-            "canada":                           { "info": "http://en.wikipedia.org/wiki/Daylight_saving_time_in_Canada" },
+            "canada":                           { "info": "http://en.wikipedia.org/wiki/Daylight_saving_time_in_Canada", "timezone": "-0330" },
             "saint pierre and miquelon":        { "since": "1987", "alias": [ "saint pierre", "miquelon" ] },
-            "united states":                    { "since": "1975", "info": "http://en.wikipedia.org/wiki/Daylight_saving_time_in_the_United_States", "alias": [ "usa", "the us" ] },
+            "united states":                    { "since": "1975", "info": "http://en.wikipedia.org/wiki/Daylight_saving_time_in_the_United_States", "alias": [ "usa", "the us" ], "timezone": "-0500" },
             "cuba":                             { "since": "1965" },
-            "haiti":                            { "since": "2012" },
+            "haiti":                            { "since": "2012", "timezone": "-0500" },
             "turks and caicos":                 { "since": "1979", "alias": [ "turks", "caicos" ] }
         },
         "excludes": {
@@ -94,7 +94,8 @@
     "jordan": {
         "start": "last friday of march",
         "end": "last friday of october",
-        "since": "2013"
+        "since": "2013",
+        "timezone": "+0300"
     },
     "palestine": {
         "start": "last friday of march",
@@ -104,61 +105,73 @@
     "syria": {
         "start": "last friday of march",
         "end": "last friday of october",
-        "since": "1983"
+        "since": "1983",
+        "timezone": "+0200"
     },
     "new zealand": {
         "start": "last sunday of september",
         "end": "last sunday of april",
-        "since": "1974"
+        "since": "1974",
+        "timezone": "+1200"
     },
     "samoa": {
         "start": "last sunday of september",
         "end": "last sunday of april",
-        "since": "2011"
+        "since": "2011",
+        "timezone": "+1300"
     },
     "mexico": {
         "start": "first sunday of april",
-        "end": "last sunday of october"
+        "end": "last sunday of october",
+        "timezone": "-0600"
     },
     "fiji": {
         "start": "first sunday of november",
         "end": "third sunday of january",
-        "since": "2009"
+        "since": "2009",
+        "timezone": "+1200"
     },
     "australia": {
         "start": "first sunday of october",
         "end": "first sunday of april",
-        "info": "http://en.wikipedia.org/wiki/Australian_Daylight_Saving_Time"
+        "info": "http://en.wikipedia.org/wiki/Australian_Daylight_Saving_Time",
+        "timezone": "+1000"
     },
     "paraguay": {
         "start": "first sunday of october",
         "end": "fourth sunday of april",
-        "since": "1975"
+        "since": "1975",
+        "timezone": "-0400"
     },
     "uruguay": {
         "start": "first sunday of october",
         "end": "second sunday of march",
-        "since": "2004"
+        "since": "2004",
+        "timezone": "-0300"
     },
     "namibia": {
         "start": "first sunday of september",
         "end": "first sunday of april",
-        "since": "1994"
+        "since": "1994",
+        "timezone": "+0100"
     },
     "israel": {
         "start": "friday before last sunday of march",
         "end": "last sunday of october",
-        "since": "1985"
+        "since": "1985",
+        "timezone": "+0200"
     },
     "egypt": {
         "start": "last friday of april",
         "end": "last friday of september",
-        "since": "2014"
+        "since": "2014",
+        "timezone": "+0200"
     },
     "iran": {
         "start": "march 21st",
         "end": "september 21st",
-        "since": "2008"
+        "since": "2008",
+        "timezone": "+0330"
     },
     "greenland": {
         "start": "saturday before last sunday of march",
@@ -167,12 +180,15 @@
     "chile": {
         "start": "second sunday of september",
         "end": "last sunday of april",
-        "since": "1968"
+        "since": "1968",
+        "alias": [ "chili" ],
+        "timezone": "-0400"
     },
     "brazil": {
         "start": "third sunday of october",
         "end": "third sunday of february",
-        "info": "http://en.wikipedia.org/wiki/Daylight_saving_time_in_Brazil"
+        "info": "http://en.wikipedia.org/wiki/Daylight_saving_time_in_Brazil",
+        "timezone": "-0300"
     },
     "no dst": {
         "includes": {
@@ -198,7 +214,7 @@
             "british virgin islands":           {},
             "brunei":                           {},
             "burkina faso":                     { "alias": [ "burkina fasso" ] },
-            "burma":                            {},
+            "burma":                            { "alias": [ "myanmar" ] },
             "burundi":                          {},
             "cambodia":                         {},
             "cameroon":                         {},
@@ -247,7 +263,7 @@
             "india":                            { "since": "1945" },
             "indonesia":                        {},
             "iraq":                             { "since": "2007" },
-            "ivory coast":                      {},
+            "ivory coast":                      { "alias": [ "côte d'ivoire", "cote d'ivoire" ] },
             "jamaica":                          { "since": "1983" },
             "japan":                            { "since": "1951", "alias": [ "nippon" ] },
             "kazakhstan":                       { "since": "2004" },
@@ -259,7 +275,7 @@
             "lesotho":                          { "since": "1944" },
             "liberia":                          {},
             "libya":                            { "since": "2003" },
-            "macao":                            { "since": "1980" },
+            "macao":                            { "since": "1980", "alias": [ "macau" ] },
             "madagascar":                       { "since": "1954" },
             "malawi":                           {},
             "malaysia":                         { "since": "1935" },
@@ -328,7 +344,7 @@
             "togo":                             {},
             "tokelau":                          {},
             "tonga":                            { "since": "2002" },
-            "trinidad and tobago":              { "alias" [ "trinidad", "tobago" ] },
+            "trinidad and tobago":              { "alias": [ "trinidad", "tobago" ] },
             "tunisia":                          { "since": "2008" },
             "turkmenistan":                     { "since": "1991" },
             "tuvalu":                           {},

@@ -6,7 +6,7 @@ require_once('./dstbot.inc.php');
  * TODO:
  * V get data for all dst settings per country
  *   v aliases per country
- *     - exclude 'american samoa' being detected as 'samoa'?
+ *     - exclude e.g. 'american samoa' being detected as 'samoa'?
  *   V year since start of use DST or stop use of DST
  *   - timezone offset
  *   - notes for special cases
@@ -446,7 +446,7 @@ class DstBot {
                     'startts' => date('Y-m-d', strtotime($aGroup['start'] . ' ' . date('Y'))),
                     'end' => str_replace(' Of ', ' of ', ucwords($aGroup['end'])),
                     'endts' => date('Y-m-d', strtotime($aGroup['end'] . ' ' . date('Y'))),
-                    //'since' => ...
+                    'since' => (isset($aGroup['since']) ? $aGroup['since'] : FALSE),
                 );
 
                 return $aCountryInfo;
@@ -454,24 +454,51 @@ class DstBot {
 
             //check 'includes' array
             if (isset($aGroup['includes'])) {
-                foreach ($aGroup['includes'] as $sInclude) {
-                    if (stripos($sQuestion, $sInclude) !== FALSE) {
+                foreach ($aGroup['includes'] as $sName => $aInclude) {
+
+                    //check name of country against question
+                    if (stripos($sQuestion, $sName) !== FALSE) {
                         $aCountryInfo = array(
                             'group' => $sGroupName,
-                            'name' => ucwords($sInclude),
+                            'name' => ucwords($sName),
                             'start' => str_replace(' Of ', ' of ', ucwords($aGroup['start'])),
                             'startts' => date('Y-m-d', strtotime($aGroup['start'] . ' ' . date('Y'))),
                             'end' => str_replace(' Of', ' of ', ucwords($aGroup['end'])),
                             'endts' => date('Y-m-d', strtotime($aGroup['end'] . ' ' . date('Y'))),
-                            //'since' => ..
                         );
+                        $aCountryInfo['since']  = (!empty($aInclude['since']) ? $aInclude['since'] : FALSE);
+                        $aCountryInfo['info']   = (!empty($aInclude['info']) ? $aInclude['info'] : FALSE);
+                        if (!empty($aInclude['permanent'])) {
+                            $aCountryInfo['permanent'] = $aInclude['permanent'];
+                        }
 
                         return $aCountryInfo;
                     }
+
+                    //TODO: test
+                    if (!empty($aInclude['alias'])) {
+                        foreach ($aInclude['alias'] as $sAlias) {
+                            if (stripos($sQuestion, $sAlias) !== FALSE) {
+                                $aCountryInfo = array(
+                                    'group' => $sGroupName,
+                                    'name' => ucwords($sName),
+                                    'start' => str_replace(' Of ', ' of ', ucwords($aGroup['start'])),
+                                    'startts' => date('Y-m-d', strtotime($aGroup['start'] . ' ' . date('Y'))),
+                                    'end' => str_replace(' Of', ' of ', ucwords($aGroup['end'])),
+                                    'endts' => date('Y-m-d', strtotime($aGroup['end'] . ' ' . date('Y'))),
+                                );
+                                $aCountryInfo['since']  = (!empty($aInclude['since']) ? $aInclude['since'] : FALSE);
+                                $aCountryInfo['info']   = (!empty($aInclude['info']) ? $aInclude['info'] : FALSE);
+                                if (!empty($aInclude['permanent'])) {
+                                    $aCountryInfo['permanent'] = $aInclude['permanent'];
+                                }
+
+                                return $aCountryInfo;
+                            }
+                        }
+                    }
                 }
             }
-
-            //TODO: aliases
         }
 
         return FALSE;
