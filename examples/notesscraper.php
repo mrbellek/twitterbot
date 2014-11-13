@@ -103,12 +103,17 @@ class NotesScraper {
                     //get next pages, as long as next link is present AND it is not disabled (max 100 pages)
                     while (preg_match('/<li class="next ?">/', $sHTML) && !preg_match('/<li class="next disabled/', $sHTML) && $iOffset <= 5000) {
 
-                        $sHTML = file_get_contents($sAddress . '?offset=' . $iOffset . '&filter=0');
-                        $bRet = $this->parseNotes($sHTML);
-                        if (!$bRet) {
-                            //note found that is older than treshold, break out of loop and go to next address
-                            echo '/age';
-                            break;
+                        $sHTML = @file_get_contents($sAddress . '?offset=' . $iOffset . '&filter=0');
+                        if (empty($sHTML)) {
+                            //disconnected
+                            echo '/dc';
+                        } else {
+                            $bRet = $this->parseNotes($sHTML);
+                            if (!$bRet) {
+                                //note found that is older than treshold, break out of loop and go to next address
+                                echo '/age';
+                                break;
+                            }
                         }
 
                         $iOffset += 50;
