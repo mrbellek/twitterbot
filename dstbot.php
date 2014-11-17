@@ -8,14 +8,8 @@ require_once('./dstbot.inc.php');
  *   v aliases per country
  *     - exclude e.g. 'american samoa' being detected as 'samoa'?
  *   V year since start of use DST or stop use of DST
- *   - timezone offset
- *   - notes for special cases
- *     - brazil delays DST by one week if it coincides with carnival
- *     - azerbaijan uses DST, province nagorno-karabakh does not
- *     - ukrain uses DST, province crimea does not
- *     - easter island starts 1 day earlier than chile to stay in sync (timezones)
- *     - egypt, morocco, western sahara do not observe DST during Ramadan
- *     - permanent DST (e.g. Falkland Islands)
+ *   V notes for special cases
+ *   . timezone offset
  * V tweet warning about DST clock change 7 days, 1 day in advance
  *   - moment of change, with proper timezone
  *   - update checkDSTStart() to take timezones into account
@@ -31,19 +25,6 @@ class DstBot {
 
     private $sUsername;
     private $sLogFile;
-
-    /*
-     * GROUPS:
-     * - Europe, except Armenia, Belarus, Georgia, Iceland, Russia (and Crimea of Ukrain)
-     *   - also includes Lebanon, Morocco, Western Sahara
-     * - North America, except Mexico and Greenland
-     *   - also includes Cuba, Haiti, Turks and Caicos
-     * - Jordan, Palestine, Syria
-     * - Samoa, New Zealand
-     * - [everything else, single countries]
-     * - no DST group
-     */
-
     private $aSettings;
 
     public function __construct($aArgs) {
@@ -68,6 +49,36 @@ class DstBot {
         $this->sLastMentionFile = (!empty($aArgs['sLastMentionFile'])   ? $aArgs['sLastMentionFile'] : strtolower(__CLASS__) . '-last.json');
         $this->sLogFile         = (!empty($aArgs['sLogFile'])           ? $aArgs['sLogFile']        : strtolower(__CLASS__) . '.log');
 
+        /*
+         * NOTES FOR SETTINGS.JSON FORMAT:
+         * - groups for countries with identical start/ends (e.g. Europe)
+         *   - key is internal name of group
+         *   - 'name' key is display name
+         *   - 'start' is start of DST
+         *   - 'end' is end of DST
+         *   - 'includes' array is list of participating countries
+         *     - key is display name
+         *     - 'since' is year since start/end of DST observation
+         *     - 'alias' is array of other names country is known as
+         *     - 'timezone' is timezone, in +dddd format (or -dddd)
+         *     - 'info' is url to wiki page for complex DST rules
+         *     - 'note' is additional notes for country
+         *   - 'excludes' array is list of not participating countries, even though they'd be expected to fall in group
+         * - separate countries
+         *   - 'start'
+         *   - 'end'
+         *   - 'since'
+         *   - 'alias'
+         *   - 'timezone'
+         *   - 'info'
+         *   - 'note'
+         * - group 'no dst' for countries that do not observe DST ever
+         *   - 'includes' array is list of participating countries
+         *     - key is country display name
+         *     - 'since'
+         *     - 'alias'
+         *     - 'permanent' is if the country is in permanent DST mode
+         */
         $this->aSettings = @json_decode(file_get_contents($this->sSettingsFile), TRUE);
         if (!$this->aSettings) {
             $this->logger(1, sprintf('Failed to load settings file. (%s)', json_last_error_msg()));
@@ -309,7 +320,7 @@ class DstBot {
 
     private function parseMention($oMention) {
 
-        $sDefaultReply = 'I didn\'t understand your question! You can ask when #DST starts or ends in any country, or since when it was/wasn\'t used.';
+        $sDefaultReply = 'I didn\'t understand your question! You can ask when #DST starts or ends in any country, or since when it\'s (not) used.';
 
         //reply to questions from everyon in DMs if possible, mention otherwise
         $sId = $oMention->id_str;
@@ -361,17 +372,24 @@ class DstBot {
         } else {
 
             $sExtra = '';
-            if (isset($aCountryInfo['info'])) {
-                //some coutries are complicated, and have their own wiki page with more info
-                $sExtra = 'More info: ' . $aCountryInfo['info'];
+            if (isset($aCountryInfo['note'])) {
 
-            } elseif (isset($aCountryInfo['permanent'])) {
+                //some countries have a note in parentheses
+                $sExtra .= $aCountryInfo['note'];
+            }
+            if (isset($aCountryInfo['info'])) {
+
+                //some countries are complicated, and have their own wiki page with more info
+                $sExtra .= 'More info: ' . $aCountryInfo['info'];
+            }
+
+            if (isset($aCountryInfo['permanent'])) {
                 //some countries have permanent DST in effect
                 if ($aCountryInfo['permanent'] == TRUE) {
-                    $sExtra = 'DST is permanently in effect.';
+                    $sExtra .= 'DST is permanently in effect.';
                 } else {
                     //just in case, never used
-                    $sExtra = 'DST is permanently not in effect.';
+                    $sExtra .= 'DST is permanently not in effect.';
                 }
             }
             //example: DST has not been observed in Russia since 1947

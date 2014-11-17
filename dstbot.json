@@ -12,7 +12,7 @@
             "albania":                          { "since": "1974", "timezone": "+0100" },
             "andorra":                          { "since": "1985", "timezone": "+0100" },
             "austria":                          { "since": "1980", "timezone": "+0100" },
-            "azerbaijan":                       { "since": "1996", "timezone": "+0400" },
+            "azerbaijan":                       { "since": "1996", "timezone": "+0400", "note": "(except Nagorno-Karabagh)" },
             "belgium":                          { "since": "1977", "timezone": "+0100" },
             "bosnia and herzegovina":           { "since": "1983", "alias": [ "bosnia", "herzegovina" ], "timezone": "+0100" },
             "bulgaria":                         { "since": "1979", "timezone": "+0200" },
@@ -44,7 +44,7 @@
             "moldova":                          { "since": "1991", "timezone": "+0200" },
             "monaco":                           { "since": "1976", "timezone": "+0100" },
             "montenegro":                       { "since": "1983", "timezone": "+0100" },
-            "morocco":                          { "since": "2008", "timezone": "+0000" },
+            "morocco":                          { "since": "2008", "timezone": "+0000", "note": "(except during Ramadan)" },
             "netherlands":                      { "since": "1977", "alias": [ "holland" ], "timezone": "+0100" },
             "norway":                           { "since": "1980", "timezone": "+0100" },
             "poland":                           { "since": "1977", "timezone": "+0100" },
@@ -58,9 +58,9 @@
             "sweden":                           { "since": "1980", "timezone": "+0100" },
             "switzerland":                      { "since": "1980", "timezone": "+0100" },
             "turkey":                           { "since": "1985", "timezone": "+0200" },
-            "ukraine":                          { "since": "1992", "timezone": "+0200" },
+            "ukraine":                          { "since": "1992", "timezone": "+0200", "note": "(except Crimea)" },
             "united kingdom":                   { "since": "1971", "info": "http://en.wikipedia.org/wiki/British_Summer_Time", "alias": [ "the uk", "england" ], "timezone": "+0000" },
-            "western sahara":                   { "since": "2008" }
+            "western sahara":                   { "since": "2008", "note": "(except during Ramadan)" }
         },
         "excludes": {
             "armenia":                          {},
@@ -165,7 +165,8 @@
         "start": "last friday of april",
         "end": "last friday of september",
         "since": "2014",
-        "timezone": "+0200"
+        "timezone": "+0200",
+        "note": "(except during Ramadan)"
     },
     "iran": {
         "start": "march 21st",
@@ -182,13 +183,15 @@
         "end": "last sunday of april",
         "since": "1968",
         "alias": [ "chili" ],
-        "timezone": "-0400"
+        "timezone": "-0400",
+        "note": "(Easter Island 1 day early)"
     },
     "brazil": {
         "start": "third sunday of october",
         "end": "third sunday of february",
         "info": "http://en.wikipedia.org/wiki/Daylight_saving_time_in_Brazil",
         "timezone": "-0300"
+        "note": "(delayed during Carnaval)"
     },
     "no dst": {
         "includes": {
@@ -313,7 +316,6 @@
             "rwanda":                           {},
             "saba":                             {},
             "saint barthélemy":                 { "alias": [ "saint barthelemy" ] },
-            "saint helena, ascension and tristan da cunha": { "alias": [ "saint helena", "ascension", "tristan da cunha" ] },
             "saint kitts and nevis":            { "alias": [ "saint kitts", "nevis" ] },
             "saint lucia":                      {},
             "saint martin":                     {},
@@ -345,6 +347,7 @@
             "tokelau":                          {},
             "tonga":                            { "since": "2002" },
             "trinidad and tobago":              { "alias": [ "trinidad", "tobago" ] },
+            "tristan da cunha":                 { "alias": [ "saint helena", "ascension", "saint helena, ascension and tristan da cunha" ] },
             "tunisia":                          { "since": "2008" },
             "turkmenistan":                     { "since": "1991" },
             "tuvalu":                           {},
