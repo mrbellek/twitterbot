@@ -5,7 +5,7 @@ require_once('./dstbot.inc.php');
 /*
  * TODO:
  * V get data for all dst settings per country
- *   v aliases per country
+ *   V aliases per country
  *     - exclude e.g. 'american samoa' being detected as 'samoa'?
  *   V year since start of use DST or stop use of DST
  *   V notes for special cases
@@ -13,9 +13,10 @@ require_once('./dstbot.inc.php');
  * V tweet warning about DST clock change 7 days, 1 day in advance
  *   - moment of change, with proper timezone
  *   - update checkDSTStart() to take timezones into account
- * v reply to command: when is next DST in (country)?
- * v reply to command: what time is it now in (country)?
- *   v or get country from profile
+ * V reply to command: when is next DST in (country)?
+ *   V change to show just day instead of complete date in parentheses)
+ * V reply to command: what time is it now in (country)?
+ *   V or get country from profile
  */
 
 $o = new DstBot(array('sUsername' => 'DSTnotify'));
@@ -331,7 +332,7 @@ class DstBot {
         $aCountryInfo = $this->findCountryInQuestion($oMention->text);
         if (!$aCountryInfo) {
             //try to find country name in 'location' field of user profile
-            $aCountryInfo = $this->findCountryInQuestion($oMention->location);
+            $aCountryInfo = $this->findCountryInQuestion($oMention->user->location);
         }
 
         if (!$aCountryInfo) {
@@ -361,43 +362,45 @@ class DstBot {
             return $this->replyToQuestion($oMention, $sDefaultReply);
         }
 
+        //construct extra information
+        $sExtra = '';
+        if (!empty($aCountryInfo['note'])) {
+
+            //some countries have a note in parentheses
+            $sExtra .= $aCountryInfo['note'];
+        }
+        if (!empty($aCountryInfo['info'])) {
+
+            //some countries are complicated, and have their own wiki page with more info
+            $sExtra .= ' More info: ' . $aCountryInfo['info'];
+        }
+
+        if (isset($aCountryInfo['permanent'])) {
+            //some countries have permanent DST in effect
+            if ($aCountryInfo['permanent'] == TRUE) {
+                $sExtra .= ' DST is permanently in effect.';
+            } else {
+                //just in case, never used
+                $sExtra .= ' DST is permanently not in effect.';
+            }
+        }
+
         if ($sEvent == 'start' || $sEvent == 'end') {
             //example: DST will start in Belgium on the last sunday of march (2014-03-21)
-            $this->replyToQuestion($oMention, sprintf('#DST will %s in %s on the %s (%s)',
+            $this->replyToQuestion($oMention, sprintf('#DST will %s in %s on the %s (%s). %s',
                 $sEvent,
                 $aCountryInfo['name'],
                 $aCountryInfo[$sEvent],
-                $aCountryInfo[$sEvent . 'ts']
+                $aCountryInfo[$sEvent . 'day'],
+                trim($sExtra)
             ));
         } else {
-
-            $sExtra = '';
-            if (isset($aCountryInfo['note'])) {
-
-                //some countries have a note in parentheses
-                $sExtra .= $aCountryInfo['note'];
-            }
-            if (isset($aCountryInfo['info'])) {
-
-                //some countries are complicated, and have their own wiki page with more info
-                $sExtra .= 'More info: ' . $aCountryInfo['info'];
-            }
-
-            if (isset($aCountryInfo['permanent'])) {
-                //some countries have permanent DST in effect
-                if ($aCountryInfo['permanent'] == TRUE) {
-                    $sExtra .= 'DST is permanently in effect.';
-                } else {
-                    //just in case, never used
-                    $sExtra .= 'DST is permanently not in effect.';
-                }
-            }
             //example: DST has not been observed in Russia since 1947
             $this->replyToQuestion($oMention, sprintf('#DST has %s been observed in %s since %s. %s',
                 ($aCountryInfo['group'] == 'no dst' ? 'not' : ''),
                 $aCountryInfo['name'],
                 $aCountryInfo['since'],
-                $sExtra
+                trim($sExtra)
             ));
         }
 
@@ -405,6 +408,8 @@ class DstBot {
     }
 
     private function replyToQuestion($oMention, $sReply) {
+
+        $sReply = trim($sReply);
 
         //check friendship between bot and sender
         $oRet = $this->oTwitter->get('friendships/show', array('source_screen_name' => $this->sUsername, 'target_screen_name' => $oMention->user->screen_name));
@@ -458,14 +463,20 @@ class DstBot {
             //check for group name
             if (stripos($sQuestion, $sGroupName) !== FALSE) {
                 $aCountryInfo = array(
-                    'group' => $sGroupName,
-                    'name' => (isset($aGroup['name']) ? $aGroup['name'] : ucwords($sGroupname)),
-                    'start' => str_replace(' Of ', ' of ', ucwords($aGroup['start'])),
-                    'startts' => date('Y-m-d', strtotime($aGroup['start'] . ' ' . date('Y'))),
-                    'end' => str_replace(' Of ', ' of ', ucwords($aGroup['end'])),
-                    'endts' => date('Y-m-d', strtotime($aGroup['end'] . ' ' . date('Y'))),
-                    'since' => (isset($aGroup['since']) ? $aGroup['since'] : FALSE),
+                    'group'     => $sGroupName,
+                    'name'      => (isset($aGroup['name']) ? $aGroup['name'] : ucwords($sGroupName)),
+                    'start'     => $this->capitalizeStuff($aGroup['start']),
+                    'startday'  => date('jS', strtotime($aGroup['start'] . ' ' . date('Y'))),
+                    'end'       => $this->capitalizeStuff($aGroup['end']),
+                    'endday'    => date('jS', strtotime($aGroup['end'] . ' ' . date('Y'))),
+                    'since'     => (isset($aGroup['since']) ? $aGroup['since'] : FALSE),
+                    'info'      => (isset($aGroup['info']) ? $aGroup['info'] : FALSE),
+                    'note'      => (isset($aGroup['note']) ? $aGroup['note'] : FALSE),
+                    'timezone'  => (isset($aGroup['timezone']) ? $aGroup['timezone'] : FALSE),
                 );
+                if (!empty($aInclude['permanent'])) {
+                    $aCountryInfo['permanent'] = $aInclude['permanent'];
+                }
 
                 return $aCountryInfo;
             }
@@ -477,15 +488,17 @@ class DstBot {
                     //check name of country against question
                     if (stripos($sQuestion, $sName) !== FALSE) {
                         $aCountryInfo = array(
-                            'group' => $sGroupName,
-                            'name' => ucwords($sName),
-                            'start' => str_replace(' Of ', ' of ', ucwords($aGroup['start'])),
-                            'startts' => date('Y-m-d', strtotime($aGroup['start'] . ' ' . date('Y'))),
-                            'end' => str_replace(' Of', ' of ', ucwords($aGroup['end'])),
-                            'endts' => date('Y-m-d', strtotime($aGroup['end'] . ' ' . date('Y'))),
+                            'group'     => $sGroupName,
+                            'name'      => ucwords($sName),
+                            'start'     => $this->capitalizeStuff($aGroup['start']),
+                            'startday'  => date('jS', strtotime($aGroup['start'] . ' ' . date('Y'))),
+                            'end'       => $this->capitalizeStuff($aGroup['end']),
+                            'endday'    => date('jS', strtotime($aGroup['end'] . ' ' . date('Y'))),
+                            'since'     => (isset($aInclude['since']) ? $aInclude['since'] : FALSE),
+                            'info'      => (isset($aInclude['info']) ? $aInclude['info'] : FALSE),
+                            'note'      => (isset($aInclude['note']) ? $aInclude['note'] : FALSE),
+                            'timezone'  => (isset($aInclude['timezone']) ? $aInclude['timezone'] : FALSE),
                         );
-                        $aCountryInfo['since']  = (!empty($aInclude['since']) ? $aInclude['since'] : FALSE);
-                        $aCountryInfo['info']   = (!empty($aInclude['info']) ? $aInclude['info'] : FALSE);
                         if (!empty($aInclude['permanent'])) {
                             $aCountryInfo['permanent'] = $aInclude['permanent'];
                         }
@@ -493,20 +506,21 @@ class DstBot {
                         return $aCountryInfo;
                     }
 
-                    //TODO: test
                     if (!empty($aInclude['alias'])) {
                         foreach ($aInclude['alias'] as $sAlias) {
                             if (stripos($sQuestion, $sAlias) !== FALSE) {
                                 $aCountryInfo = array(
-                                    'group' => $sGroupName,
-                                    'name' => ucwords($sName),
-                                    'start' => str_replace(' Of ', ' of ', ucwords($aGroup['start'])),
-                                    'startts' => date('Y-m-d', strtotime($aGroup['start'] . ' ' . date('Y'))),
-                                    'end' => str_replace(' Of', ' of ', ucwords($aGroup['end'])),
-                                    'endts' => date('Y-m-d', strtotime($aGroup['end'] . ' ' . date('Y'))),
+                                    'group'     => $sGroupName,
+                                    'name'      => ucwords($sName),
+                                    'start'     => $this->capitalizeStuff($aGroup['start']),
+                                    'startday'  => date('jS', strtotime($aGroup['start'] . ' ' . date('Y'))),
+                                    'end'       => $this->capitalizeStuff($aGroup['end']),
+                                    'endday'    => date('jS', strtotime($aGroup['end'] . ' ' . date('Y'))),
+                                    'since'     => (isset($aInclude['since']) ? $aInclude['since'] : FALSE),
+                                    'info'      => (isset($aInclude['info']) ? $aInclude['info'] : FALSE),
+                                    'note'      => (isset($aInclude['note']) ? $aInclude['note'] : FALSE),
+                                    'timezone'  => (isset($aInclude['timezone']) ? $aInclude['timezone'] : FALSE),
                                 );
-                                $aCountryInfo['since']  = (!empty($aInclude['since']) ? $aInclude['since'] : FALSE);
-                                $aCountryInfo['info']   = (!empty($aInclude['info']) ? $aInclude['info'] : FALSE);
                                 if (!empty($aInclude['permanent'])) {
                                     $aCountryInfo['permanent'] = $aInclude['permanent'];
                                 }
@@ -520,6 +534,22 @@ class DstBot {
         }
 
         return FALSE;
+    }
+
+    private function capitalizeStuff($sString) {
+
+        //capitalize days of week and months
+        $aCapitalize = array(
+            'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+            'january', 'february', 'march', 'april', 'may', 'june',
+            'july', 'august', 'september', 'october', 'november', 'december',
+        );
+
+        foreach ($aCapitalize as $sWord) {
+            $sString = str_ireplace($sWord, ucfirst($sWord), $sString);
+        }
+
+        return $sString;
     }
 
     private function stringContainsWord($sString, $aWords) {

@@ -190,7 +190,7 @@
         "start": "third sunday of october",
         "end": "third sunday of february",
         "info": "http://en.wikipedia.org/wiki/Daylight_saving_time_in_Brazil",
-        "timezone": "-0300"
+        "timezone": "-0300",
         "note": "(delayed during Carnaval)"
     },
     "no dst": {
