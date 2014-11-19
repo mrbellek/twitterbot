@@ -323,11 +323,12 @@ class DstBot {
     private function parseMention($oMention) {
 
         $sDefaultReply = 'I didn\'t understand your question! You can ask when #DST starts or ends in any country, or since when it\'s (not) used.';
+        $sNoDSTReply = '%s does not observe DST. %s';
 
         //reply to questions from everyon in DMs if possible, mention otherwise
         $sId = $oMention->id_str;
         $sQuestion = str_replace('@' . strtolower($this->sUsername) . ' ', '', strtolower($oMention->text));
-        printf("Parsing question %s from %s..\n", $sQuestion, $oMention->user->screen_name);
+        printf("Parsing question '%s' from %s..\n", $sQuestion, $oMention->user->screen_name);
 
         //try to find country in tweet
         $aCountryInfo = $this->findCountryInQuestion($oMention->text);
@@ -338,6 +339,18 @@ class DstBot {
 
         if (!$aCountryInfo) {
             return $this->replyToQuestion($oMention, $sDefaultReply);
+        }
+
+        if ($aCountryInfo['group'] == 'no dst') {
+            $sExtra = '';
+            if (!empty($aCountryInfo['since'])) {
+                if (isset($aCountryInfo['permanent']) && $aCountryInfo['permanent']) {
+                    $sExtra = sprintf('It has been in permanent DST time since %d.', $aCountryInfo['since']);
+                } else {
+                    $sExtra = sprintf('It has not since %d', $aCountryInfo['since']);
+                }
+            }
+            return $this->replyToQuestion($oMention, sprintf($sNoDSTReply, $aCountryInfo['name'], $sExtra));
         }
 
         $sEvent = '';
@@ -463,23 +476,8 @@ class DstBot {
 
             //check for group name
             if (stripos($sQuestion, $sGroupName) !== FALSE) {
-                $aCountryInfo = array(
-                    'group'     => $sGroupName,
-                    'name'      => (isset($aGroup['name']) ? $aGroup['name'] : ucwords($sGroupName)),
-                    'start'     => $this->capitalizeStuff($aGroup['start']),
-                    'startday'  => date('jS', strtotime($aGroup['start'] . ' ' . date('Y'))),
-                    'end'       => $this->capitalizeStuff($aGroup['end']),
-                    'endday'    => date('jS', strtotime($aGroup['end'] . ' ' . date('Y'))),
-                    'since'     => (isset($aGroup['since']) ? $aGroup['since'] : FALSE),
-                    'info'      => (isset($aGroup['info']) ? $aGroup['info'] : FALSE),
-                    'note'      => (isset($aGroup['note']) ? $aGroup['note'] : FALSE),
-                    'timezone'  => (isset($aGroup['timezone']) ? $aGroup['timezone'] : FALSE),
-                );
-                if (!empty($aInclude['permanent'])) {
-                    $aCountryInfo['permanent'] = $aInclude['permanent'];
-                }
-
-                return $aCountryInfo;
+                $aFoundCountry[$sGroupName] = $aGroup;
+                break;
             }
 
             //check 'includes' array
@@ -488,50 +486,52 @@ class DstBot {
 
                     //check name of country against question
                     if (stripos($sQuestion, $sName) !== FALSE) {
-                        $aCountryInfo = array(
-                            'group'     => $sGroupName,
-                            'name'      => ucwords($sName),
-                            'start'     => $this->capitalizeStuff($aGroup['start']),
-                            'startday'  => date('jS', strtotime($aGroup['start'] . ' ' . date('Y'))),
-                            'end'       => $this->capitalizeStuff($aGroup['end']),
-                            'endday'    => date('jS', strtotime($aGroup['end'] . ' ' . date('Y'))),
-                            'since'     => (isset($aInclude['since']) ? $aInclude['since'] : FALSE),
-                            'info'      => (isset($aInclude['info']) ? $aInclude['info'] : FALSE),
-                            'note'      => (isset($aInclude['note']) ? $aInclude['note'] : FALSE),
-                            'timezone'  => (isset($aInclude['timezone']) ? $aInclude['timezone'] : FALSE),
-                        );
-                        if (!empty($aInclude['permanent'])) {
-                            $aCountryInfo['permanent'] = $aInclude['permanent'];
-                        }
-
-                        return $aCountryInfo;
+                        $aFoundCountry[$sGroupName] = array_merge($aGroup, $aInclude);
+                        unset($aFoundCountry[$sGroupName]['includes']);
+                        unset($aFoundCountry[$sGroupName]['excludes']);
+                        unset($aFoundCountry[$sGroupName]['alias']);
+                        break 2;
                     }
 
                     if (!empty($aInclude['alias'])) {
                         foreach ($aInclude['alias'] as $sAlias) {
                             if (stripos($sQuestion, $sAlias) !== FALSE) {
-                                $aCountryInfo = array(
-                                    'group'     => $sGroupName,
-                                    'name'      => ucwords($sName),
-                                    'start'     => $this->capitalizeStuff($aGroup['start']),
-                                    'startday'  => date('jS', strtotime($aGroup['start'] . ' ' . date('Y'))),
-                                    'end'       => $this->capitalizeStuff($aGroup['end']),
-                                    'endday'    => date('jS', strtotime($aGroup['end'] . ' ' . date('Y'))),
-                                    'since'     => (isset($aInclude['since']) ? $aInclude['since'] : FALSE),
-                                    'info'      => (isset($aInclude['info']) ? $aInclude['info'] : FALSE),
-                                    'note'      => (isset($aInclude['note']) ? $aInclude['note'] : FALSE),
-                                    'timezone'  => (isset($aInclude['timezone']) ? $aInclude['timezone'] : FALSE),
-                                );
-                                if (!empty($aInclude['permanent'])) {
-                                    $aCountryInfo['permanent'] = $aInclude['permanent'];
-                                }
-
-                                return $aCountryInfo;
+                                $aFoundCountry[$sGroupName] = array_merge($aGroup, $aInclude);
+                                unset($aFoundCountry[$sGroupName]['includes']);
+                                unset($aFoundCountry[$sGroupName]['excludes']);
+                                unset($aFoundCountry[$sGroupName]['alias']);
+                                break 2;
                             }
                         }
                     }
                 }
             }
+        }
+
+        if ($aFoundCountry) {
+
+            $sGroupName = key($aFoundCountry);
+            $aGroup = $aFoundCountry[$sGroupName];
+
+            $aCountryInfo = array(
+                'group'     => $sGroupName,
+                'name'      => (isset($aGroup['name']) ? ucwords($aGroup['name']) : FALSE),
+                'since'     => (isset($aInclude['since']) ? $aInclude['since'] : FALSE),
+                'info'      => (isset($aInclude['info']) ? $aInclude['info'] : FALSE),
+                'note'      => (isset($aInclude['note']) ? $aInclude['note'] : FALSE),
+                'timezone'  => (isset($aInclude['timezone']) ? $aInclude['timezone'] : FALSE),
+            );
+            if ($sGroupName != 'no dst') {
+                $aCountryInfo['start'] = $this->capitalizeStuff($aGroup['start']);
+                $aCountryInfo['startday'] = date('jS', strtotime($aGroup['start'] . ' ' . date('Y')));
+                $aCountryInfo['end'] = $this->capitalizeStuff($aGroup['end']);
+                $aCountryInfo['endday'] = date('jS', strtotime($aGroup['end'] . ' ' . date('Y')));
+            }
+            if (!empty($aInclude['permanent'])) {
+                $aCountryInfo['permanent'] = $aInclude['permanent'];
+            }
+
+            return $aCountryInfo;
         }
 
         return FALSE;
