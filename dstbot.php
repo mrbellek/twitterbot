@@ -322,11 +322,12 @@ class DstBot {
     private function parseMention($oMention) {
 
         $sDefaultReply = 'I didn\'t understand your question! You can ask when #DST starts or ends in any country, or since when it\'s (not) used.';
+        $sNoDSTReply = '%s does not observe DST. %s';
 
         //reply to questions from everyon in DMs if possible, mention otherwise
         $sId = $oMention->id_str;
         $sQuestion = str_replace('@' . strtolower($this->sUsername) . ' ', '', strtolower($oMention->text));
-        printf("Parsing question %s from %s..\n", $sQuestion, $oMention->user->screen_name);
+        printf("Parsing question '%s' from %s..\n", $sQuestion, $oMention->user->screen_name);
 
         //try to find country in tweet
         $aCountryInfo = $this->findCountryInQuestion($oMention->text);
@@ -337,6 +338,18 @@ class DstBot {
 
         if (!$aCountryInfo) {
             return $this->replyToQuestion($oMention, $sDefaultReply);
+        }
+
+        if ($aCountryInfo['group'] == 'no dst') {
+            $sExtra = '';
+            if (!empty($aCountryInfo['since'])) {
+                if (isset($aCountryInfo['permanent']) && $aCountryInfo['permanent']) {
+                    $sExtra = sprintf('It has been in permanent DST time since %d.', $aCountryInfo['since']);
+                } else {
+                    $sExtra = sprintf('It has not since %d', $aCountryInfo['since']);
+                }
+            }
+            return $this->replyToQuestion($oMention, sprintf($sNoDSTReply, $aCountryInfo['name'], $sExtra));
         }
 
         $sEvent = '';
@@ -453,6 +466,7 @@ class DstBot {
         return TRUE;
     }
 
+    //TODO: refactor this bullshit
     private function findCountryInQuestion($sQuestion) {
 
         $aCountryInfo = array();
@@ -490,10 +504,10 @@ class DstBot {
                         $aCountryInfo = array(
                             'group'     => $sGroupName,
                             'name'      => ucwords($sName),
-                            'start'     => $this->capitalizeStuff($aGroup['start']),
-                            'startday'  => date('jS', strtotime($aGroup['start'] . ' ' . date('Y'))),
-                            'end'       => $this->capitalizeStuff($aGroup['end']),
-                            'endday'    => date('jS', strtotime($aGroup['end'] . ' ' . date('Y'))),
+                            'start'     => ($sGroupName != 'no dst' ? $this->capitalizeStuff($aGroup['start']) : FALSE),
+                            'startday'  => ($sGroupName != 'no dst' ? date('jS', strtotime($aGroup['start'] . ' ' . date('Y'))) : FALSE),
+                            'end'       => ($sGroupName != 'no dst' ? $this->capitalizeStuff($aGroup['end']) : FALSE),
+                            'endday'    => ($sGroupName != 'no dst' ? date('jS', strtotime($aGroup['end'] . ' ' . date('Y'))) : FALSE),
                             'since'     => (isset($aInclude['since']) ? $aInclude['since'] : FALSE),
                             'info'      => (isset($aInclude['info']) ? $aInclude['info'] : FALSE),
                             'note'      => (isset($aInclude['note']) ? $aInclude['note'] : FALSE),
@@ -512,10 +526,10 @@ class DstBot {
                                 $aCountryInfo = array(
                                     'group'     => $sGroupName,
                                     'name'      => ucwords($sName),
-                                    'start'     => $this->capitalizeStuff($aGroup['start']),
-                                    'startday'  => date('jS', strtotime($aGroup['start'] . ' ' . date('Y'))),
-                                    'end'       => $this->capitalizeStuff($aGroup['end']),
-                                    'endday'    => date('jS', strtotime($aGroup['end'] . ' ' . date('Y'))),
+                                    'start'     => ($sGroupName != 'no dst' ? $this->capitalizeStuff($aGroup['start']) : FALSE),
+                                    'startday'  => ($sGroupName != 'no dst' ? date('jS', strtotime($aGroup['start'] . ' ' . date('Y'))) : FALSE),
+                                    'end'       => ($sGroupName != 'no dst' ? $this->capitalizeStuff($aGroup['end']) : FALSE),
+                                    'endday'    => ($sGroupName != 'no dst' ? date('jS', strtotime($aGroup['end'] . ' ' . date('Y'))) : FALSE),
                                     'since'     => (isset($aInclude['since']) ? $aInclude['since'] : FALSE),
                                     'info'      => (isset($aInclude['info']) ? $aInclude['info'] : FALSE),
                                     'note'      => (isset($aInclude['note']) ? $aInclude['note'] : FALSE),
