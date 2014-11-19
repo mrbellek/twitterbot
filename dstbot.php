@@ -49,6 +49,7 @@ class DstBot {
         $this->sSettingsFile    = (!empty($aArgs['sSettingsFile'])      ? $aArgs['sSettingsFile']   : strtolower(__CLASS__) . '.json');
         $this->sLastMentionFile = (!empty($aArgs['sLastMentionFile'])   ? $aArgs['sLastMentionFile'] : strtolower(__CLASS__) . '-last.json');
         $this->sLogFile         = (!empty($aArgs['sLogFile'])           ? $aArgs['sLogFile']        : strtolower(__CLASS__) . '.log');
+        $this->bReplyInDM       = (!empty($aArgs['bReplyInDM'])         ? $aArgs['bReplyInDM']      : FALSE);
 
         /*
          * NOTES FOR SETTINGS.JSON FORMAT:
@@ -276,13 +277,13 @@ class DstBot {
 
     private function checkMentions() {
 
-		$aLastMention = json_decode(@file_get_contents(MYPATH . '/' . $this->sLastMentionFile), TRUE);
+      $aLastMention = json_decode(@file_get_contents(MYPATH . '/' . $this->sLastMentionFile), TRUE);
         printf("Checking mentions since %s..\n", ($aLastMention ? $aLastMention['timestamp'] : 'never'));
 
         //fetch new mentions since last run
         $aMentions = $this->oTwitter->get('statuses/mentions_timeline', array(
             'count'         => 10, //TODO: increase?
-			'since_id'		=> ($aLastMention && !empty($aLastMention['max_id']) ? $aLastMention['max_id'] : 1),
+         'since_id'      => ($aLastMention && !empty($aLastMention['max_id']) ? $aLastMention['max_id'] : 1),
         ));
 
         if (is_object($aMentions) && !empty($aMentions->errors[0]->message)) {
@@ -309,12 +310,12 @@ class DstBot {
         }
         printf("- replied to %d commands\n\n", count($aMentions));
 
-		//save data for next run
-		$aThisCheck = array(
-			'max_id'	=> $sMaxId,
-			'timestamp'	=> date('Y-m-d H:i:s'),
-		);
-		file_put_contents(MYPATH . '/' . $this->sLastMentionFile, json_encode($aThisCheck));
+      //save data for next run
+      $aThisCheck = array(
+         'max_id'   => $sMaxId,
+         'timestamp'   => date('Y-m-d H:i:s'),
+      );
+      file_put_contents(MYPATH . '/' . $this->sLastMentionFile, json_encode($aThisCheck));
 
         return TRUE;
     }
@@ -420,7 +421,7 @@ class DstBot {
         }
 
         //if we can DM the source of the command, do that
-        if ($oRet->relationship->source->can_dm) {
+        if ($this->bReplyInDM && $oRet->relationship->source->can_dm) {
 
             $oRet = $this->oTwitter->post('direct_messages/new', array('user_id' => $oMention->user->id_str, 'text' => substr($sReply, 0, 140)));
 
