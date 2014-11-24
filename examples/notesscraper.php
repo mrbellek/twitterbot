@@ -1,11 +1,6 @@
 <?php
 set_time_limit(0);
 
-/*
- * TODO:
- * - indication for cause of halt of spidering address (out of pages, too old, too many pages, disconnect etc)
- */
-
 //start the scraper, optionally pass an array of urls to spider in constructor
 $o = new NotesScraper();
 
@@ -194,10 +189,19 @@ class NotesScraper {
         $sQuery .= substr(' -"' . implode('" -"', $aFilters) . '"', 0, 512);
 
         //prepare the whole url
-        $sUrl = 'http://google.com/search?q=' . urlencode($sQuery) . '&safe=off&tbs=qdr:m';
+        $sUrl = 'https://google.com/search?q=' . urlencode($sQuery) . '&safe=off&tbs=qdr:m';
+
+        //add some http headers
+        $oContext = stream_context_create(array('http' => array(
+            'method' => 'GET',
+            'header' => 'Referer: https://google.com' . PHP_EOL . 
+                'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.122 Safari/537.36 OPR/25.0.1614.71' . PHP_EOL .
+                'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' . PHP_EOL .
+                'Accept-Language: en-US,en;q=0.8' . PHP_EOL
+        )));
 
         //fetch the first page
-        $sResults = file_get_contents($sUrl);
+        $sResults = file_get_contents($sUrl, FALSE, $oContext);
         $iOffset = 10;
         $aAddresses = array();
 
@@ -210,7 +214,7 @@ class NotesScraper {
                 $aAddresses = array_merge($aAddresses, $aMatches[1]);
             }
 
-            $sResults = file_get_contents($sUrl . '&start=' . $iOffset);
+            $sResults = file_get_contents($sUrl . '&start=' . $iOffset, FALSE, $oContext);
             $iOffset += 10;
             echo '.';
         }

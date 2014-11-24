@@ -49,6 +49,7 @@ class DstBot {
         $this->sSettingsFile    = (!empty($aArgs['sSettingsFile'])      ? $aArgs['sSettingsFile']   : strtolower(__CLASS__) . '.json');
         $this->sLastMentionFile = (!empty($aArgs['sLastMentionFile'])   ? $aArgs['sLastMentionFile'] : strtolower(__CLASS__) . '-last.json');
         $this->sLogFile         = (!empty($aArgs['sLogFile'])           ? $aArgs['sLogFile']        : strtolower(__CLASS__) . '.log');
+        $this->bReplyInDM       = (!empty($aArgs['bReplyInDM'])         ? $aArgs['bReplyInDM']      : FALSE);
 
         /*
          * NOTES FOR SETTINGS.JSON FORMAT:
@@ -433,7 +434,7 @@ class DstBot {
         }
 
         //if we can DM the source of the command, do that
-        if ($oRet->relationship->source->can_dm) {
+        if ($this->bReplyInDM && $oRet->relationship->source->can_dm) {
 
             $oRet = $this->oTwitter->post('direct_messages/new', array('user_id' => $oMention->user->id_str, 'text' => substr($sReply, 0, 140)));
 
