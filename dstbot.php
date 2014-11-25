@@ -68,7 +68,7 @@ class DstBot {
          *   - 'timezone'
          *   - 'info'
          *   - 'note'
-         * - group 'no dst' for countries that do not observe DST ever
+         * - group 'no dst' for countries that do not observe DST right now
          *   - 'includes' array is list of participating countries
          *     - key is country display name
          *     - 'since'
@@ -135,8 +135,8 @@ class DstBot {
 
         //check if any of the countries are switching to DST (summer time) NOW
         echo "Checking for DST start..\n";
-        //if ($aGroups = $this->checkDSTStart(time())) {
-        if ($aGroups = $this->checkDSTStart(strtotime(date('Y-m-d 00:00:00')))) {
+        //if ($aGroups = $this->checkDSTStart(strtotime(date('Y-m-d 00:00:00')))) {
+        if ($aGroups = $this->checkDSTStart(time())) {
 
             if (!$this->postTweetDST('starting', $aGroups, 'now')) {
                 return FALSE;
