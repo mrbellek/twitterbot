@@ -7,18 +7,10 @@ require_once('./dstbot.inc.php');
  * V get data for all dst settings per country
  *   V aliases per country
  *     - exclude e.g. 'american samoa' being detected as 'samoa'?
- *   V year since start of use DST or stop use of DST
- *   V notes for special cases
  *   . timezone offset
  * V tweet warning about DST clock change 7 days, 1 day in advance
  *   - moment of change, with proper timezone
  *   - update checkDSTStart() to take timezones into account
- * V reply to command: when is next DST in (country)?
- *   V change to show just day instead of complete date in parentheses)
- * V reply to command: what time is it now in (country)?
- *   V or get country from profile
- * - bug: dst end is last end instead of current end (next year)
- *   - maybe display this + next time in parentheses? -> 'ends on last Sunday of March (2014: 31st, 2015: 12th)'
  */
 
 $o = new DstBot(array('sUsername' => 'DSTnotify'));
@@ -533,10 +525,17 @@ class DstBot {
                 'timezone'  => (isset($aGroup['timezone']) ? $aGroup['timezone'] : FALSE),
             );
             if ($sGroupName != 'no dst') {
+                //start and end in relative terms (last sunday of september)
                 $aCountryInfo['start'] = $this->capitalizeStuff($aGroup['start']);
-                $aCountryInfo['startday'] = date('jS', strtotime($aGroup['start'] . ' ' . date('Y')));
                 $aCountryInfo['end'] = $this->capitalizeStuff($aGroup['end']);
-                $aCountryInfo['endday'] = date('jS', strtotime($aGroup['end'] . ' ' . date('Y')));
+
+                //work out when that is for current + next year
+                $sStartDayNow = date('jS', strtotime($aGroup['start'] . ' ' . date('Y')));
+                $sStartDayNext = date('jS', strtotime($aGroup['start'] . ' ' . (date('Y') + 1)));
+                $sEndDayNow = date('jS', strtotime($aGroup['end'] . ' ' . date('Y')));
+                $sEndDayNext = date('jS', strtotime($aGroup['end'] . ' ' . (date('Y') + 1)));
+                $aCountryInfo['startday'] = sprintf('%d: %s, %d: %s', date('Y'), $sStartDayNow, (date('Y') + 1), $sStartDayNext);
+                $aCountryInfo['endday'] = sprintf('%d: %s, %d: %s', date('Y'), $sEndDayNow, (date('Y') + 1), $sEndDayNext);
             }
             if (isset($aGroup['permanent'])) {
                 $aCountryInfo['permanent'] = $aGroup['permanent'];
