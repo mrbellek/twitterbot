@@ -7,10 +7,10 @@ require_once('./dstbot.inc.php');
  * V get data for all dst settings per country
  *   V aliases per country
  *     - exclude e.g. 'american samoa' being detected as 'samoa'?
- *   . timezone offset
+ *   v timezone offset
  * V tweet warning about DST clock change 7 days, 1 day in advance
- *   - moment of change, with proper timezone
- *   - update checkDSTStart() to take timezones into account
+ *   ? moment of change, with proper timezone
+ *     - not possible since countries in a group have multiple timezones?
  */
 
 $o = new DstBot(array('sUsername' => 'DSTnotify'));
@@ -135,13 +135,12 @@ class DstBot {
 
         //check if any of the countries are switching to DST (summer time) NOW
         echo "Checking for DST start..\n";
-        //if ($aGroups = $this->checkDSTStart(strtotime(date('Y-m-d 00:00:00')))) {
-        if ($aGroups = $this->checkDSTStart(time())) {
+        /*if ($aGroups = $this->checkDSTStart(time())) {
 
             if (!$this->postTweetDST('starting', $aGroups, 'now')) {
                 return FALSE;
             }
-        }
+        }*/
 
         //check if any of the countries are switching to DST (summer time) in 24 hours
         if ($aGroups = $this->checkDSTStart(time() + 24 * 3600)) {
@@ -161,12 +160,12 @@ class DstBot {
 
         //check if any of the countries are switching from DST (winter time) NOW
         echo "Checking for DST end..\n";
-        if ($aGroups = $this->checkDSTEnd(time())) {
+        /*if ($aGroups = $this->checkDSTEnd(time())) {
 
             if (!$this->postTweetDST('ending', $aGroups, 'now')) {
                 return FALSE;
             }
-        }
+        }*/
 
         //check if any of the countries are switching from DST (winter time) in 24 hours
         if ($aGroups = $this->checkDSTEnd(time() + 24 * 3600)) {
