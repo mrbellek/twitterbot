@@ -244,7 +244,7 @@
             "equatorial guinea":                {},
             "eritrea":                          {},
             "ethiopia":                         {},
-            "falkland islands":                 { "since": "2011", "permanent": "true" },
+            "falkland islands":                 { "since": "2011", "permanent": "1" },
             "french guyana":                    {},
             "french polynesia":                 {},
             "french southern and antarctic lands": {},
