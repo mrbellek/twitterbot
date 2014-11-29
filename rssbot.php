@@ -153,7 +153,7 @@ class RssBot {
                 if (isset($oRet->errors)) {
                     $this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
                     $this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
-                    return FALSE;
+                    //return FALSE;
                 }
             }
 

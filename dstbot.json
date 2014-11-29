@@ -1,12 +1,13 @@
 {
     "candyland": {
         "name": "Candyland!",
-        "start": "first thursday of november",
-        "end": "first wednesday of november",
-        "since": "2001"
+        "start": "first wednesday of december",
+        "end": "first thursday of december",
+        "since": "2001",
+        "timezone": "+0100"
     },
     "europe": {
-        "name": "Europe (except Armenia, Belarus, Georgia, Iceland, Russia), Lebanon, Morocco, Western Sahara",
+        "name": "Europe (except Armenia, Belarus, Georgia, Iceland, Russia)",
         "includes": {
             "akrotiri and dhekelia":            { "alias": [ "akrotiri", "dhekelia" ] },
             "albania":                          { "since": "1974", "timezone": "+0100" },
@@ -35,7 +36,6 @@
             "jersey":                           { "since": "1971" },
             "kosovo":                           { "since": "1983" },
             "latvia":                           { "since": "1981", "timezone": "+0200" },
-            "lebanon":                          { "since": "1984", "timezone": "+0200" },
             "liechtenstein":                    { "timezone": "+0100" },
             "lithuania":                        { "timezone": "+0200" },
             "luxembourg":                       { "since": "1977", "alias": [ "luxemburg" ], "timezone": "+0100" },
@@ -44,7 +44,6 @@
             "moldova":                          { "since": "1991", "timezone": "+0200" },
             "monaco":                           { "since": "1976", "timezone": "+0100" },
             "montenegro":                       { "since": "1983", "timezone": "+0100" },
-            "morocco":                          { "since": "2008", "timezone": "+0000", "note": "(except during Ramadan)" },
             "netherlands":                      { "since": "1977", "alias": [ "holland" ], "timezone": "+0100" },
             "norway":                           { "since": "1980", "timezone": "+0100" },
             "poland":                           { "since": "1977", "timezone": "+0100" },
@@ -59,15 +58,14 @@
             "switzerland":                      { "since": "1980", "timezone": "+0100" },
             "turkey":                           { "since": "1985", "timezone": "+0200" },
             "ukraine":                          { "since": "1992", "timezone": "+0200", "note": "(except Crimea)" },
-            "united kingdom":                   { "since": "1971", "info": "http://en.wikipedia.org/wiki/British_Summer_Time", "alias": [ "the uk", "england" ], "timezone": "+0000" },
-            "western sahara":                   { "since": "2008", "note": "(except during Ramadan)" }
+            "united kingdom":                   { "since": "1971", "info": "http://en.wikipedia.org/wiki/British_Summer_Time", "alias": [ "the uk", "england" ], "timezone": "+0000" }
         },
         "excludes": {
             "armenia":                          {},
             "belarus":                          {},
-            "georgia":                          { "since": "2005" },
-            "iceland":                          { "since": "1968" },
-            "russia":                           { "since": "2014", "alias": [ "crimea" ] }
+            "georgia":                          {},
+            "iceland":                          {},
+            "russia":                           {}
         },
         "start": "last sunday of march",
         "end": "last sunday of october"
@@ -85,11 +83,24 @@
             "turks and caicos":                 { "since": "1979", "alias": [ "turks", "caicos" ] }
         },
         "excludes": {
-            "mexico":                           { "since": "1996" },
-            "greenland":                        { "since": "1980", "info": "http://en.wikipedia.org/wiki/Daylight_saving_time_in_the_Americas#Greenland" }
+            "mexico":                           {},
+            "greenland":                        {}
         },
         "start": "last sunday of march",
         "end": "last sunday of october"
+    },
+    "lebanon": {
+        "since": "1984",
+        "timezone": "+0200"
+    },
+    "morocco": {
+        "since": "2008",
+        "timezone": "+0000",
+        "note": "(except during Ramadan)"
+    },
+    "western sahara": {
+        "since": "2008",
+        "note": "(except during Ramadan)"
     },
     "jordan": {
         "start": "last friday of march",
@@ -123,6 +134,7 @@
     "mexico": {
         "start": "first sunday of april",
         "end": "last sunday of october",
+         "since": "1996",
         "timezone": "-0600"
     },
     "fiji": {
@@ -176,7 +188,9 @@
     },
     "greenland": {
         "start": "saturday before last sunday of march",
-        "end": "saturday before last sunday of october"
+        "end": "saturday before last sunday of october",
+        "since": "1980",
+        "info": "http://en.wikipedia.org/wiki/Daylight_saving_time_in_the_Americas#Greenland" 
     },
     "chile": {
         "start": "second sunday of september",
@@ -244,13 +258,13 @@
             "equatorial guinea":                {},
             "eritrea":                          {},
             "ethiopia":                         {},
-            "falkland islands":                 { "since": "2011", "permanent": "true" },
+            "falkland islands":                 { "since": "2011", "permanent": "1" },
             "french guyana":                    {},
             "french polynesia":                 {},
             "french southern and antarctic lands": {},
             "gabon":                            {},
             "gambia":                           {},
-            "georgia":                          {},
+            "georgia":                          { "since": "2005" },
             "ghana":                            { "since": "1942" },
             "grenada":                          {},
             "guadeloupe":                       {},
@@ -262,7 +276,7 @@
             "heard and mcdonald islands":       {},
             "honduras":                         { "since": "2006" },
             "hong kong":                        { "since": "1979" },
-            "iceland":                          {},
+            "iceland":                          { "since": "1968" },
             "india":                            { "since": "1945" },
             "indonesia":                        {},
             "iraq":                             { "since": "2007" },
@@ -312,7 +326,7 @@
             "pitcairn islands":                 {},
             "puerto rico":                      { "since": "1945" },
             "qatar":                            {},
-            "russia":                           {},
+            "russia":                           { "since": "2014", "alias": [ "crimea" ] },
             "rwanda":                           {},
             "saba":                             {},
             "saint barthélemy":                 { "alias": [ "saint barthelemy" ] },
