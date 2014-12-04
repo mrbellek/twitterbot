@@ -1,6 +1,6 @@
 <?php
-require_once('./twitteroauth.php');
-require_once('./dstbot.inc.php');
+require_once('twitteroauth.php');
+require_once('dstbot.inc.php');
 
 /*
  * TODO:
@@ -75,10 +75,10 @@ class DstBot {
          *     - 'alias'
          *     - 'permanent' is if the country is in permanent DST mode
          */
-        $this->aSettings = @json_decode(file_get_contents($this->sSettingsFile), TRUE);
+        $this->aSettings = @json_decode(file_get_contents(MYPATH . '/' . $this->sSettingsFile), TRUE);
         if (!$this->aSettings) {
-            $this->logger(1, sprintf('Failed to load settings file. (%s)', json_last_error_msg()));
-            $this->halt(sprintf('Failed to load settings files. (%s)', json_last_error_msg()));
+            $this->logger(1, sprintf('Failed to load settings file. (json_decode error %s)', json_last_error()));
+            $this->halt(sprintf('Failed to load settings files. (json_decode error %s)', json_last_error()));
             die();
         }
 

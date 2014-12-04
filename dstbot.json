@@ -90,15 +90,21 @@
         "end": "last sunday of october"
     },
     "lebanon": {
+        "start": "last sunday of march",
+        "end": "last sunday of october",
         "since": "1984",
         "timezone": "+0200"
     },
     "morocco": {
+        "start": "last sunday of march",
+        "end": "last sunday of october",
         "since": "2008",
         "timezone": "+0000",
         "note": "(except during Ramadan)"
     },
     "western sahara": {
+        "start": "last sunday of march",
+        "end": "last sunday of october",
         "since": "2008",
         "note": "(except during Ramadan)"
     },
