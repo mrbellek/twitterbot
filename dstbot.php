@@ -267,13 +267,13 @@ class DstBot {
 
     private function checkMentions() {
 
-		$aLastMention = json_decode(@file_get_contents(MYPATH . '/' . $this->sLastMentionFile), TRUE);
+      $aLastMention = json_decode(@file_get_contents(MYPATH . '/' . $this->sLastMentionFile), TRUE);
         printf("Checking mentions since %s..\n", ($aLastMention ? $aLastMention['timestamp'] : 'never'));
 
         //fetch new mentions since last run
         $aMentions = $this->oTwitter->get('statuses/mentions_timeline', array(
             'count'         => 20,
-			'since_id'		=> ($aLastMention && !empty($aLastMention['max_id']) ? $aLastMention['max_id'] : 1),
+         'since_id'      => ($aLastMention && !empty($aLastMention['max_id']) ? $aLastMention['max_id'] : 1),
         ));
 
         if (is_object($aMentions) && !empty($aMentions->errors[0]->message)) {
@@ -300,12 +300,12 @@ class DstBot {
         }
         printf("- replied to %d commands\n\n", count($aMentions));
 
-		//save data for next run
-		$aThisCheck = array(
-			'max_id'	=> $sMaxId,
-			'timestamp'	=> date('Y-m-d H:i:s'),
-		);
-		file_put_contents(MYPATH . '/' . $this->sLastMentionFile, json_encode($aThisCheck));
+      //save data for next run
+      $aThisCheck = array(
+         'max_id'   => $sMaxId,
+         'timestamp'   => date('Y-m-d H:i:s'),
+      );
+      file_put_contents(MYPATH . '/' . $this->sLastMentionFile, json_encode($aThisCheck));
 
         return TRUE;
     }
@@ -404,17 +404,17 @@ class DstBot {
             if (!empty($aCountryInfo['since'])) {
                 $this->replyToQuestion($oMention, sprintf('#DST has%s been observed in %s since %s. %s',
                     ($aCountryInfo['group'] == 'no dst' ? ' not' : ''),
-                    $aCountryInfo['name'],
-                    $aCountryInfo['since'],
-                    trim($sExtra)
-                ));
+                $aCountryInfo['name'],
+                $aCountryInfo['since'],
+                trim($sExtra)
+            ));
             } else {
                 $this->replyToQuestion($oMention, sprintf('#DST is%s observed in %s. %s',
                     ($aCountryInfo['group'] == 'no dst' ? ' not' : ''),
                     $aCountryInfo['name'],
                     trim($sExtra)
                 ));
-            }
+        }
         }
 
         return TRUE;
