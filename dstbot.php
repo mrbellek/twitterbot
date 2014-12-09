@@ -11,6 +11,7 @@ require_once('dstbot.inc.php');
  * V tweet warning about DST clock change 7 days, 1 day in advance
  *   ? moment of change, with proper timezone
  *     - not possible since countries in a group have multiple timezones?
+ * V only check for DST changes every 30 minutes, but check mentions every 5 minutes (cronjob)
  */
 
 $o = new DstBot(array('sUsername' => 'DSTnotify'));
@@ -133,57 +134,63 @@ class DstBot {
 
     private function checkDST() {
 
-        //check if any of the countries are switching to DST (summer time) NOW
-        echo "Checking for DST start..\n";
-        /*if ($aGroups = $this->checkDSTStart(time())) {
+        //only check every half hour (with 3min margin)
+        if ((date('i') > 56 && date('i') < 4) || (date('i') > 26 && date('i') < 34)) {
 
-            if (!$this->postTweetDST('starting', $aGroups, 'now')) {
-                return FALSE;
+            //check if any of the countries are switching to DST (summer time) NOW
+            echo "Checking for DST start..\n";
+            /*if ($aGroups = $this->checkDSTStart(time())) {
+
+                if (!$this->postTweetDST('starting', $aGroups, 'now')) {
+                    return FALSE;
+                }
+            }*/
+
+            //check if any of the countries are switching to DST (summer time) in 24 hours
+            if ($aGroups = $this->checkDSTStart(time() + 24 * 3600)) {
+
+                if (!$this->postTweetDST('starting', $aGroups, 'in 24 hours')) {
+                    return FALSE;
+                }
             }
-        }*/
 
-        //check if any of the countries are switching to DST (summer time) in 24 hours
-        if ($aGroups = $this->checkDSTStart(time() + 24 * 3600)) {
+            //check if any of the countries are switching to DST (summer time) in 7 days
+            if ($aGroups = $this->checkDSTStart(time() + 7 * 24 * 3600)) {
 
-            if (!$this->postTweetDST('starting', $aGroups, 'in 24 hours')) {
-                return FALSE;
+                if (!$this->postTweetDST('starting', $aGroups, 'in 1 week')) {
+                    return FALSE;
+                }
             }
+
+            //check if any of the countries are switching from DST (winter time) NOW
+            echo "Checking for DST end..\n";
+            /*if ($aGroups = $this->checkDSTEnd(time())) {
+
+                if (!$this->postTweetDST('ending', $aGroups, 'now')) {
+                    return FALSE;
+                }
+            }*/
+
+            //check if any of the countries are switching from DST (winter time) in 24 hours
+            if ($aGroups = $this->checkDSTEnd(time() + 24 * 3600)) {
+
+                if (!$this->postTweetDST('ending', $aGroups, 'in 24 hours')) {
+                    return FALSE;
+                }
+            }
+
+            //check if any of the countries are switching from DST (winter time) in 7 days
+            if ($aGroups = $this->checkDSTEnd(time() + 7 * 24 * 3600)) {
+
+                if (!$this->postTweetDST('ending', $aGroups, 'in 1 week')) {
+                    return FALSE;
+                }
+            }
+
+            return TRUE;
         }
 
-        //check if any of the countries are switching to DST (summer time) in 7 days
-        if ($aGroups = $this->checkDSTStart(time() + 7 * 24 * 3600)) {
-
-            if (!$this->postTweetDST('starting', $aGroups, 'in 1 week')) {
-                return FALSE;
-            }
-        }
-
-        //check if any of the countries are switching from DST (winter time) NOW
-        echo "Checking for DST end..\n";
-        /*if ($aGroups = $this->checkDSTEnd(time())) {
-
-            if (!$this->postTweetDST('ending', $aGroups, 'now')) {
-                return FALSE;
-            }
-        }*/
-
-        //check if any of the countries are switching from DST (winter time) in 24 hours
-        if ($aGroups = $this->checkDSTEnd(time() + 24 * 3600)) {
-
-            if (!$this->postTweetDST('ending', $aGroups, 'in 24 hours')) {
-                return FALSE;
-            }
-        }
-
-        //check if any of the countries are switching from DST (winter time) in 7 days
-        if ($aGroups = $this->checkDSTEnd(time() + 7 * 24 * 3600)) {
-
-            if (!$this->postTweetDST('ending', $aGroups, 'in 1 week')) {
-                return FALSE;
-            }
-        }
-
-        return TRUE;
+        return FALSE;
     }
 
     //check if DST starts (summer time start) for any of the countries

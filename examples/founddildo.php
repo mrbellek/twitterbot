@@ -9,6 +9,8 @@ $oTwitterBot = new RetweetBot(array(
 	'aSearchStrings'	=> array(
 		1 => 'found dildo -RT -retweet -retweeted -"people demand rubber dicks" -"ask.fm" -tumblr -tmblr',
 		2 => 'found vibrator -RT -retweet -retweeted -"ask.fm" -tumblr -tmblr -"cat hissing"',
+        3 => 'found buttplug -"found out" -"@buttplug" -"ask.fm"',
+        4 => 'found fleshlight -flashlight -cheese -"found out" -factory',
 	),
 ));
 $oTwitterBot->run();
