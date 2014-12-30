@@ -8,10 +8,11 @@ require_once('dstbot.inc.php');
  *   V aliases per country
  *     - exclude e.g. 'american samoa' being detected as 'samoa'?
  *   v timezone offset
- * V tweet warning about DST clock change 7 days, 1 day in advance
+ * - tweet warning about DST clock change 7 days, 1 day in advance
  *   ? moment of change, with proper timezone
  *     - not possible since countries in a group have multiple timezones?
  * V only check for DST changes every 30 minutes, but check mentions every 5 minutes (cronjob)
+ * v figure out why the fuck it's not triggering at midnight
  */
 
 $o = new DstBot(array('sUsername' => 'DSTnotify'));
@@ -22,6 +23,9 @@ class DstBot {
     private $sUsername;
     private $sLogFile;
     private $aSettings;
+
+    //error margin for cronjobs not firing exactly when they should
+    private $iErrorMargin = 180;
 
     public function __construct($aArgs) {
 
@@ -89,14 +93,14 @@ class DstBot {
     }
 
     public function run() {
-
+        
         //check if auth is ok
         if ($this->getIdentity()) {
 
             //check for upcoming DST changes and tweet about it
             $this->checkDST();
 
-            //check for menions and reply
+            //check for mentions and reply
             $this->checkMentions();
 
             $this->halt();
@@ -135,10 +139,13 @@ class DstBot {
     private function checkDST() {
 
         //only check every half hour (with 3min margin)
-        if ((date('i') > 56 && date('i') < 4) || (date('i') > 26 && date('i') < 34)) {
+        if ((date('i') > 60 - ($this->iErrorMargin / 60) && date('i') < $this->iErrorMargin / 60) ||
+            (date('i') > 30 - ($this->iErrorMargin / 60) && date('i') < 30 + $this->iErrorMargin / 60)) {
 
-            //check if any of the countries are switching to DST (summer time) NOW
             echo "Checking for DST start..\n";
+
+            //DISABLED BECAUSE TIMEZONES
+            //check if any of the countries are switching to DST (summer time) NOW
             /*if ($aGroups = $this->checkDSTStart(time())) {
 
                 if (!$this->postTweetDST('starting', $aGroups, 'now')) {
@@ -162,8 +169,10 @@ class DstBot {
                 }
             }
 
-            //check if any of the countries are switching from DST (winter time) NOW
             echo "Checking for DST end..\n";
+
+            //DISABLED BECAUSE TIMEZONES
+            //check if any of the countries are switching from DST (winter time) NOW
             /*if ($aGroups = $this->checkDSTEnd(time())) {
 
                 if (!$this->postTweetDST('ending', $aGroups, 'now')) {
@@ -204,8 +213,8 @@ class DstBot {
                 //convert 'last sunday of march 2014' to timestamp
                 $iDSTStart = strtotime($aSetting['start'] . ' ' . date('Y'));
 
-                //error margin of 1 minute
-                if ($iDSTStart >= $iTimestamp - 60 && $iDSTStart <= $iTimestamp + 60) {
+                //error margin of 3 minutes
+                if ($iDSTStart >= $iTimestamp - $this->iErrorMargin && $iDSTStart <= $iTimestamp + $this->iErrorMargin) {
 
                     //DST will start here
                     $aGroupsDSTStart[] = $sGroup;
@@ -228,7 +237,7 @@ class DstBot {
                 $iDSTEnd = strtotime($aSetting['end'] . ' ' . date('Y'));
 
                 //error margin of 1 minute
-                if ($iDSTEnd >= $iTimestamp - 60 && $iDSTEnd <= $iTimestamp + 60) {
+                if ($iDSTEnd >= $iTimestamp - $this->iErrorMargin && $iDSTEnd <= $iTimestamp + $this->iErrorMargin) {
 
                     //DST will end here
                     $aGroupsDSTEnd[] = $sGroup;
@@ -261,6 +270,7 @@ class DstBot {
 
     private function postTweet($sTweet) {
 
+        die(var_dump($sTweet));
         printf("- [%d] %s\n", strlen($sTweet), $sTweet);
         return TRUE;
 

@@ -1,15 +1,15 @@
 {
     "candyland": {
         "name": "Candyland!",
-        "start": "second tuesday of december",
-        "end": "second thursday of december",
-        "since": "2001",
+        "start": "fifth thursday of december",
+        "end": "fifth friday of december",
+        "since": "2001"
     },
-    "candyland": {
+    "candyland2": {
         "name": "Candyland v2!",
-        "start": "second wednesday of december",
-        "end": "second friday of december",
-        "since": "2002",
+        "start": "first monday of january",
+        "end": "second monday of january",
+        "since": "2002"
     },
     "europe": {
         "name": "Europe (except Armenia, Belarus, Georgia, Iceland, Russia)",
