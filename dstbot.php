@@ -12,7 +12,12 @@ require_once('dstbot.inc.php');
  *   ? moment of change, with proper timezone
  *     - not possible since countries in a group have multiple timezones?
  * V only check for DST changes every 30 minutes, but check mentions every 5 minutes (cronjob)
- * v figure out why the fuck it's not triggering at midnight
+ * . figure out why the fuck it's not triggering at midnight
+ *   v triggering on half hours?
+ *   v triggering on date match?
+ *   v generating correct tweet?
+ *   - posting tweet ok?
+ * - do warnings tweeted in december for changes in january work?
  */
 
 $o = new DstBot(array('sUsername' => 'DSTnotify'));
@@ -139,8 +144,10 @@ class DstBot {
     private function checkDST() {
 
         //only check every half hour (with 3min margin)
-        if ((date('i') > 60 - ($this->iErrorMargin / 60) && date('i') < $this->iErrorMargin / 60) ||
-            (date('i') > 30 - ($this->iErrorMargin / 60) && date('i') < 30 + $this->iErrorMargin / 60)) {
+        $iClockMinutes = (int)date('i');
+        if ($iClockMinutes > 60 - ($this->iErrorMargin / 60) ||  //minutes is >57
+            $iClockMinutes < ($this->iErrorMargin / 60) ||       //minutes is <3
+            ($iClockMinutes > 30  - ($this->iErrorMargin / 60) && $iClockMinutes < 30 + ($this->iErrorMargin / 60))) {    //minutes between 27 and 33
 
             echo "Checking for DST start..\n";
 
@@ -159,6 +166,9 @@ class DstBot {
                 if (!$this->postTweetDST('starting', $aGroups, 'in 24 hours')) {
                     return FALSE;
                 }
+            } else {
+                echo "- No DST starts 24 from now.\n";
+                $this->logger(5, 'no dst starts 24h from midnight today');
             }
 
             //check if any of the countries are switching to DST (summer time) in 7 days
@@ -186,6 +196,9 @@ class DstBot {
                 if (!$this->postTweetDST('ending', $aGroups, 'in 24 hours')) {
                     return FALSE;
                 }
+            } else {
+                echo "- No DST ends 24 from now.\n";
+                $this->logger(5, 'no dst ends 24h from midnight today');
             }
 
             //check if any of the countries are switching from DST (winter time) in 7 days
@@ -197,6 +210,10 @@ class DstBot {
             }
 
             return TRUE;
+
+        } else {
+            echo "Skipping checkDST() because it's not on full or half hour.\n";
+            $this->logger(5, sprintf('skipping checkDST() because its not on the half hour (with %ds margin)', $this->iErrorMargin));
         }
 
         return FALSE;
@@ -270,7 +287,6 @@ class DstBot {
 
     private function postTweet($sTweet) {
 
-        die(var_dump($sTweet));
         printf("- [%d] %s\n", strlen($sTweet), $sTweet);
         return TRUE;
 
