@@ -12,11 +12,7 @@ require_once('dstbot.inc.php');
  *   ? moment of change, with proper timezone
  *     - not possible since countries in a group have multiple timezones?
  * V only check for DST changes every 30 minutes, but check mentions every 5 minutes (cronjob)
- * . figure out why the fuck it's not triggering at midnight
- *   v triggering on half hours?
- *   v triggering on date match?
- *   v generating correct tweet?
- *   - posting tweet ok?
+ * V only reply to mentions that have our name at the start
  * - do warnings tweeted in december for changes in january work?
  */
 
@@ -306,7 +302,7 @@ class DstBot {
         //fetch new mentions since last run
         $aMentions = $this->oTwitter->get('statuses/mentions_timeline', array(
             'count'         => 20,
-         'since_id'      => ($aLastMention && !empty($aLastMention['max_id']) ? $aLastMention['max_id'] : 1),
+            'since_id'      => ($aLastMention && !empty($aLastMention['max_id']) ? $aLastMention['max_id'] : 1),
         ));
 
         if (is_object($aMentions) && !empty($aMentions->errors[0]->message)) {
@@ -347,6 +343,11 @@ class DstBot {
 
         $sDefaultReply = 'I didn\'t understand your question! You can ask when #DST starts or ends in any country, or since when it\'s (not) used.';
         $sNoDSTReply = '%s does not observe DST. %s';
+
+        //ignore mentions where our name is not at the start of the tweet
+        if (stripos($oMention->text, '@' . $this->sUsername) !== 0) {
+            return TRUE;
+        }
 
         //reply to questions from everyon in DMs if possible, mention otherwise
         $sId = $oMention->id_str;
@@ -455,6 +456,7 @@ class DstBot {
 
     private function replyToQuestion($oMention, $sReply) {
 
+        die(var_dump($sReply));
         $sReply = trim($sReply);
 
         //check friendship between bot and sender
