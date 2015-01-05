@@ -4,9 +4,9 @@ require_once('twitteroauth.php');
 /*
  * TODO:
  * - options to:
- *   v generate markov chains on every run
+ *   V generate markov chains on every run
  *   v read pregenerated markov chains on every run
- *   v read pregenerated messages from database
+ *   V read pregenerated messages from database
  */
 
 class MarkovBot {
@@ -163,25 +163,27 @@ class MarkovBot {
         }
 
         $aMarkovChains = array();
+        $lStart = microtime(TRUE);
         $sInput = implode(' ', file($this->sInputFile, FILE_IGNORE_NEW_LINES));
+        printf("- Read input file %s (%d bytes in %.3fs)..\n", $this->sInputFile, filesize($this->sInputFile), microtime(TRUE) - $lStart);
+        $this->aMarkovChains = $this->generateMarkovChainsWords($sInput);
 
-        printf("- Read input file %s (%d bytes)..\n", $this->sInputFile, filesize($this->sInputFile));
+        return TRUE;
+    }
+
+    private function generateMarkovChainsWords($sInput) {
 
         $lStart = microtime(TRUE);
-        $aWords = explode(' ', $sInput);
-        unset($sInput);
+        $aWords = str_word_count($sInput, 1, '\'"-,.;:0123456789%?!');
+
         foreach ($aWords as $i => $sWord) {
             if (!empty($aWords[$i + 2])) {
                 $aMarkovChains[$sWord . ' ' . $aWords[$i + 1]][] = $aWords[$i + 2];
             }
         }
-        unset($aWords);
-        unset($aMarkovChains[' ']);
-        $this->aMarkovChains = $aMarkovChains;
+        printf("- done, generated %d chains in %.3f seconds\n\n", count($aMarkovChains), microtime(TRUE) - $lStart);
 
-        printf("- done, generated %d chains in %d seconds\n\n", count($aMarkovChains), microtime(TRUE) - $lStart);
-
-        return TRUE;
+        return $aMarkovChains;
     }
 
     private function loadMarkovChains() {
