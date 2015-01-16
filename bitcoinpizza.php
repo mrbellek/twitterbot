@@ -2,17 +2,11 @@
 require_once('twitteroauth.php');
 require_once('bitcoinpizza.inc.php');
 
-/*
- * TODO:
- * V fetch btc->usd rate from major exhanges
- * V calculate price of 10k bitcoins and change from yesterday
- * - post tweet at 3:14
- */ 
-
 $o = new BitcoinPizzaBot(array(
-    'sUsername' => 'bitcoin_pizza', 
+    'sUsername' => 'bitcoin_pizza',
     'sLastRunFile' => 'bitcoinpizza.json',
-    'sTweetFormat' => 'The #Bitcoin Pizza is worth $:worth today! (:change% from yesterday)',
+    'sTweetFormat' => 'The #Bitcoin pizza is worth $:worth today. (:change% from yesterday)',
+    'sBirthdaySuffix' => ' Today is Bitcoin pizza day!',
 ));
 $o->run();
 
@@ -68,6 +62,7 @@ class BitcoinPizzaBot {
 
         $this->sUsername        = (!empty($aArgs['sUsername'])          ? $aArgs['sUsername']       : '');
         $this->sTweetFormat     = (!empty($aArgs['sTweetFormat'])       ? $aArgs['sTweetFormat']    : '');
+        $this->sBirthdaySuffix  = (!empty($aArgs['sBirthdaySuffix'])    ? $aArgs['sBirthdaySuffix'] : '');
         $this->sLastRunFile     = (!empty($aArgs['sLastRunFile'])       ? $aArgs['sLastRunFile']    : strtolower(__CLASS__) . '.json');
         $this->sLogFile         = (!empty($aArgs['sLogFile'])           ? $aArgs['sLogFile']        : strtolower(__CLASS__) . '.log');
     }
@@ -161,6 +156,11 @@ class BitcoinPizzaBot {
         $aLastRun = @json_decode(file_get_contents(MYPATH . '/' . $this->sLastRunFile), TRUE);
         if ($aLastRun) {
             $iChange = 100 * ($lBtcPrice - $aLastRun['last_price']) / $aLastRun['last_price'];
+            if ($iChange < 1 && $iChange > 0) {
+                $iChange = number_format($iChange, 2);
+            } else {
+                $iChange = (int)$iChange;
+            }
         } else {
             $iChange = 0;
         }
@@ -172,9 +172,14 @@ class BitcoinPizzaBot {
         //construct tweet
         $aReplaces = array(
             ':worth' => number_format(10000 * $lBtcPrice),
-            ':change' => ($iChange > 0 ? '+' : '') . (int)$iChange,
+            ':change' => ($iChange > 0 ? '+' : '') . $iChange,
         );
         $sTweet = str_replace(array_keys($aReplaces), array_values($aReplaces), $this->sTweetFormat);
+
+        if (date('n') == 5 && date('d') == 22) {
+            //anniversary!
+            $sTweet .= $this->sBirthdaySuffix;
+        }
 
         return $sTweet;
     }
