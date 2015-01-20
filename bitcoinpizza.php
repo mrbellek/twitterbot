@@ -116,11 +116,15 @@ class BitcoinPizzaBot {
 
         echo "Getting BTC price in USD from all exchanges..\n";
 
+        $oContext = stream_context_create(array(
+            'http' => array('timeout' => 8)
+        ));
+
         $aBtcPrices = array();
         foreach ($this->aBtcTickers as $sName => $aTicker) {
 
             printf("- Checking BTC price at %s..\n", $sName);
-            $oResult = @json_decode(file_get_contents($aTicker['url']));
+            $oResult = @json_decode(file_get_contents($aTicker['url'], FALSE, $oContext));
 
             $aSteps = explode('.', $aTicker['target']);
             $aResult = (array)$oResult;
@@ -229,7 +233,7 @@ class BitcoinPizzaBot {
             break;
         }
 
-        $iRet = file_put_contents($this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
+        $iRet = file_put_contents(MYPATH . '/' . $this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
 
         if ($iRet === FALSE) {
             die($sTimestamp . ' [FATAL] Unable to write to logfile!');

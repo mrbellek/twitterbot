@@ -640,7 +640,7 @@ class DstBot {
             break;
         }
 
-        $iRet = file_put_contents($this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
+        $iRet = file_put_contents(MYPATH . '/' . $this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
 
         if ($iRet === FALSE) {
             die($sTimestamp . ' [FATAL] Unable to write to logfile!');
