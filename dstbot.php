@@ -23,6 +23,7 @@ class DstBot {
 
     private $sUsername;
     private $sLogFile;
+    private $iLogLevel = 3; //increase for debugging
     private $aSettings;
 
     //error margin for cronjobs not firing exactly when they should
@@ -614,6 +615,10 @@ class DstBot {
     }
 
     private function logger($iLevel, $sMessage) {
+
+        if ($iLevel > $this->iLogLevel) {
+            return FALSE;
+        }
 
         $sLogLine = "%s [%s] %s\n";
         $sTimestamp = date('Y-m-d H:i:s');

@@ -14,6 +14,7 @@ class MarkovBot {
     private $oTwitter;
     private $sUsername;
     private $sLogFile;
+    private $iLogLevel = 3; //increase for debugging
     private $sInputFile;
 
     public function __construct($aArgs) {
@@ -407,6 +408,10 @@ class MarkovBot {
     }
 
     private function logger($iLevel, $sMessage) {
+
+        if ($iLevel > $this->iLogLevel) {
+            return FALSE;
+        }
 
         $sLogLine = "%s [%s] %s\n";
         $sTimestamp = date('Y-m-d H:i:s');

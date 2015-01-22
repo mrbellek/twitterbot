@@ -22,6 +22,7 @@ class RetweetBot
 	private $sSettingsFile;		//where to get settings from
 	private $sLastSearchFile;	//where to save data from last search
 	private $sLogFile;			//where to log stuff
+    private $iLogLevel = 3;     //increase for debugging
 
 	public function __construct($aArgs) {
 
@@ -549,6 +550,10 @@ class RetweetBot
 	}
 
 	private function logger($iLevel, $sMessage) {
+
+        if ($iLevel > $this->iLogLevel) {
+            return FALSE;
+        }
 
 		$sLogLine = "%s [%s] %s\n";
 		$sTimestamp = date('Y-m-d H:i:s');
