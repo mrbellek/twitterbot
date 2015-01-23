@@ -95,7 +95,7 @@ class DstBot {
     }
 
     public function run() {
-        
+
         //check if auth is ok
         if ($this->getIdentity()) {
 
@@ -148,19 +148,18 @@ class DstBot {
 
             echo "Checking for DST start..\n";
 
-            //DISABLED BECAUSE TIMEZONES
             //check if any of the countries are switching to DST (summer time) NOW
-            /*if ($aGroups = $this->checkDSTStart(time())) {
+            if ($aGroups = $this->checkDSTStart(time())) {
 
-                if (!$this->postTweetDST('starting', $aGroups, 'now')) {
+                if (!$this->postTweetDST('starting', $aGroups, 'today')) {
                     return FALSE;
                 }
-            }*/
+            }
 
             //check if any of the countries are switching to DST (summer time) in 24 hours
             if ($aGroups = $this->checkDSTStart(time() + 24 * 3600)) {
 
-                if (!$this->postTweetDST('starting', $aGroups, 'in 24 hours')) {
+                if (!$this->postTweetDST('starting', $aGroups, 'tomorrow')) {
                     return FALSE;
                 }
             } else {
@@ -171,26 +170,25 @@ class DstBot {
             //check if any of the countries are switching to DST (summer time) in 7 days
             if ($aGroups = $this->checkDSTStart(time() + 7 * 24 * 3600)) {
 
-                if (!$this->postTweetDST('starting', $aGroups, 'in 1 week')) {
+                if (!$this->postTweetDST('starting', $aGroups, 'next week')) {
                     return FALSE;
                 }
             }
 
             echo "Checking for DST end..\n";
 
-            //DISABLED BECAUSE TIMEZONES
             //check if any of the countries are switching from DST (winter time) NOW
-            /*if ($aGroups = $this->checkDSTEnd(time())) {
+            if ($aGroups = $this->checkDSTEnd(time())) {
 
-                if (!$this->postTweetDST('ending', $aGroups, 'now')) {
+                if (!$this->postTweetDST('ending', $aGroups, 'today')) {
                     return FALSE;
                 }
-            }*/
+            }
 
             //check if any of the countries are switching from DST (winter time) in 24 hours
             if ($aGroups = $this->checkDSTEnd(time() + 24 * 3600)) {
 
-                if (!$this->postTweetDST('ending', $aGroups, 'in 24 hours')) {
+                if (!$this->postTweetDST('ending', $aGroups, 'tomorrow')) {
                     return FALSE;
                 }
             } else {
@@ -201,7 +199,7 @@ class DstBot {
             //check if any of the countries are switching from DST (winter time) in 7 days
             if ($aGroups = $this->checkDSTEnd(time() + 7 * 24 * 3600)) {
 
-                if (!$this->postTweetDST('ending', $aGroups, 'in 1 week')) {
+                if (!$this->postTweetDST('ending', $aGroups, 'next week')) {
                     return FALSE;
                 }
             }
@@ -219,6 +217,7 @@ class DstBot {
     //check if DST starts (summer time start) for any of the countries
     private function checkDSTStart($iTimestamp) {
 
+        $this->logger(6, sprintf('running checkDSTstart for %d (%s)', $iTimestamp, date('Y-m-d H:i:s', $iTimestamp)));
         $aGroupsDSTStart = array();
         foreach ($this->aSettings as $sGroup => $aSetting) {
 
@@ -232,6 +231,10 @@ class DstBot {
 
                     //DST will start here
                     $aGroupsDSTStart[] = $sGroup;
+
+                    $this->logger(6, sprintf('checkDSTstart %s: yes, %d is near %d (%ds margin)', $sGroup, $iDSTStart, $iTimestamp, $this->iErrorMargin));
+                } else {
+                    $this->logger(6, sprintf('checkDSTstart %s: no, %d is not near %d (%ds margin)', $sGroup, $iDSTStart, $iTimestamp, $this->iErrorMargin));
                 }
             }
         }
@@ -242,6 +245,7 @@ class DstBot {
     //check if DST ends (winter time start) for any of the countries
     private function checkDSTEnd($iTimestamp) {
 
+        $this->logger(6, sprintf('running checkDSTstop for %d (%s)', $iTimestamp, date('Y-m-d H:i:s', $iTimestamp)));
         $aGroupsDSTEnd = array();
         foreach ($this->aSettings as $sGroup => $aSetting) {
 
@@ -255,6 +259,10 @@ class DstBot {
 
                     //DST will end here
                     $aGroupsDSTEnd[] = $sGroup;
+
+                    $this->logger(6, sprintf('checkDSTstop %s: yes, %d is near %d (%ds margin)', $sGroup, $iDSTEnd, $iTimestamp, $this->iErrorMargin));
+                } else {
+                    $this->logger(6, sprintf('checkDSTstop %s: no, %d is not near %d (%ds margin)', $sGroup, $iDSTEnd, $iTimestamp, $this->iErrorMargin));
                 }
             }
         }
@@ -285,7 +293,6 @@ class DstBot {
     private function postTweet($sTweet) {
 
         printf("- [%d] %s\n", strlen($sTweet), $sTweet);
-        return TRUE;
 
         $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
         if (isset($oRet->errors)) {
@@ -457,7 +464,6 @@ class DstBot {
 
     private function replyToQuestion($oMention, $sReply) {
 
-        die(var_dump($sReply));
         $sReply = trim($sReply);
 
         //check friendship between bot and sender
