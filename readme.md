@@ -12,10 +12,10 @@ http://www.prasannasp.net/how-to-create-a-twitter-bot/
 ```
 
 This repository has several different types of Twitter bots with live examples:
-* **retweetbot.php** - a script that searches Twitter for certain terms and retweets them if they meet certain conditions
-* **tweetbot.php** - a script that fetches a single record from a database and tweets it, after formatting
-* **rssbot.php** - a script that fetches a RSS feed and tweets items from it, after formatting
-* **markovbot.php** - a script that parses a body of text and generates tweets from it based on Markov Chains
+* **retweetbot.php** - a script that searches Twitter for certain terms and retweets them if they meet certain conditions - example: [@FoundDildo](http://twitter.com/founddildo)
+* **tweetbot.php** - a script that fetches a single record from a database and tweets it, after formatting - example: [@NotesFromBTC](http://twitter.com/NotesFromBTC)
+* **rssbot.php** - a script that fetches a RSS feed and tweets items from it, after formatting - example: [@r_Buttcoin](http://twitter.com/r_buttcoin)
+* **markovbot.php** - a script that parses a body of text and generates tweets from it based on Markov Chains - example: [@stallman_txt](http://twitter.com/stallman_txt)
 
 All scripts assume a basic knowledge of PHP. Every of these bots is used by creating its object and passing arguments in the constructor. None of the scripts should need to be altered to get your bot working.
 
