@@ -8,11 +8,12 @@ require_once('dstbot.inc.php');
  *   V aliases per country
  *     - exclude e.g. 'american samoa' being detected as 'samoa'?
  *   v timezone offset
- * - tweet warning about DST clock change 7 days, 1 day in advance
- *   ? moment of change, with proper timezone
- *     - not possible since countries in a group have multiple timezones?
+ * V tweet warning about DST clock change 7 days, 1 day in advance
+ *   x moment of change, with proper timezone - not possible since countries in a group have multiple timezones?
+ *   V just change it to 'today' instead of 'now'
  * V only check for DST changes every 30 minutes, but check mentions every 5 minutes (cronjob)
  * V only reply to mentions that have our name at the start
+ * V only reply to ppl following me
  * - do warnings tweeted in december for changes in january work?
  */
 
@@ -318,21 +319,34 @@ class DstBot {
             $this->halt(sprintf('- Failed getting mentions, halting. (%s)', $aMentions->errors[0]->message));
         }
 
-        if (count($aMentions) == 0) {
-            echo "- no new mentions.\n\n";
+        //if we have mentions, get followers for auth (we will only respond to commands from people that follow us)
+        if (count($aMentions) > 0) {
+            $oRet = $this->oTwitter->get('followers/ids', array('screen_name' => $this->sUsername, 'stringify_ids' => TRUE));
+            if (!empty($oRet->errors[0]->message)) {
+                $this->logger(2, sprintf('Twitter API call failed: GET followers/ids (%s)', $aMentions->errors[0]->message));
+                $this->halt(sprintf('- Failed getting followers, halting. (%s)', $aMentions->errors[0]->message));
+            }
+            $aFollowers = $oRet->ids;
+
+        } else {
+            echo '- no new mentions.<br><br>';
             return FALSE;
         }
 
-        //reply to everyone
+        //reply to followers only
         $sMaxId = '0';
         foreach ($aMentions as $oMention) {
             if ($oMention->id_str > $sMaxId) {
                 $sMaxId = $oMention->id_str;
             }
 
-            $bRet = $this->parseMention($oMention);
-            if (!$bRet) {
-                break;
+            //only reply to followers
+            if (in_array($oMention->user->id_str, $aFollowers)) {
+
+                $bRet = $this->parseMention($oMention);
+                if (!$bRet) {
+                    break;
+                }
             }
         }
         printf("- replied to %d commands\n\n", count($aMentions));
