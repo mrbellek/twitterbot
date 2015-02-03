@@ -21,12 +21,12 @@ class TweetBot {
 	public function __construct($aArgs) {
 
 		//connect to twitter
-		//$this->oTwitter = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
-		//$this->oTwitter->host = "https://api.twitter.com/1.1/";
+		$this->oTwitter = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
+		$this->oTwitter->host = "https://api.twitter.com/1.1/";
 
         //connect to database
 		try {
-			//$this->oPDO = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS);
+			$this->oPDO = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS);
 		} catch(Exception $e) {
 			$this->logger(2, sprintf('Database connection failed. (%s)', $e->getMessage()));
 			$this->halt(sprintf('- Database connection failed. (%s)', $e->getMessage()));
@@ -35,8 +35,6 @@ class TweetBot {
 
 		//load args
 		$this->parseArgs($aArgs);
-
-        die(var_dump($this->getStats()));
 	}
 
 	private function parseArgs($aArgs) {
