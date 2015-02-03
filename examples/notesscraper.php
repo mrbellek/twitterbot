@@ -1,6 +1,20 @@
 <?php
 set_time_limit(0);
 
+/*
+ * for future reference, these are the addresses with probably the funniest public notes:
+ * Silkroad Seized Coins    - https://blockchain.info/address/1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX
+ * DPR Seized Coins         - https://blockchain.info/address/1FfmbHfnpaZjKFvyi1okTjJJusN455paPH
+ * DPR Seized Coins 2       - https://blockchain.info/address/1i7cZdoE9NcHSdAL5eGjmTJbBVqeQDwgw
+ *
+ * more named addresses:
+ * Bitstamp Hack            - https://blockchain.info/address/1L2JsXHPMYuAa9ugvHGLwkdstCPUDemNCf
+ * TouchID hack             - https://blockchain.info/address/1LMvYJx26XMKnnX4R5AhWsxCg6bnSkAk3F
+ * XSS hack                 - https://blockchain.info/address/1DnwcSevrYyUCTxbPmL1TtABoaucDTMTYo
+ * Inputs.io Hack           - https://blockchain.info/address/1EMztWbGCBBrUAHquVeNjWpJKcB8gBzAFx
+ * PeerTech.org Hack Bounty - https://blockchain.info/address/128Dwx6qckYEftrUGmYWfn5PRcKvQtW6bp
+ */
+
 //start the scraper, optionally pass an array of urls to spider in constructor
 $o = new NotesScraper();
 
@@ -15,6 +29,12 @@ class NotesScraper {
     private $sSqlExport = './notesscraper.sql';
 
     private $iNoteAgeThreshold;
+
+    //keep track of data for fun
+    private $lDataDownloaded = 0;
+    private $lNotesFound = 0;
+    private $lNotesFiltered = 0;
+
 
     public function __construct($aAddresses = array()) {
 
@@ -45,6 +65,7 @@ class NotesScraper {
             $this->finalizeFiles();
 
             echo "done!";
+            printf("\n- downloaded %d MB of HTML\n- found %d notes\n- filtered %d notes", number_format($this->lDataDownloaded / (1024 ^ 2), 2), $this->lNotesFound, $this->lNotesFiltered);
         } else {
             echo "searchGoogle() failed! bot throttling?";
         }
@@ -81,6 +102,7 @@ class NotesScraper {
             printf("fetching address %d/%d..\r\n", $iKey + 1, count($this->aAddresses));
             try {
                 $sHTML = file_get_contents($sAddress . $sArgs);
+                $this->lDataDownloaded += strlen($sHTML);
                 if (empty($sHTML)) {
                     //got disconnected, just move on
                     echo '/dc';
@@ -99,6 +121,7 @@ class NotesScraper {
                     while (preg_match('/<li class="next ?">/', $sHTML) && !preg_match('/<li class="next disabled/', $sHTML) && $iOffset <= 5000) {
 
                         $sHTML = @file_get_contents($sAddress . '?offset=' . $iOffset . '&filter=0');
+                        $this->lDataDownloaded += strlen($sHTML);
                         if (empty($sHTML)) {
                             //disconnected
                             echo '/dc';
@@ -135,6 +158,7 @@ class NotesScraper {
         //look for public notes
         if (preg_match_all('/<div class="alert note"><b>Public Note:<\/b> (.*?)<\/div>.*?href="(\/tx\/[a-zA-Z0-9]{64})">.+?"pull-right">(.+?)<\/span>/', $sHTML, $aMatches)) {
             echo count($aMatches[1]) . ' ';
+            $this->lNotesFound += count($aMatches[1]);
 
             //loop through public notes (+ transaction ids)
             foreach ($aMatches[1] as $iKey2 => $sNote) {
@@ -153,6 +177,7 @@ class NotesScraper {
                     if (stripos($sNote, $sFilter) !== FALSE) {
                         //keyword match, don't save
                         $bFiltered = TRUE;
+                        $this->lNotesFiltered++;
                     }
                 }
 
