@@ -14,7 +14,9 @@ require_once('dstbot.inc.php');
  * V only check for DST changes every 30 minutes, but check mentions every 5 minutes (cronjob)
  * V only reply to mentions that have our name at the start
  * V only reply to ppl following me
- * - do warnings tweeted in december for changes in january work?
+ * V answer question 'when is next DST change?'
+ *   V either in coutry or 'worldwide'
+ * - abstract formatting of aGroup into aCountryInfo into a function
  */
 
 $o = new DstBot(array('sUsername' => 'DSTnotify'));
@@ -376,15 +378,42 @@ class DstBot {
         $sQuestion = str_replace('@' . strtolower($this->sUsername) . ' ', '', strtolower($oMention->text));
         printf("Parsing question '%s' from %s..\n", $sQuestion, $oMention->user->screen_name);
 
+        //find type of question
+        $sEvent = '';
+        $aKeywords = array(
+            'next' => array('next'),                //when is next DST change for..
+            'start' => array('start', 'begin'),     //when does DST start in..
+            'end' => array('stop', 'end' , 'over'), //when does DST end in..
+            'since' => array('since', 'when'),      //since when does .. have DST
+        );
+
+        //the order of the arrays above is the order we're searching in
+        foreach ($aKeywords as $sEvent => $aKeywords) {
+            if ($this->stringContainsWord($sQuestion, $aKeywords)) {
+                //keyword match, break so $sEvent has the proper event
+                break;
+            }
+        }
+
+        if (!$sEvent) {
+            return $this->replyToQuestion($oMention, $sDefaultReply);
+        }
+
         //try to find country in tweet
         $aCountryInfo = $this->findCountryInQuestion($oMention->text);
-        if (!$aCountryInfo) {
+        if (!$aCountryInfo && !empty($oMention->user->location)) {
             //try to find country name in 'location' field of user profile
             $aCountryInfo = $this->findCountryInQuestion($oMention->user->location);
         }
 
         if (!$aCountryInfo) {
-            return $this->replyToQuestion($oMention, $sDefaultReply);
+            if ($sEvent == 'next') {
+                //for 'next' event without country, use 'worldwide' i.e. get next DST change anywhere
+                $aCountryInfo = $this->getNextDSTChange();
+            } else {
+                //reply default
+                return $this->replyToQuestion($oMention, $sDefaultReply);
+            }
         }
 
         //skip question type parsing if country does not observe DST
@@ -398,29 +427,6 @@ class DstBot {
                 }
             }
             return $this->replyToQuestion($oMention, sprintf($sNoDSTReply, $aCountryInfo['name'], $sExtra));
-        }
-
-        $sEvent = '';
-        $aKeywords = array(
-            'start' => array('start', 'begin'),
-            'end' => array('stop', 'end' , 'over'),
-            'since' => array('since', 'when'),
-        );
-
-        //TODO: figure out best order for checking keywords for start/end/since
-        if ($this->stringContainsWord($sQuestion, $aKeywords['start'])) {
-            //user wants to know about start of DST period
-            $sEvent = 'start';
-        } elseif ($this->stringContainsWord($sQuestion, $aKeywords['end'])) {
-            //user wants to know about end of DST period
-            $sEvent = 'end';
-        } elseif ($this->stringContainsWord($sQuestion, $aKeywords['since'])) {
-            //user wants to know about DST period for given country
-            $sEvent = 'since';
-        }
-
-        if (!$sEvent) {
-            return $this->replyToQuestion($oMention, $sDefaultReply);
         }
 
         //construct extra information
@@ -447,6 +453,7 @@ class DstBot {
         }
 
         if ($sEvent == 'start' || $sEvent == 'end') {
+
             //example: DST starts in Belgium on the last sunday of march (2014-03-21)
             $this->replyToQuestion($oMention, sprintf('#DST %ss in %s on the %s (%s). %s',
                 $sEvent,
@@ -455,22 +462,54 @@ class DstBot {
                 $aCountryInfo[$sEvent . 'day'],
                 trim($sExtra)
             ));
-        } else {
+
+        } elseif ($sEvent == 'since') {
+
             //example: DST has not been observed in Russia since 1947
             if (!empty($aCountryInfo['since'])) {
+
                 $this->replyToQuestion($oMention, sprintf('#DST has%s been observed in %s since %s. %s',
                     ($aCountryInfo['group'] == 'no dst' ? ' not' : ''),
-                $aCountryInfo['name'],
-                $aCountryInfo['since'],
-                trim($sExtra)
-            ));
+                    $aCountryInfo['name'],
+                    $aCountryInfo['since'],
+                    trim($sExtra)
+                ));
+
             } else {
+
                 $this->replyToQuestion($oMention, sprintf('#DST is%s observed in %s. %s',
                     ($aCountryInfo['group'] == 'no dst' ? ' not' : ''),
                     $aCountryInfo['name'],
                     trim($sExtra)
                 ));
-        }
+            }
+
+        } elseif ($sEvent == 'next') {
+            //'next' event is special: aCountryInfo can either contain start or stop event info
+            //so determine which of the two occurs first from now
+            if (!isset($aCountryInfo['event'])) {
+                $iNextStart = strtotime($aCountryInfo['start'] . ' ' . date('Y'));
+                $iNextStartY = strtotime($aCountryInfo['start'] . ' ' . (date('Y') + 1));
+                $iNextEnd = strtotime($aCountryInfo['end'] . ' ' . date('Y'));
+                $iNextEndY = strtotime($aCountryInfo['end'] . ' ' . (date('Y') + 1));
+
+                $iNextStart = ($iNextStart < time() ? $iNextStartY : $iNextStart);
+                $iNextEnd = ($iNextEnd < time() ? $iNextEndY : $iNextEnd);
+
+                $sEvent = ($iNextStart < $iNextEnd ? 'start' : 'end');
+            } else {
+                $sEvent = $aCountryInfo['event'];
+            }
+
+            //example: The next DST change is: DST starts in United States on the last sunday of march (2014-03-21)
+            $this->replyToQuestion($oMention, sprintf('The next %s change is: #DST %ss in %s on the %s (%s). %s',
+                ($aCountryInfo['group'] == 'worldwide' ? $aCountryInfo['group'] : ''),
+                $sEvent,
+                $aCountryInfo['name'],
+                $aCountryInfo[$sEvent],
+                $aCountryInfo[$sEvent . 'day'],
+                trim($sExtra)
+            ));
         }
 
         return TRUE;
@@ -478,7 +517,8 @@ class DstBot {
 
     private function replyToQuestion($oMention, $sReply) {
 
-        $sReply = trim($sReply);
+        //remove spaces where needed
+        $sReply = trim(preg_replace('/ +/', ' ', $sReply));
 
         //check friendship between bot and sender
         $oRet = $this->oTwitter->get('friendships/show', array('source_screen_name' => $this->sUsername, 'target_screen_name' => $oMention->user->screen_name));
@@ -600,6 +640,85 @@ class DstBot {
         }
 
         return FALSE;
+    }
+
+    private function getNextDSTChange() {
+
+        $iNextChange = strtotime('+1 year');
+        $aNextCountry = array();
+
+        foreach ($this->aSettings as $sGroupName => $aGroup) {
+
+            if ($sGroupName != 'no dst') {
+                $aGroup['group'] = $sGroupName;
+
+                if (isset($aGroup['start'])) {
+
+                    //check if this DST start is this year or next
+                    if (strtotime($aGroup['start'] . ' ' . date('Y')) > time()) {
+                        $iChange = strtotime($aGroup['start'] . ' ' . date('Y'));
+                    } else {
+                        $iChange = strtotime($aGroup['start'] . ' ' . (date('Y') + 1));
+                    }
+
+                    //if this is sooner, save it
+                    if ($iChange < $iNextChange) {
+                        $aNextCountry = $aGroup;
+                        $aNextCountry['event'] = 'start';
+                        $iNextChange = $iChange;
+                    }
+                }
+
+                if (isset($aGroup['end'])) {
+                    //check if this DST stop is this year or next
+                    if (strtotime($aGroup['end'] . ' ' . date('Y')) > time()) {
+                        $iChange = strtotime($aGroup['end'] . ' ' . date('Y'));
+                    } else {
+                        $iChange = strtotime($aGroup['end'] . ' ' . (date('Y') + 1));
+                    }
+
+                    //if this is sooner, save it
+                    if ($iChange < $iNextChange) {
+                        $aNextCountry = $aGroup;
+                        $aNextCountry['event'] = 'end';
+                        $iNextChange = $iChange;
+                    }
+                }
+
+                if (empty($aNextCountry['name'])) {
+                    $aNextCountry['name'] = ucwords($sGroupName);
+                }
+            }
+        }
+
+        //format some fields, add some more for convenience
+        $aCountryInfo = array(
+            'group'     => (isset($aNextCountry['group']) ? $aNextCountry['group'] : FALSE),
+            'name'      => (isset($aNextCountry['name']) ? ucwords($aNextCountry['name']) : FALSE),
+            'since'     => (isset($aNextCountry['since']) ? $aNextCountry['since'] : FALSE),
+            'info'      => (isset($aNextCountry['info']) ? $aNextCountry['info'] : FALSE),
+            'note'      => (isset($aNextCountry['note']) ? $aNextCountry['note'] : FALSE),
+            'timezone'  => (isset($aNextCountry['timezone']) ? $aNextCountry['timezone'] : FALSE),
+            'event'     => (isset($aNextCountry['event']) ? $aNextCountry['event'] : FALSE),
+        );
+        if ($aCountryInfo['group'] != 'no dst') {
+            //start and end in relative terms (last sunday of september)
+            $aCountryInfo['start'] = $this->capitalizeStuff($aNextCountry['start']);
+            $aCountryInfo['end'] = $this->capitalizeStuff($aNextCountry['end']);
+
+            //work out when that is for current + next year
+            $sStartDayNow = date('jS', strtotime($aNextCountry['start'] . ' ' . date('Y')));
+            $sStartDayNext = date('jS', strtotime($aNextCountry['start'] . ' ' . (date('Y') + 1)));
+            $sEndDayNow = date('jS', strtotime($aNextCountry['end'] . ' ' . date('Y')));
+            $sEndDayNext = date('jS', strtotime($aNextCountry['end'] . ' ' . (date('Y') + 1)));
+            $aCountryInfo['startday'] = sprintf('%d: %s, %d: %s', date('Y'), $sStartDayNow, (date('Y') + 1), $sStartDayNext);
+            $aCountryInfo['endday'] = sprintf('%d: %s, %d: %s', date('Y'), $sEndDayNow, (date('Y') + 1), $sEndDayNext);
+        }
+        if (isset($aNextCountry['permanent'])) {
+            $aCountryInfo['permanent'] = $aNextCountry['permanent'];
+        }
+
+        return $aCountryInfo;
     }
 
     private function capitalizeStuff($sString) {

@@ -1,18 +1,19 @@
 {
     "candyland": {
         "name": "Candyland!",
-        "start": "first friday of february",
-        "end": "second sunday of february",
+        "start": "first friday of january",
+        "end": "second sunday of january",
         "since": "2001"
     },
     "candyland2": {
         "name": "Candyland v2!",
-        "start": "first saturday of february",
-        "end": "second monday of february",
+        "start": "first saturday of january",
+        "end": "second monday of january",
         "since": "2002"
     },
     "europe": {
         "name": "Europe (except Armenia, Belarus, Georgia, Iceland, Russia)",
+        "shortname": "Europe",
         "includes": {
             "akrotiri and dhekelia":            { "alias": [ "akrotiri", "dhekelia" ] },
             "albania":                          { "since": "1974", "timezone": "+0100" },
@@ -77,6 +78,7 @@
     },
     "north america": {
         "name": "North America (except Mexico and Greenland), Cuba, Haiti, Turks and Caicos",
+        "shortname": "North America",
         "includes": {
             "bahamas":                          { "since": "1964", "timezone": "-0500" },
             "bermuda":                          { "since": "1974" },
@@ -179,7 +181,7 @@
         "timezone": "+0100"
     },
     "israel": {
-        "start": "friday before last sunday of march",
+        "start": "-2 day last sunday of march",
         "end": "last sunday of october",
         "since": "1985",
         "timezone": "+0200"
@@ -198,8 +200,8 @@
         "timezone": "+0330"
     },
     "greenland": {
-        "start": "saturday before last sunday of march",
-        "end": "saturday before last sunday of october",
+        "start": "-1 day last sunday of march",
+        "end": "-1 day last sunday of october",
         "since": "1980",
         "info": "http://en.wikipedia.org/wiki/Daylight_saving_time_in_the_Americas#Greenland" 
     },
