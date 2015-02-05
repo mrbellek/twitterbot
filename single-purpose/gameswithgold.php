@@ -3,11 +3,15 @@ require_once('twitteroauth.php');
 require_once('gameswithgold.inc.php');
 
 $o = new GamesWithGold(array(
-    'sUsername'         => 'GamesWGold',
+    'sUsername'             => 'XboxPSfreegames',
 
-    'sTweetFormatStart' => 'Starting today, :game [:platform] is free for members with Xbox Live Gold - :link',
-    'sTweetFormatStop'  => 'Today is the last day :game [:platform] is free for members with Xbox Live Gold - :link',
-    'sDefaultLink'      => 'http://www.xbox.com/en-US/live/games-with-gold',
+    'sTweetFormatStartXbox' => '[:platform] Starting today, :game is free for #Xbox Live Gold members - :link',
+    'sTweetFormatStopXbox'  => '[:platform] Today is the last day :game is free for #Xbox Live Gold members - :link',
+    'sDefaultLinkXbox'      => 'http://www.xbox.com/en-US/live/games-with-gold',
+
+    'sTweetFormatStartPSN'  => '[:platform] Starting today, :game is free for members with #Playstation Plus - :link',
+    'sTweetFormatStopXPSN'  => '[:platform] Today is the last day :game is free for members with #Playstation Plus - :link',
+    'sDefaultLinkPSN'       => 'http://www.playstation.com/en-us/explore/playstation-plus/',
 ));
 $o->run();
 
@@ -17,7 +21,13 @@ $o->run();
  * V gameswithgold table: game name, platform (xbone/360), game link on xbox.com, free date start, free date start
  * V tweet when game goes from paid to free
  * V tweet when game starts last free day
- * ? retweet @majorlenson and @thevowel when tweeting about games with gold
+ * V add page
+ *   V display upcoming free games on page
+ *   V click to edit
+ *   - delete button in edit dialog to it's password protected
+ *
+ * . maybe announce free games for PSN Plus too? http://blog.us.playstation.com/tag/playstation-plus/
+ * - retweet @majorlenson and @thevowel when tweeting about games with gold?
  */
 
 class GamesWithGold {
@@ -55,13 +65,16 @@ class GamesWithGold {
 
     private function parseArgs($aArgs) {
 
-        $this->sUsername        = (!empty($aArgs['sUsername'])          ? $aArgs['sUsername']           : '');
-        $this->sLogFile         = (!empty($aArgs['sLogFile'])           ? $aArgs['sLogFile']            : strtolower(__CLASS__) . '.log');
+        $this->sUsername                = (!empty($aArgs['sUsername'])              ? $aArgs['sUsername']               : '');
+        $this->sLogFile                 = (!empty($aArgs['sLogFile'])               ? $aArgs['sLogFile']                : strtolower(__CLASS__) . '.log');
 
-        $this->aDbVars          = (!empty($aArgs['aDbVars'])            ? $aArgs['aDbVars']             : array());
-        $this->sTweetFormatStart= (!empty($aArgs['sTweetFormatStart'])  ? $aArgs['sTweetFormatStart']   : '');
-        $this->sTweetFormatStop = (!empty($aArgs['sTweetFormatStop'])   ? $aArgs['sTweetFormatStop']   : '');
-        $this->sDefaultLink     = (!empty($aArgs['sDefaultLink'])       ? $aArgs['sDefaultLink']        : '');
+        $this->aDbVars                  = (!empty($aArgs['aDbVars'])                ? $aArgs['aDbVars']                 : array());
+        $this->sTweetFormatStartXbox    = (!empty($aArgs['sTweetFormatStartXbox'])  ? $aArgs['sTweetFormatStartXbox']   : '');
+        $this->sTweetFormatStopXbox     = (!empty($aArgs['sTweetFormatStopXbox'])   ? $aArgs['sTweetFormatStopXbox']    : '');
+        $this->sDefaultLinkXbox         = (!empty($aArgs['sDefaultLink'])           ? $aArgs['sDefaultLink']            : '');
+        $this->sTweetFormatStartPSN     = (!empty($aArgs['sTweetFormatStartPSN'])   ? $aArgs['sTweetFormatStartPSN']    : '');
+        $this->sTweetFormatStopPSN      = (!empty($aArgs['sTweetFormatStopPSN'])    ? $aArgs['sTweetFormatStopPSN']     : '');
+        $this->sDefaultLinkPSN          = (!empty($aArgs['sDefaultLink'])           ? $aArgs['sDefaultLink']            : '');
 
         if ($this->sLogFile == '.log') {
             $this->sLogFile = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME) . '.log';
@@ -76,29 +89,51 @@ class GamesWithGold {
         }
 
         //check if auth is ok
-        if (1||$this->getIdentity()) { //DEBUG
+        if ($this->getIdentity()) {
 
             //fetch record from database for games starting free period today
-            if ($aRecord = $this->fetchStartRecord()) {
+            if ($aRecords = $this->fetchStartRecords()) {
 
-                //format start tweet
-                if ($sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStart)) {
+                foreach ($aRecords as $aRecord) {
+                    $sTweet = '';
+
+                    //determine platform and format start tweet
+                    if (stripos($aRecord['platform'], 'xbox') !== FALSE) {
+                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStartXbox);
+                    } elseif (stripos($aRecord['platform'], 'playstation') !== FALSE) {
+                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStartPSN);
+                    }
 
                     //post tweet
-                    $this->postTweet($sTweet);
+                    if ($sTweet) {
+                        $this->postTweet($sTweet);
+                    } else {
+                        $this->logger(2, sprintf('Unknown platform for game: %s (id %d)', $aRecord['platform'], $aRecord['id']));
+                    }
                 }
             } else {
                 echo "No games turn free today.\n";
             }
 
             //fetch record from database for games ending free period tomorrow
-            if ($aRecord = $this->fetchStopRecord()) {
+            if ($aRecords = $this->fetchStopRecords()) {
 
-                //format stop tweet
-                if ($sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStop)) {
+                foreach ($aRecords as $aRecord) {
+                    $sTweet = '';
+
+                    //determine platform and format stop tweet
+                    if (stripos($aRecord['platform'], 'xbox') !== FALSE) {
+                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStopXbox);
+                    } elseif (stripos($aRecord['platform'], 'playstation') !== FALSE) {
+                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStopPSN);
+                    }
 
                     //post tweet
-                    $this->postTweet($sTweet);
+                    if ($sTweet) {
+                        $this->postTweet($sTweet);
+                    } else {
+                        $this->logger(2, sprintf('Unknown platform for game: %s (id %d)', $aRecord['platform'], $aRecord['id']));
+                    }
                 }
             } else {
                 echo "No games stop being free tomorrow.\n";
@@ -137,25 +172,25 @@ class GamesWithGold {
         return TRUE;
     }
 
-    private function fetchStartRecord() {
+    private function fetchStartRecords() {
 
-        return $this->fetchRecord('
+        return $this->fetchRecords('
             SELECT *
             FROM gameswithgold
             WHERE startdate = CURDATE()'
         );
     }
     
-    private function fetchStopRecord() {
+    private function fetchStopRecords() {
 
-        return $this->fetchRecord('
+        return $this->fetchRecords('
             SELECT *
             FROM gameswithgold
             WHERE enddate = CURDATE() + INTERVAL 1 DAY'
         );
     }
 
-    private function fetchRecord($sQuery) {
+    private function fetchRecords($sQuery) {
 
         $sth = $this->oPDO->prepare($sQuery);
 		if ($sth->execute() == FALSE) {
@@ -164,11 +199,11 @@ class GamesWithGold {
 			return FALSE;
 		}
 
-        if ($aRecord = $sth->fetch(PDO::FETCH_ASSOC)) {
+        if ($aRecords = $sth->fetchAll(PDO::FETCH_ASSOC)) {
 
-            return $aRecord;
+            return $aRecords;
         } else {
-            return FALSE;
+            return array();
         }
     }
 
@@ -185,7 +220,6 @@ class GamesWithGold {
     private function postTweet($sTweet) {
 
 		echo 'Posting tweet..<br>';
-        die(var_dump($sTweet));
 
         //tweet
         $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
