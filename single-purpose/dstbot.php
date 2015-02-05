@@ -1,5 +1,5 @@
 <?php
-require_once('twitteroauth.php');
+require_once('../twitteroauth.php');
 require_once('dstbot.inc.php');
 
 /*
@@ -15,8 +15,10 @@ require_once('dstbot.inc.php');
  * V only reply to mentions that have our name at the start
  * V only reply to ppl following me
  * V answer question 'when is next DST change?'
- *   . either in coutry or 'worldwide'
- * - abstract formatting of aGroup into aCountryInfo into a function
+ *   V either in coutry or 'worldwide'
+ * V abstract formatting of aGroup into aCountryInfo into a function
+ *
+ * - refactor this horrible mess, use flowcharts and shit
  */
 
 $o = new DstBot(array('sUsername' => 'DSTnotify'));
@@ -98,6 +100,25 @@ class DstBot {
     }
 
     public function run() {
+
+        /* TEST SUITE
+        $oMention = new stdClass;
+        $oMention->id_str = 1;
+        $oMention->user = new stdClass;
+        $oMention->user->screen_name = 'testuser';
+        $oMention->text = '@dstnotify when does dst start?';
+        $oMention->text = '@dstnotify when is next dst change?';
+        $oMention->user->location = 'Netherlands';
+        $oMention->text = '@dstnotify when does dst start here?';
+        $oMention->text = '@dstnotify when does dst start in belgium?';
+        $oMention->text = '@dstnotify since when do united states observe dst?';
+        $oMention->text = '@dstnotify since when do we observe dst?';
+        $oMention->text = '@dstnotify when is next dst change?';
+        $oMention->text = '@dstnotify when is next worldwide dst change?';
+        $oMention->user->location = '';
+        $oMention->text = '@dstnotify when is next worldwide dst change?';
+        $this->parseMention($oMention);
+        die();*/
 
         //check if auth is ok
         if ($this->getIdentity()) {
@@ -412,8 +433,15 @@ class DstBot {
                 //for 'next' event without country, use 'worldwide' i.e. get next DST change anywhere
                 $aCountryInfo = $this->getNextDSTChange();
             } else {
-                //reply default
+                //no country found, reply default
                 return $this->replyToQuestion($oMention, $sDefaultReply);
+            }
+
+        } elseif ($aCountryInfo && $sEvent == 'next') {
+            //if country was found AND no event was specified ('when is next change'), find whichever is soonest
+            $aNextChange = $this->getNextChange($aCountryInfo);
+            if ($aNextChange['event']) {
+                $aCountryInfo['event'] = $aNextChange['event'];
             }
         }
 
@@ -456,9 +484,9 @@ class DstBot {
         if ($sEvent == 'start' || $sEvent == 'end') {
 
             //example: DST starts in Belgium on the last sunday of march (2014-03-21)
-            $this->replyToQuestion($oMention, sprintf('#DST %ss in %s on the %s (%s). %s',
-                $sEvent,
+            $this->replyToQuestion($oMention, sprintf('#DST in %s %ss on the %s (%s). %s',
                 $aCountryInfo['name'],
+                $sEvent,
                 $aCountryInfo[$sEvent],
                 $aCountryInfo[$sEvent . 'day'],
                 trim($sExtra)
@@ -611,33 +639,9 @@ class DstBot {
 
             $sGroupName = key($aFoundCountry);
             $aGroup = $aFoundCountry[$sGroupName];
+            $aGroup['group'] = $sGroupName;
 
-            $aCountryInfo = array(
-                'group'     => $sGroupName,
-                'name'      => (isset($aGroup['name']) ? ucwords($aGroup['name']) : FALSE),
-                'since'     => (isset($aGroup['since']) ? $aGroup['since'] : FALSE),
-                'info'      => (isset($aGroup['info']) ? $aGroup['info'] : FALSE),
-                'note'      => (isset($aGroup['note']) ? $aGroup['note'] : FALSE),
-                'timezone'  => (isset($aGroup['timezone']) ? $aGroup['timezone'] : FALSE),
-            );
-            if ($sGroupName != 'no dst') {
-                //start and end in relative terms (last sunday of september)
-                $aCountryInfo['start'] = $this->capitalizeStuff($aGroup['start']);
-                $aCountryInfo['end'] = $this->capitalizeStuff($aGroup['end']);
-
-                //work out when that is for current + next year
-                $sStartDayNow = date('jS', strtotime($aGroup['start'] . ' ' . date('Y')));
-                $sStartDayNext = date('jS', strtotime($aGroup['start'] . ' ' . (date('Y') + 1)));
-                $sEndDayNow = date('jS', strtotime($aGroup['end'] . ' ' . date('Y')));
-                $sEndDayNext = date('jS', strtotime($aGroup['end'] . ' ' . (date('Y') + 1)));
-                $aCountryInfo['startday'] = sprintf('%d: %s, %d: %s', date('Y'), $sStartDayNow, (date('Y') + 1), $sStartDayNext);
-                $aCountryInfo['endday'] = sprintf('%d: %s, %d: %s', date('Y'), $sEndDayNow, (date('Y') + 1), $sEndDayNext);
-            }
-            if (isset($aGroup['permanent'])) {
-                $aCountryInfo['permanent'] = $aGroup['permanent'];
-            }
-
-            return $aCountryInfo;
+            return $this->formatCountryInfo($aGroup);
         }
 
         return FALSE;
@@ -653,37 +657,14 @@ class DstBot {
             if ($sGroupName != 'no dst') {
                 $aGroup['group'] = $sGroupName;
 
-                if (isset($aGroup['start'])) {
+                //get next DST change for this group
+                $aChange = $this->getNextChange($aGroup);
 
-                    //check if this DST start is this year or next
-                    if (strtotime($aGroup['start'] . ' ' . date('Y')) > time()) {
-                        $iChange = strtotime($aGroup['start'] . ' ' . date('Y'));
-                    } else {
-                        $iChange = strtotime($aGroup['start'] . ' ' . (date('Y') + 1));
-                    }
-
-                    //if this is sooner, save it
-                    if ($iChange < $iNextChange) {
-                        $aNextCountry = $aGroup;
-                        $aNextCountry['event'] = 'start';
-                        $iNextChange = $iChange;
-                    }
-                }
-
-                if (isset($aGroup['end'])) {
-                    //check if this DST stop is this year or next
-                    if (strtotime($aGroup['end'] . ' ' . date('Y')) > time()) {
-                        $iChange = strtotime($aGroup['end'] . ' ' . date('Y'));
-                    } else {
-                        $iChange = strtotime($aGroup['end'] . ' ' . (date('Y') + 1));
-                    }
-
-                    //if this is sooner, save it
-                    if ($iChange < $iNextChange) {
-                        $aNextCountry = $aGroup;
-                        $aNextCountry['event'] = 'end';
-                        $iNextChange = $iChange;
-                    }
+                //save closest change
+                if ($aChange['event'] && $aChange['timestamp'] < $iNextChange) {
+                    $aNextCountry = $aGroup;
+                    $aNextCountry['event'] = $aChange['event'];
+                    $iNextChange = $aChange['timestamp'];
                 }
 
                 if (empty($aNextCountry['name'])) {
@@ -692,34 +673,76 @@ class DstBot {
             }
         }
 
+        return $this->formatCountryInfo($aNextCountry);;
+    }
+
+    private function formatCountryInfo($aGroup) {
+
         //format some fields, add some more for convenience
         $aCountryInfo = array(
-            'group'     => (isset($aNextCountry['group']) ? $aNextCountry['group'] : FALSE),
-            'name'      => (isset($aNextCountry['name']) ? ucwords($aNextCountry['name']) : FALSE),
-            'since'     => (isset($aNextCountry['since']) ? $aNextCountry['since'] : FALSE),
-            'info'      => (isset($aNextCountry['info']) ? $aNextCountry['info'] : FALSE),
-            'note'      => (isset($aNextCountry['note']) ? $aNextCountry['note'] : FALSE),
-            'timezone'  => (isset($aNextCountry['timezone']) ? $aNextCountry['timezone'] : FALSE),
-            'event'     => (isset($aNextCountry['event']) ? $aNextCountry['event'] : FALSE),
+            'group'     => (isset($aGroup['group'])     ? $aGroup['group'] : FALSE),
+            'name'      => (isset($aGroup['name'])      ? ucwords($aGroup['name']) : FALSE),
+            'since'     => (isset($aGroup['since'])     ? $aGroup['since'] : FALSE),
+            'info'      => (isset($aGroup['info'])      ? $aGroup['info'] : FALSE),
+            'note'      => (isset($aGroup['note'])      ? $aGroup['note'] : FALSE),
+            'timezone'  => (isset($aGroup['timezone'])  ? $aGroup['timezone'] : FALSE),
+            'event'     => (isset($aGroup['event'])     ? $aGroup['event'] : FALSE),
         );
         if ($aCountryInfo['group'] != 'no dst') {
             //start and end in relative terms (last sunday of september)
-            $aCountryInfo['start'] = $this->capitalizeStuff($aNextCountry['start']);
-            $aCountryInfo['end'] = $this->capitalizeStuff($aNextCountry['end']);
+            $aCountryInfo['start'] = $this->capitalizeStuff($aGroup['start']);
+            $aCountryInfo['end'] = $this->capitalizeStuff($aGroup['end']);
 
             //work out when that is for current + next year
-            $sStartDayNow = date('jS', strtotime($aNextCountry['start'] . ' ' . date('Y')));
-            $sStartDayNext = date('jS', strtotime($aNextCountry['start'] . ' ' . (date('Y') + 1)));
-            $sEndDayNow = date('jS', strtotime($aNextCountry['end'] . ' ' . date('Y')));
-            $sEndDayNext = date('jS', strtotime($aNextCountry['end'] . ' ' . (date('Y') + 1)));
+            $sStartDayNow = date('jS', strtotime($aGroup['start'] . ' ' . date('Y')));
+            $sStartDayNext = date('jS', strtotime($aGroup['start'] . ' ' . (date('Y') + 1)));
+            $sEndDayNow = date('jS', strtotime($aGroup['end'] . ' ' . date('Y')));
+            $sEndDayNext = date('jS', strtotime($aGroup['end'] . ' ' . (date('Y') + 1)));
             $aCountryInfo['startday'] = sprintf('%d: %s, %d: %s', date('Y'), $sStartDayNow, (date('Y') + 1), $sStartDayNext);
             $aCountryInfo['endday'] = sprintf('%d: %s, %d: %s', date('Y'), $sEndDayNow, (date('Y') + 1), $sEndDayNext);
         }
-        if (isset($aNextCountry['permanent'])) {
-            $aCountryInfo['permanent'] = $aNextCountry['permanent'];
+        if (isset($aGroup['permanent'])) {
+            $aCountryInfo['permanent'] = $aGroup['permanent'];
         }
 
         return $aCountryInfo;
+    }
+
+    private function getNextChange($aGroup) {
+
+        $aReturn = array(
+            'event' => FALSE,
+            'timestamp' => FALSE,
+        );
+
+        if (isset($aGroup['start'])) {
+
+            //check if this DST start is this year or next
+            if (strtotime($aGroup['start'] . ' ' . date('Y')) > time()) {
+                $iChange = strtotime($aGroup['start'] . ' ' . date('Y'));
+            } else {
+                $iChange = strtotime($aGroup['start'] . ' ' . (date('Y') + 1));
+            }
+
+            $aReturn['event'] = 'start';
+            $aReturn['timestamp'] = $iChange;
+        }
+
+        if (isset($aGroup['end'])) {
+            //check if this DST stop is this year or next
+            if (strtotime($aGroup['end'] . ' ' . date('Y')) > time()) {
+                $iChange = strtotime($aGroup['end'] . ' ' . date('Y'));
+            } else {
+                $iChange = strtotime($aGroup['end'] . ' ' . (date('Y') + 1));
+            }
+
+            if ($iChange < $aReturn['timestamp']) {
+                $aReturn['event'] = 'end';
+                $aReturn['timestamp'] = $iChange;
+            }
+        }
+
+        return $aReturn;
     }
 
     private function capitalizeStuff($sString) {
