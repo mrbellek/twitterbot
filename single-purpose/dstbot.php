@@ -15,7 +15,7 @@ require_once('dstbot.inc.php');
  * V only reply to mentions that have our name at the start
  * V only reply to ppl following me
  * V answer question 'when is next DST change?'
- *   V either in coutry or 'worldwide'
+ *   . either in coutry or 'worldwide'
  * - abstract formatting of aGroup into aCountryInfo into a function
  */
 
@@ -401,8 +401,9 @@ class DstBot {
 
         //try to find country in tweet
         $aCountryInfo = $this->findCountryInQuestion($oMention->text);
-        if (!$aCountryInfo && !empty($oMention->user->location)) {
-            //try to find country name in 'location' field of user profile
+        if (!$aCountryInfo && !empty($oMention->user->location) && stripos($oMention->text, 'worldwide') === FALSE) {
+
+            //try to find country name in 'location' field of user profile (unless tweet contains 'worldwide')
             $aCountryInfo = $this->findCountryInQuestion($oMention->user->location);
         }
 

@@ -24,9 +24,9 @@ $o->run();
  * V add page
  *   V display upcoming free games on page
  *   V click to edit
- *   - delete button in edit dialog to it's password protected
+ *   V delete button in edit dialog to it's password protected
  *
- * . maybe announce free games for PSN Plus too? http://blog.us.playstation.com/tag/playstation-plus/
+ * V maybe announce free games for PSN Plus too? http://blog.us.playstation.com/tag/playstation-plus/
  * - retweet @majorlenson and @thevowel when tweeting about games with gold?
  */
 
