@@ -1,5 +1,5 @@
 <?php
-require_once('../twitteroauth.php');
+require_once('twitteroauth.php');
 require_once('dstbot.inc.php');
 
 /*
