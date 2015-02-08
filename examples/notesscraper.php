@@ -2,6 +2,10 @@
 set_time_limit(0);
 
 /*
+ * TODO:
+ * - regex suippoprt in json filters
+ *
+ *
  * for future reference, these are the addresses with probably the funniest public notes:
  * Silkroad Seized Coins    - https://blockchain.info/address/1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX
  * DPR Seized Coins         - https://blockchain.info/address/1FfmbHfnpaZjKFvyi1okTjJJusN455paPH
@@ -174,10 +178,21 @@ class NotesScraper {
                 //apply filters
                 $bFiltered = FALSE;
                 foreach ($this->aFilters as $sFilter) {
-                    if (stripos($sNote, $sFilter) !== FALSE) {
-                        //keyword match, don't save
-                        $bFiltered = TRUE;
-                        $this->lNotesFiltered++;
+                    //check if filter is a keyword match or regex
+                    if (preg_match('/^\/.+\/i?$/', $sFilter)) {
+                        //regex
+                        if (preg_match($sFilter, $sNote)) {
+                            //regex match, don't save
+                            $bFiltered = TRUE;
+                            $this->lNotesFiltered++;
+                        }
+                    } else {
+                        //keyword match
+                        if (stripos($sNote, $sFilter) !== FALSE) {
+                            //keyword match, don't save
+                            $bFiltered = TRUE;
+                            $this->lNotesFiltered++;
+                        }
                     }
                 }
 
@@ -219,7 +234,7 @@ class NotesScraper {
         //add some http headers
         $oContext = stream_context_create(array('http' => array(
             'method' => 'GET',
-            'header' => 'Referer: https://google.com' . PHP_EOL . 
+            'header' => 'Referer: https://google.com' . PHP_EOL .
                 'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.122 Safari/537.36 OPR/25.0.1614.71' . PHP_EOL .
                 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' . PHP_EOL .
                 'Accept-Language: en-US,en;q=0.8' . PHP_EOL
