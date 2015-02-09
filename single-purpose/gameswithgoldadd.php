@@ -4,6 +4,16 @@ require_once('gameswithgold.inc.php');
 $sError = '';
 $sSuccess = '';
 
+//array with platform possibilities
+$aPlatforms = array(
+    'Xbox 360' => 'xbox',
+    'Xbox One' => 'xbox',
+    'Playstation 3' => 'playstation',
+    'Playstation 4' => 'playstation',
+    'Playstation Vita' => 'playstation',
+    'Playstation (cross-buy)' => 'playstation',
+);
+
 //connect to database
 try {
     $oPDO = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS);
@@ -13,15 +23,16 @@ try {
 
 if ($_POST && !$sError) {
 
+    //check form password
     if ($_POST['password'] != FORM_PASS) {
 
         $sError = 'Wrong password.';
 
     } else {
 
+        //delete record
         if (!empty($_POST['action']) && strtolower($_POST['action']) == 'delete') {
 
-            //delete record
             if (!empty($_POST['id']) && is_numeric($_POST['id'])) {
 
                 $sth = $oPDO->prepare('
@@ -41,6 +52,7 @@ if ($_POST && !$sError) {
                 }
             }
 
+        //insert/update record
         } elseif (!empty($_POST['action']) && strtolower($_POST['action']) == 'save') {
 
             //validate stuff
@@ -117,21 +129,9 @@ if ($_POST && !$sError) {
     if ($sth->execute()) {
         $aData = $sth->fetch(PDO::FETCH_ASSOC);
     }
-/*} elseif (!empty($_GET['del']) && is_numeric($_GET['del']) && !$sError) {
-
-    $sth = $oPDO->prepare('
-        DELETE
-        FROM gameswithgold
-        WHERE id = :id
-        LIMIT 1'
-    );
-    $sth->bindValue(':id', (int)$_GET['del']);
-    if ($sth->execute()) {
-        $sSuccess = 'Record deleted.';
-    }*/
 }
 
-//fetch upcoming games
+//no form submit: list upcoming games
 $aUpcomingGames = array();
 $sth = $oPDO->prepare('
     SELECT *
@@ -142,26 +142,16 @@ $sth = $oPDO->prepare('
 if ($sth->execute()) {
     $aUpcomingGames = $sth->fetchAll(PDO::FETCH_ASSOC);
 
-    //TODO: don't hardcode this
+    //make xbox games green color and playstation games blue color
     foreach ($aUpcomingGames as $key => $aGame) {
-        if (in_array($aGame['platform'], array('Xbox 360', 'Xbox One'))) {
+        $sPlatform = (!empty($aPlatforms[$aGame['platform']]) ? $aPlatforms[$aGame['platform']] : '');
+        if ($sPlatform == 'xbox') {
             $aUpcomingGames[$key]['platformclass'] = 'success';
-        } elseif (in_array($aGame['platform'], array('Playstation 3', 'Playstation 4', 'Playstation Vita', 'Playstation (cross-buy)'))) {
+        } elseif ($sPlatform == 'playstation') {
             $aUpcomingGames[$key]['platformclass'] = 'info';
         }
     }
 }
-
-//array with platform possibilities
-$aPlatforms = array(
-    'Xbox 360',
-    'Xbox One',
-    'Playstation 3',
-    'Playstation 4',
-    'Playstation Vita',
-    'Playstation (cross-buy)',
-);
-
 ?>
 <html>
     <head>
@@ -202,7 +192,7 @@ $aPlatforms = array(
                     <label for="platform" class="col-sm-2 control-label">Platform</label>
                     <div class="col-sm-10">
                         <select name="platform" id="platform" class="form-control">
-                        <?php foreach ($aPlatforms as $sPlatform) { ?>
+                        <?php foreach (array_keys($aPlatforms) as $sPlatform) { ?>
                             <option value="<?= $sPlatform ?>" <?= (@$aData['platform'] == $sPlatform ? 'selected' : '') ?>><?= $sPlatform ?></option>
                         <?php } ?>
                         </select>
