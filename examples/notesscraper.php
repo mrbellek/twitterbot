@@ -2,10 +2,6 @@
 set_time_limit(0);
 
 /*
- * TODO:
- * - regex suippoprt in json filters
- *
- *
  * for future reference, these are the addresses with probably the funniest public notes:
  * Silkroad Seized Coins    - https://blockchain.info/address/1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX
  * DPR Seized Coins         - https://blockchain.info/address/1FfmbHfnpaZjKFvyi1okTjJJusN455paPH
