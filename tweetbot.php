@@ -33,6 +33,11 @@ class TweetBot {
 			return FALSE;
 		}
 
+        //make output visible in browser
+        if (!empty($_SERVER['HTTP_HOST'])) {
+            echo '<pre>';
+        }
+
 		//load args
 		$this->parseArgs($aArgs);
 	}
@@ -80,7 +85,7 @@ class TweetBot {
 
 	private function getIdentity() {
 
-		echo 'Fetching identify..<br>';
+		echo "Fetching identify..\n";
 
 		if (!$this->sUsername) {
 			$this->logger(2, 'No username');
@@ -92,7 +97,7 @@ class TweetBot {
 
 		if (is_object($oUser) && !empty($oUser->screen_name)) {
 			if ($oUser->screen_name == $this->sUsername) {
-				printf('- Allowed: @%s, continuing.<br><br>', $oUser->screen_name);
+				printf("- Allowed: @%s, continuing.\n\n", $oUser->screen_name);
 			} else {
 				$this->logger(2, sprintf('Authenticated username was unexpected: %s (expected: %s)', $oUser->screen_name, $this->sUsername));
 				$this->halt(sprintf('- Not alowed: @%s (expected: %s), halting.', $oUser->screen_name, $this->sUsername));
@@ -109,7 +114,7 @@ class TweetBot {
 
 	private function getRecord() {
 
-		echo 'Getting random record from database..<br>';
+		echo "Getting random record from database..\n";
 
 		if (!defined('DB_HOST') || !defined('DB_NAME') ||
 			!defined('DB_USER') || !defined('DB_PASS')) {
@@ -127,13 +132,20 @@ class TweetBot {
 			return FALSE;
 		}
 
-        if ($this->aTweetSettings['bPostOnlyOnce'] == FALSE) {
+        if ($this->aTweetSettings['bPostOnlyOnce'] == TRUE) {
+
             //fetch random record out of those that haven't been posted yet
             $sth = $this->oPDO->prepare(sprintf('
                 SELECT *
-                FROM %1$s
-                WHERE %2$s = 0
-                ORDER BY RAND()
+                FROM %1$s AS r1
+                JOIN (
+                    SELECT (RAND() * (
+                        SELECT MAX(id) FROM %1$s
+                    )) AS id
+                ) AS r2
+                WHERE r1.id >= r2.id
+                AND %2$s = 0
+                ORDER BY r1.id ASC
                 LIMIT 1',
                 $this->aDbSettings['sTable'],
                 $this->aDbSettings['sCounterCol']
@@ -143,12 +155,18 @@ class TweetBot {
             //fetch random record out of those with the lowest counter value
             $sth = $this->oPDO->prepare(sprintf('
                 SELECT *
-                FROM %1$s
-                WHERE %2$s = (
+                FROM %1$s AS r1
+                JOIN (
+                    SELECT (RAND() * (
+                        SELECT MAX(id) FROM %1$s
+                    )) AS id
+                ) AS r2
+                WHERE r1.id >= r2.id
+                AND %2$s = (
                     SELECT MIN(%2$s)
                     FROM %1$s
                 )
-                ORDER BY RAND()
+                ORDER BY r1.id ASC
                 LIMIT 1',
                 $this->aDbSettings['sTable'],
                 $this->aDbSettings['sCounterCol']
@@ -162,7 +180,7 @@ class TweetBot {
 		}
 
         if ($aRecord = $sth->fetch(PDO::FETCH_ASSOC)) {
-            printf('- Found record that has been posted %d times before.<br>', $aRecord['postcount']);
+            printf("- Found record that has been posted %d times before.\n", $aRecord['postcount']);
 
             //update record with postcount and timestamp of last post
             $sth = $this->oPDO->prepare(sprintf('
@@ -194,7 +212,7 @@ class TweetBot {
 
 	private function postMessage($aRecord) {
 
-		echo 'Posting tweet..<br>';
+		echo "Posting tweet..\n";
 
 		//construct tweet
 		$sTweet = $this->formatTweet($aRecord);
@@ -218,7 +236,7 @@ class TweetBot {
                         $this->halt(sprintf('- Retweet failed, halting. (*%s)', $oRet->error));
                         return FALSE;
                     } else {
-                        printf('- Retweeted: <b>%s</b><br>', $sTweetUrl);
+                        printf("- Retweeted: %s\n", $sTweetUrl);
                     }
                 }
             }
@@ -232,7 +250,7 @@ class TweetBot {
                 $this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
                 return FALSE;
             } else {
-                printf('- <b>%s</b><br>', utf8_decode($sTweet));
+                printf("- %s\n", utf8_decode($sTweet));
             }
         }
 
@@ -299,7 +317,7 @@ class TweetBot {
     private function checkMentions() {
 
 		$aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . sprintf($this->sLastSearchFile, 1)), TRUE);
-        printf('Checking mentions since %s for commands..<br>', $aLastSearch['timestamp']);
+        printf("Checking mentions since %s for commands..\n", $aLastSearch['timestamp']);
 
         //fetch new mentions since last run
         $aMentions = $this->oTwitter->get('statuses/mentions_timeline', array(
@@ -322,7 +340,7 @@ class TweetBot {
             $aFollowing = $oRet->ids;
 
         } else {
-            echo '- no new mentions.<br><br>';
+            echo "- no new mentions.\n\n";
             return FALSE;
         }
 
@@ -337,7 +355,7 @@ class TweetBot {
                 }
             }
         }
-        printf('- replied to %d commands<br><br>', count($aMentions));
+        printf("- replied to %d commands\n\n", count($aMentions));
 
         return TRUE;
     }
@@ -347,7 +365,7 @@ class TweetBot {
         //reply to commands from friends (people we follow) in DMs
         $sId = $oMention->id_str;
         $sCommand = str_replace('@' . strtolower($this->sUsername) . ' ', '', strtolower($oMention->text));
-        printf('Parsing command %s from %s..<br>', $sCommand, $oMention->user->screen_name);
+        printf("Parsing command %s from %s..\n", $sCommand, $oMention->user->screen_name);
 
         switch ($sCommand) {
             case 'help':
@@ -370,7 +388,7 @@ class TweetBot {
                 return $this->replyToCommand($oMention, sprintf('Total records: %d, %d aren\'t posted yet.', $aStats['total'], $aStats['unposted']));
 
             default:
-                echo '- command unknown.<br>';
+                echo "- command unknown.\n";
                 return FALSE;
         }
     }
@@ -415,7 +433,7 @@ class TweetBot {
             }
         }
 
-        printf('- Replied: %s<br>', $sReply);
+        printf("- Replied: %s\n", $sReply);
         return TRUE;
     }
 
@@ -445,7 +463,7 @@ class TweetBot {
     }
 
 	private function halt($sMessage = '') {
-		echo $sMessage . '<br><br>Done!<br><br>';
+		echo $sMessage . "\n\nDone!\n\n";
 		return FALSE;
 	}
 
