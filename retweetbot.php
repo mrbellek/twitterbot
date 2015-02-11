@@ -60,6 +60,7 @@ class RetweetBot
 		$this->aSearchStrings	= (!empty($aArgs['aSearchStrings']) ? $aArgs['aSearchStrings']	: '');
 		$this->iSearchMax		= (!empty($aArgs['iSearchMax'])		? $aArgs['iSearchMax']		: 5);
 		$this->iMinRateLimit	= (!empty($aArgs['iMinRateLimit'])	? $aArgs['iMinRateLimit']	: 5);
+        $this->bReplyToCmds     = (!empty($aArgs['bReplyToCmds'])   ? $aArgs['bReplyToCmds']    : FALSE);
 
 		$this->sSettingsFile 	= (!empty($aArgs['sSettingsFile'])	? $aArgs['sSettingsFile']		: strtolower($this->sUsername) . '.json');
 		$this->sLastSearchFile 	= (!empty($aArgs['sLastSearchFile']) ? $aArgs['sLastSearchFile']	: strtolower($this->sUsername) . '-last%d.json');
@@ -103,7 +104,9 @@ class RetweetBot
 				if ($this->getBlockedUsers()) {
 
                     //check messages & reply if needed
-                    $this->checkMentions();
+                    if ($this->bReplyToCmds) {
+                        $this->checkMentions();
+                    }
 
 					//loop through all search strings
 					$this->aSearchStrings = (is_array($this->aSearchStrings) ? $this->aSearchStrings : array(1 => $this->aSearchStrings));

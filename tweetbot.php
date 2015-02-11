@@ -45,6 +45,7 @@ class TweetBot {
 	private function parseArgs($aArgs) {
 
 		$this->sUsername = (!empty($aArgs['sUsername']) ? $aArgs['sUsername'] : '');
+        $this->bReplyToCmds = (!empty($aArgs['bReplyToCmds']) ? $aArgs['bReplyToCmds'] : FALSE);
 
 		//stuff to determine what to get from database
 		$this->aDbSettings = (!empty($aArgs['aDbVars']) ? $aArgs['aDbVars'] : array());
@@ -69,7 +70,9 @@ class TweetBot {
 		if ($this->getIdentity()) {
 
             //check messages & reply if needed
-            $this->checkMentions();
+            if ($this->bReplyToCmds) {
+                $this->checkMentions();
+            }
 
 			//fetch database record
 			if ($aRecord = $this->getRecord()) {
