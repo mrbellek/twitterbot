@@ -65,7 +65,12 @@ class NotesScraper {
             $this->finalizeFiles();
 
             echo "done!";
-            printf("\n- downloaded %d MB of HTML\n- found %d notes\n- filtered %d notes", number_format($this->lDataDownloaded / (1024 ^ 2), 2), $this->lNotesFound, $this->lNotesFiltered);
+            printf("\n- downloaded %d MB of HTML\n- found %d notes\n- filtered %d notes (%d%%)",
+                number_format($this->lDataDownloaded / (1024 ^ 2), 2),
+                $this->lNotesFound,
+                $this->lNotesFiltered,
+                (100 * $this->lNotesFiltered / $this->lNotesFound)
+            );
         } else {
             echo "searchGoogle() failed! bot throttling?";
         }
