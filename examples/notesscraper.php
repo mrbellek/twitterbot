@@ -2,6 +2,10 @@
 set_time_limit(0);
 
 /*
+ * TODO:
+ * - when done, display stats on which filters are hit most often
+ * - use above data to construct better google query
+ *
  * for future reference, these are the addresses with probably the funniest public notes:
  * Silkroad Seized Coins    - https://blockchain.info/address/1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX
  * DPR Seized Coins         - https://blockchain.info/address/1FfmbHfnpaZjKFvyi1okTjJJusN455paPH
