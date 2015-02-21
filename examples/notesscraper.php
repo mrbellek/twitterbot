@@ -2,6 +2,10 @@
 set_time_limit(0);
 
 /*
+ * TODO:
+ * - when done, display stats on which filters are hit most often
+ * - use above data to construct better google query
+ *
  * for future reference, these are the addresses with probably the funniest public notes:
  * Silkroad Seized Coins    - https://blockchain.info/address/1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX
  * DPR Seized Coins         - https://blockchain.info/address/1FfmbHfnpaZjKFvyi1okTjJJusN455paPH
@@ -23,10 +27,12 @@ class NotesScraper {
     private $aAddresses = array();
 
     private $aFilters = array();
+    private $aFilterCounts = array();
 
     private $sSettingsFile = './notesscraper.json';
     private $sCsvExport = './notesscraper.csv';
     private $sSqlExport = './notesscraper.sql';
+    private $sFiltersFile = './notesscraper-top.json';
 
     private $iNoteAgeThreshold;
 
@@ -42,8 +48,12 @@ class NotesScraper {
 
         $this->aAddresses = $aAddresses;
 
+        //load filters and initialize filter counter
         $this->aFilters = json_decode(file_get_contents($this->sSettingsFile), TRUE);
         $this->aFilters = $this->aFilters['filters'];
+        foreach ($this->aFilters as $sFilter) {
+            $this->aFilterCounts[$sFilter] = 0;
+        }
 
         //if we're running from a browser, make output readable
         if (!empty($_SERVER['DOCUMENT_ROOT'])) {
@@ -65,12 +75,21 @@ class NotesScraper {
             $this->finalizeFiles();
 
             echo "done!";
-            printf("\n- downloaded %d MB of HTML\n- found %d notes\n- filtered %d notes (%d%%)",
+            printf("\n- downloaded %d MB of HTML\n- found %d notes\n- filtered %d notes (%d%%)\n",
                 number_format($this->lDataDownloaded / (1024 ^ 2), 2),
                 $this->lNotesFound,
                 $this->lNotesFiltered,
                 (100 * $this->lNotesFiltered / $this->lNotesFound)
             );
+
+            arsort($this->aFilterCounts);
+            echo "\nsaving 10 most hit filters for next run:\n";
+            $aTopFilters = array_slice($this->aFilterCounts, 0, 10);
+            foreach ($aTopFilters as $sFilter => $iCount) {
+                printf("- %d: %s\n", $iCount, $sFilter);
+            }
+            file_put_contents($this->sFiltersFile, json_encode($aTopFilters, JSON_PRETTY_PRINT));
+
         } else {
             echo "searchGoogle() failed! bot throttling?";
         }
@@ -186,6 +205,7 @@ class NotesScraper {
                             //regex match, don't save
                             $bFiltered = TRUE;
                             $this->lNotesFiltered++;
+                            $this->aFilterCounts[$sFilter]++;
                         }
                     } else {
                         //keyword match
@@ -193,6 +213,7 @@ class NotesScraper {
                             //keyword match, don't save
                             $bFiltered = TRUE;
                             $this->lNotesFiltered++;
+                            $this->aFilterCounts[$sFilter]++;
                         }
                     }
                 }
@@ -224,10 +245,21 @@ class NotesScraper {
         //basic search query
         $sQuery = 'site:blockchain.info "public note"';
 
-        //put in filters as boolean operators from the start, to save traffic and time
-        $aFilters = $this->aFilters;
-        shuffle($aFilters);
-        $sQuery .= substr(' -"' . implode('" -"', $aFilters) . '"', 0, 512);
+        //put in top hit filters from last run as boolean operators from the start to save traffic+time
+        if (is_file($this->sFiltersFile)) {
+
+            $aLastFilters = json_decode(file_get_contents($this->sFiltersFile), TRUE);
+            $aTopFilters = array_keys($aLastFilters);
+            shuffle($aTopFilters);
+            $sQuery .= substr(' -"' . implode('" -"', $aTopFilters) . '"', 0, 512);
+
+        } else {
+
+            //if those don't exist, use random filters and truncate at 512 chars
+            $aFilters = $this->aFilters;
+            shuffle($aFilters);
+            $sQuery .= substr(' -"' . implode('" -"', $aFilters) . '"', 0, 512);
+        }
 
         //prepare the whole url
         $sUrl = 'https://google.com/search?q=' . urlencode($sQuery) . '&safe=off&tbs=qdr:m';
