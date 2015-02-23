@@ -1,18 +1,18 @@
 {
 	"filters": [
 		"@iwantabot",
-        "#bot",
-        "twitch",
-        "toothbrush",
-        "i liked a @youtube video",
-        "hug bot", "hugbotph",
-        "gamergate",
-        "retweeted", "rted"
+		"#bot",
+		"twitch",
+		"toothbrush",
+		"i liked a @youtube video",
+		"hug bot", "hugbotph",
+		"gamergate",
+		"retweeted", "rted"
 	],
 	"userfilters": [
 		"bot",
-        "ebook",
-        "worst_user"
+		"ebook",
+		"worst_user"
 	],
 	"dice": {
 		"media": 1.0,
