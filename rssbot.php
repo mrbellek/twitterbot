@@ -340,9 +340,11 @@ class RssBot {
                         if ($bAttachImage) {
                             $this->uploadImage($sText);
                         }
-                    } elseif (preg_match('/imgur\.com\/a\/|imgur\.com\/.[^\/]/i', $sText)) {
+					} elseif (preg_match('/imgur\.com\/.[^\/]/i', $sText)) {
+						$sResult = 'image'; //image, but not one we can attach
+                    } elseif (preg_match('/imgur\.com\/a\//i', $sText)) {
                         $sResult = 'gallery';
-                    } elseif (preg_match('/\.gifv|youtube\.com\/|youtu\.be\/|vine\.co\/|vimeo\.com\/|liveleak\.com\//i', $sText)) {
+                    } elseif (preg_match('/\.gifv|\.webm|youtube\.com\/|youtu\.be\/|vine\.co\/|vimeo\.com\/|liveleak\.com\//i', $sText)) {
                         $sResult = 'video';
                     } else {
                         $sResult = 'external';
