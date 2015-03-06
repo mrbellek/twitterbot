@@ -1,18 +1,20 @@
 {
-    "banned": [
-        "1KcBzReYZvbeGgiaMip92MMFtTFgDqB3Vm"
-    ],
+	"banned": [
+		"1KcBzReYZvbeGgiaMip92MMFtTFgDqB3Vm"
+	],
 	"filters": [
 		"/^#\\d+$/",
 		"/^\\.$/",
 		"/^-$/",
 		"/^\\d+$/",
-        "/^Auto$/",
+		"/^Auto$/",
+		"/^cashout from/i",
 		"/^instant withdrawal transaction.$/i",
 		"/^loan/i",
 		"/^order #\\d+$/i",
 		"/^payment from/i",
 		"/^refund\\.?$/i",
+		"/^send by :/i",
 		"/^veb$/i",
 		"/^withdrawal/i",
 		"/ADDFUNDS/",
@@ -61,6 +63,7 @@
 		"btc-jockey.com",
 		"btc-pyramid",
 		"btc25.net", "btc45.net",
+		"btc2me.com",
 		"btcprofit",
 		"btcvice",
 		"btcx", "bt.cx",
@@ -68,6 +71,7 @@
 		"btcsmart.net",
 		"capitalist4life",		"cashout from",		"chainroll",
 		"chinese college student",
+		"chronox.co.in",
 		"click2dad.net",
 		"coin-games",
 		"coinad.com",
@@ -100,6 +104,8 @@
 		"help to buy a house",
 		"instantscamalert.com",
 		"instant withdraw",
+		"instantexhanger",
+		"instantscamalert.com",
 		"invoice #",
 		"kitiwa.com",
 		"laxotrade.com",
@@ -115,7 +121,7 @@
 		"mybitcoinsaver",
 		"ourbeks",
 		"pay for some work",
-		"payout id",
+		"payout id", "payout from ", "payout by ",
 		"please contact blockchain support",
 		"peerluck",
         "ponzify",
@@ -136,6 +142,6 @@
 		"vanitypay",
 		"win88.me",
 		"winbtc",
-		"withdraw "
+		"withdraw #", "withdraw to", "withdraw from"
 	]
 }

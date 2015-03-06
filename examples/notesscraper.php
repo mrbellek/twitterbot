@@ -49,8 +49,9 @@ class NotesScraper {
         $this->aAddresses = $aAddresses;
 
         //load filters and initialize filter counter
-        $this->aFilters = json_decode(file_get_contents($this->sSettingsFile), TRUE);
-        $this->aFilters = $this->aFilters['filters'];
+        $this->aSettings = json_decode(file_get_contents($this->sSettingsFile), TRUE);
+        $this->aFilters = $this->aSettings['filters'];
+		$this->aBanned = $this->aSettings['banned'];
         foreach ($this->aFilters as $sFilter) {
             $this->aFilterCounts[$sFilter] = 0;
         }
@@ -121,6 +122,15 @@ class NotesScraper {
 
         //loop through addresses
         foreach ($this->aAddresses as $iKey => $sAddress) {
+
+			//skip banned addresses that never have interesting notes
+			foreach ($this->aBanned as $sBanned) {
+				if (strpos($sAddress, $sBanned) !== FALSE) {
+					
+					printf("skipping address %s because it is banned\n", $sBanned);
+					continue 2;
+				}
+			}
 
             //get first page
             printf("fetching address %d/%d..\r\n", $iKey + 1, count($this->aAddresses));
