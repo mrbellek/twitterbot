@@ -1,9 +1,13 @@
 {
+    "banned": [
+        "1KcBzReYZvbeGgiaMip92MMFtTFgDqB3Vm"
+    ],
 	"filters": [
 		"/^#\\d+$/",
 		"/^\\.$/",
 		"/^-$/",
 		"/^\\d+$/",
+        "/^Auto$/",
 		"/^instant withdrawal transaction.$/i",
 		"/^loan/i",
 		"/^order #\\d+$/i",
@@ -32,6 +36,7 @@
 		"bitcoin faucet",
 		"bitcoin-cloud.eu",
 		"bitcoin-bucket",
+        "bitcoin-fortune.com",
 		"bitcoin-stocks",
 		"bitcoinforest",
 		"bitcoinposter.com",
@@ -113,6 +118,7 @@
 		"payout id",
 		"please contact blockchain support",
 		"peerluck",
+        "ponzify",
 		"postebit",
 		"preet bharara",
 		"ptcircle.com",
@@ -124,11 +130,12 @@
 		"th auto withdrawal",
 		"thank you for tweeting about blockchain!",
 		"topbitco.in",
+        "transaction id ",
 		"treatment is necessary",
 		"upbit.me",
 		"vanitypay",
 		"win88.me",
 		"winbtc",
-		"withdraw to", "withdraw from", "withdraw #"
+		"withdraw "
 	]
 }
