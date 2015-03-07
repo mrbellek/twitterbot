@@ -81,8 +81,8 @@
 			"mexico":							{},
 			"greenland":						{}
 		},
-		"start": "last sunday of march",
-		"end": "last sunday of october"
+		"start": "second sunday of march",
+		"end": "first sunday of november"
 	},
 	"lebanon": {
 		"start": "last sunday of march",

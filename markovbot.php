@@ -7,6 +7,7 @@ require_once('twitteroauth.php');
  *   V generate markov chains on every run
  *   v read pregenerated markov chains on every run
  *   V read pregenerated messages from database
+ *   - seed a database with [x] generated tweets en masse
  */
 
 class MarkovBot {
@@ -41,6 +42,7 @@ class MarkovBot {
 
         switch ($this->sInputType) {
             case 'generate':
+                ini_set('memory_limit', '256M');
                 $this->sInputFile       = (!empty($aArgs['sInputFile'])      ? $aArgs['sInputFile']     : strtolower($this->sUsername) . '.csv');
                 break;
 
