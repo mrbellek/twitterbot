@@ -15,6 +15,7 @@
 		"/^payment from/i",
 		"/^refund\\.?$/i",
 		"/^send by :/i",
+		"/^to my /i",
 		"/^veb$/i",
 		"/^withdrawal/i",
 		"/ADDFUNDS/",
@@ -142,6 +143,7 @@
 		"vanitypay",
 		"win88.me",
 		"winbtc",
-		"withdraw #", "withdraw to", "withdraw from"
+		"withdraw #", "withdraw to", "withdraw from",
+		"ziddu payment"
 	]
 }
