@@ -10,6 +10,7 @@
  *   - news, videos, maps, books, other bullshit that nobody uses
  * - package the whole thing, submit to Chrome Web Store as well as Opera Store
  * - comments, jesus christ
+ * - oauth 2.0 twitter api library
  */
 
 $(function() {
