@@ -22,35 +22,29 @@ $(function() {
 			return;
 		}
 
+		//console.log('you searched for ' + query);
 		chrome.runtime.onMessage.addListener(function(message) {
-			console.log(message);
-		});
-		chrome.runtime.sendMessage('getTokens');
-		//console.log(localStorage);
-		var consumer_key = localStorage.consumer_key;
-		var consumer_secret = localStorage.consumer_secret;
-		var access_key = localStorage.access_key;
-		var access_secret = localStorage.access_secret;
-		//console.log(consumer_key, consumer_secret, access_key, access_secret);
-		return;
-		/*if (!validateTokens(consumer_key, consumer_secret, access_key, access_secret)) {
-			return;
-		}*/
+			console.log('received message!');
 
-		cb = new Codebird;
-		cb.setConsumerKey(consumer_key, consumer_secret);
-		cb.setToken(access_key, access_secret);
-		console.log(consumer_key, consumer_secret, access_key, access_secret);
-		//cb.setBearerToken(access_key, access_secret);
-		cb.__call(
-			"statuses_update",
-			{
-				"status": "codebird test " + encodeURIComponent(query)
-			},
-			function(reply) {
-				console.log(reply);
-			}
-		);
+			var consumer_key = message.consumer_key;
+			var consumer_secret = message.consumer_secret;
+			var access_key = message.access_key;
+			var access_secret = message.access_secret;
+			//console.log(consumer_key, consumer_secret, access_key, access_secret);
+
+			cb = new Codebird;
+			cb.setConsumerKey(consumer_key, consumer_secret);
+			cb.setToken(access_key, access_secret);
+			//cb.setBearerToken(access_key, access_secret);
+			cb.__call(
+				"statuses_update", { "status": query },
+				function(reply) {
+					console.log(reply);
+				}
+			);
+		});
+
+		chrome.runtime.sendMessage('getTokens');
 	}
 
 	function validateTokens(consumer_key, consumer_secret, access_token, access_secret) {
