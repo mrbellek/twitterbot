@@ -1,3 +1,17 @@
+/*
+ * TODO:
+ * - pretty up the options dialog (bootstrap.css?)
+ * - figure out how to allow user to auth the app/extension instead of manually entering tokens?
+ * - popup with twitter logo that stays for 2 seconds, then tweets - and cancels tweet when clicked
+ * - above delay configurable?
+ * - abstract messaging to getOptions for clarity
+ * - also hook image search, prefix searches with 'image search:' or something
+ * - hook more searches?
+ *   - news, videos, maps, books, other bullshit that nobody uses
+ * - package the whole thing, submit to Chrome Web Store as well as Opera Store
+ * - comments, jesus christ
+ */
+
 $(function() {
 
 	if ($('#lst-ib').length > 0) {
