@@ -1,7 +1,9 @@
+//listen for message from extension in tabs
 chrome.runtime.onMessage.addListener(
 
 	function (request, sender) {
-		if (request == 'getTokens') {
+		//the only possible message is to retrieve settings
+		if (request == 'getOptions') {
 
 			var params = {
 				consumer_key: localStorage.consumer_key,
@@ -10,6 +12,7 @@ chrome.runtime.onMessage.addListener(
 				access_secret: localStorage.access_secret
 			};
 
+			//reply
 			chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
 				chrome.tabs.sendMessage(tabs[0].id, params);
 			});
