@@ -2,19 +2,70 @@
 <html>
 	<head>
 		<title>Twitter my Google settings</title>
-		<script type="text/javascript" src="jquery.min.js"></script>
+		<script type="text/javascript" src="lib/js/jquery.min.js"></script>
+		<script type="text/javascript" src="lib/js/codebird.js"></script>
 		<script type="text/javascript" src="options.js"></script>
+		<link rel="stylesheet" href="lib/css/bootstrap.min.css" />
 	</head>
 	<body>
-		<h1>Twitter API keys</h1>
-		<label>Consumer Key:</label>
-		<input type="text" id="consumer_key" name="consumer_key" value="" /><br/>
-		<label>Consumer Secret:</label>
-		<input type="text" id="consumer_secret" name="consumer_secret" value="" /><br/>
-		<label>Access Key:</label>
-		<input type="text" id="access_key" name="access_key" value="" /><br/>
-		<label>Access Secret:</label>
-		<input type="text" id="access_secret" name="access_secret" value="" /><br/>
-		<button id="save">Save</button>
+		<div class="container">
+			<h1 class="col-md-offset-2">Twitter API keys</h1>
+			<form class="form-horizontal" role="form">
+				<div class="form-group">
+					<label for="consumer_key" class="col-sm-2 control-label">Consumer Key:</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" id="consumer_key" name="consumer_key" value="" disabled />
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="consumer_secret" class="col-sm-2 control-label">Consumer Secret:</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" id="consumer_secret" name="consumer_secret" value="" disabled />
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label">&nbsp;</label>
+					<div class="col-sm-10">
+						<p class="form-control-static">You can either enter the access token+secret here, or authenticate using a PIN code below.</p>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="access_key" class="col-sm-2 control-label">Access Key:</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" id="access_key" name="access_key" value="" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="access_secret" class="col-sm-2 control-label">Access Secret:</label>
+					<div class="col-sm-10">
+						<input type="text" class="form-control" id="access_secret" name="access_secret" value="" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="save" class="col-sm-2 control-label">&nbsp;</label>
+					<div class="col-sm-10">
+						<button class="btn btn-primary" id="save">Save</button>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="save" class="col-sm-2 control-label">&nbsp;</label>
+					<div class="col-sm-10">
+						<button class="btn btn-danger" id="auth">Authenticate</button>
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="pinfield" class="col-sm-2 control-label">PIN code:</label>
+					<div class="col-sm-2">
+						<input type="text" class="form-control" id="pinfield" name="pinfield" value="" />
+					</div>
+				</div>
+				<div class="form-group">
+					<label for="save" class="col-sm-2 control-label">&nbsp;</label>
+					<div class="col-sm-10">
+						<button class="btn btn-default" id="verifypin">Verify PIN code</button>
+					</div>
+				</div>
+			</form>
+		</div>
 	</body>
 </html>

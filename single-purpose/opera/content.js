@@ -99,7 +99,7 @@ $(function() {
 			}
 
 			console.log('tweetin: ' + tweet);
-			return;
+			//return;
 
 			//tweet using CodeBird js library (Oauth 1.0)
 			cb = new Codebird;

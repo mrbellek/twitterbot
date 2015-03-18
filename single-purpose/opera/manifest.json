@@ -21,8 +21,8 @@
 			"*://*.google.be/*"
 		],
 		"js": [
-			"jquery.min.js",
-			"codebird.js",
+			"lib/js/jquery.min.js",
+			"lib/js/codebird.js",
 			"content.js"
 		]
 	} ],
