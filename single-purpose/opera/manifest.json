@@ -21,17 +21,18 @@
 			"*://*.google.be/*"
 		],
 		"js": [
-			"lib/js/jquery.min.js",
-			"lib/js/codebird.js",
+			"js/jquery.min.js",
+			"js/codebird.js",
 			"content.js"
 		]
 	} ],
 
 	"options_page": "options.html",
 
-	"page_action": {
-		"default_icon": "img/icon.png",
-		"default_title": "My sample extension",
-		"default_popup": "popup.html"
-	}
+	"web_accessible_resources": [
+		"img/twitter.png",
+		"css/popup.css"
+	],
+
+	"content_security_policy": "script-src 'self' https://www.google-analytics.com; object-src 'self'"
 }
