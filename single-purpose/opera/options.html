@@ -4,6 +4,7 @@
 		<title>Twitter my Google settings</title>
 		<script type="text/javascript" src="js/jquery.min.js"></script>
 		<script type="text/javascript" src="js/codebird.js"></script>
+		<script type="text/javascript" src="js/analytics.js"></script>
 		<script type="text/javascript" src="options.js"></script>
 		<link rel="stylesheet" href="css/bootstrap.min.css" />
 	</head>
@@ -24,12 +25,6 @@
 					</div>
 				</div>
 				<div class="form-group">
-					<label class="col-sm-2 control-label">&nbsp;</label>
-					<div class="col-sm-10">
-						<p class="form-control-static">You can either enter the access token+secret here, or authenticate using a PIN code below.</p>
-					</div>
-				</div>
-				<div class="form-group">
 					<label for="access_key" class="col-sm-2 control-label">Access Key:</label>
 					<div class="col-sm-10">
 						<input type="text" class="form-control" id="access_key" name="access_key" value="" />
@@ -45,6 +40,26 @@
 					<label for="save" class="col-sm-2 control-label">&nbsp;</label>
 					<div class="col-sm-10">
 						<button class="btn btn-primary" id="save">Save</button>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-2 control-label">&nbsp;</label>
+					<div class="col-sm-10">
+						<p class="form-control-static">To get the access token + secret, do the following:<ul>
+							<li>Go to <a href="https://apps.twitter.com" target="_blank">apps.twitter.com</a> on the account you want to link</li>
+							<li>Create a new app. Fill out the required fields with whatever you want.</li>
+							<li>Change the app permissions (Permissions tab) to read+write.<ul>
+								<li>If prompted, add a mobile phone number to the account first. You can remove it again after completing these steps.</li></ul></li>
+							<li>Go to the 'Keys and Access Tokens' tab and create your access tokens.</li>
+							<li>Copy the access tokens here.</li>
+						</ul></p>
+					</div>
+				</div>
+				<hr />
+				<div class="form-group">
+					<label class="col-sm-2 control-label">&nbsp;</label>
+					<div class="col-sm-10">
+						<p class="form-control-static">You can either enter the access token+secret above, or authenticate using a PIN code here.</p>
 					</div>
 				</div>
 				<div class="form-group">

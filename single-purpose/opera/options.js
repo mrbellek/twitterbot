@@ -58,6 +58,11 @@ $(function() {
 		$('#access_secret').val(localStorage.access_secret);
 		console.log('loaded');
 
+		//track options page view
+		ga('set', 'checkProtocolTask', function() {}); //removes failing protocol check
+		ga('require', 'displayfeatures');
+		ga('send', 'pageview', '/options.html');
+
 	}
 
 	document.addEventListener('DOMContentLoaded', loadSettings());
