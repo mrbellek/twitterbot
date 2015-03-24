@@ -9,7 +9,8 @@
  *   - broken in codebird.js :(
  * . google analytics
  * - package the whole thing, submit to Chrome Web Store as well as Opera Store
- *   - icon
+ *   v icon
+ * - fix so that script doesn't trigger again when going back from link to search results
  */
 
 $(function() {
