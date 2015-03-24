@@ -9,6 +9,7 @@
  *   - broken in codebird.js :(
  * . google analytics
  * - package the whole thing, submit to Chrome Web Store as well as Opera Store
+ *   - icon
  */
 
 $(function() {

@@ -4,6 +4,12 @@
 	"name": "Twitter my Google",
 	"description": "A simple extension that posts your Google searches to Twitter in realtime.",
 	"version": "1.0",
+	"icons": {
+		"128": "img/icon_128.png",
+		"48": "img/icon_48.png",
+		"32": "img/icon_32.png",
+		"16": "img/icon_16.png"
+	},
 
 	"background": {
 		"scripts": [
