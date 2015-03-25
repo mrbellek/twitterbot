@@ -49,11 +49,6 @@ $(function() {
 		console.log('tweet canceled.');
 		window.clearTimeout(iPopupTimer);
 		$('#popupDelay').animate({ bottom: -50 }, 'fast');
-
-		//track canceling of tweet
-		ga('set', 'checkProtocolTask', function() {});
-		ga('require', 'displayfeatures');
-		ga('send', 'pageview', '/cancel-tweet.html');
 	});
 
 	//main function for when a search is done
@@ -98,12 +93,6 @@ $(function() {
 						console.log('twitter error: ' + reply.errors[0].message);
 					} else {
 						console.log('tweet posted.');
-
-						//track tweet and search type
-						ga('set', 'checkProtocolTask', function() {});
-						ga('require', 'displayfeatures');
-						ga('send', 'pageview', '/tweet.html');
-						ga('send', 'pageview', '/search-' + type + '.html');
 					}
 				}
 			);

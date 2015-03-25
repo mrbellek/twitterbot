@@ -1,7 +1,7 @@
 {
 	"manifest_version": 2,
 
-	"name": "Twitter my Google",
+	"name": "Tweet my Googles",
 	"description": "A simple extension that posts your Google searches to Twitter in realtime.",
 	"version": "1.0",
 	"icons": {
