@@ -5,10 +5,11 @@
  * v pretty up the options dialog (bootstrap.css?)
  * v popup with twitter logo that stays for 2 seconds, then tweets - and cancels tweet when clicked
  *   - above delay configurable?
+ * v google analytics
+ * v fix so that twitter icon appears above search results on image search
  * . figure out how to allow user to auth the app/extension instead of manually entering tokens?
  *   - broken in codebird.js :(
- * . google analytics
- * - package the whole thing, submit to Chrome Web Store as well as Opera Store
+ * . package the whole thing, submit to Chrome Web Store as well as Opera Store
  *   v icon
  * - fix so that script doesn't trigger again when going back from link to search results
  */
