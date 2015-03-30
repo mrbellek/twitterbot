@@ -144,9 +144,9 @@ class TweetBot {
                 JOIN (
                     SELECT (RAND() * (
                         SELECT MAX(id) FROM %1$s
-                    )) AS id
+                    )) AS random_id
                 ) AS r2
-                WHERE r1.id >= r2.id
+                WHERE r1.id >= r2.random_id
                 AND %2$s = 0
                 ORDER BY r1.id ASC
                 LIMIT 1',
@@ -162,9 +162,9 @@ class TweetBot {
                 JOIN (
                     SELECT (RAND() * (
                         SELECT MAX(id) FROM %1$s
-                    )) AS id
+                    )) AS random_id
                 ) AS r2
-                WHERE r1.id >= r2.id
+                WHERE r1.id >= r2.random_id
                 AND %2$s = (
                     SELECT MIN(%2$s)
                     FROM %1$s
@@ -183,7 +183,7 @@ class TweetBot {
 		}
 
         if ($aRecord = $sth->fetch(PDO::FETCH_ASSOC)) {
-            printf("- Found record that has been posted %d times before.\n", $aRecord['postcount']);
+            printf("\n- Found record that has been posted %d times before.\n", $aRecord['postcount']);
 
             //update record with postcount and timestamp of last post
             $sth = $this->oPDO->prepare(sprintf('

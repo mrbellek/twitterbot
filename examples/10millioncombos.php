@@ -16,6 +16,7 @@ $oTwitterBot = new TweetBot(array(
         array('sVar' => ':password', 'sRecordField' => 'password'),
     ),
     'bPostOnlyOnce' => TRUE,
+	'bReplyToCmds'	=> FALSE,
 ));
 $oTwitterBot->run();
 ?>
