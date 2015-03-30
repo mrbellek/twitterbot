@@ -1,6 +1,7 @@
 {
 	"banned": [
-		"1KcBzReYZvbeGgiaMip92MMFtTFgDqB3Vm"
+		"1KcBzReYZvbeGgiaMip92MMFtTFgDqB3Vm",
+		"1JdC6Xg3ajT3rge3FgPNSYYFpmf53Vbtje"
 	],
 	"filters": [
 		"/^#\\d+$/",
@@ -20,6 +21,7 @@
 		"/^to my /i",
 		"/^veb$/i",
 		"/^withdrawal/i",
+		"/^withdraw$/i",
 		"/ADDFUNDS/",
 		"100xbtc",
 		"2xbitco.in",
