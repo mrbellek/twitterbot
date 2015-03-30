@@ -76,7 +76,7 @@ $(function() {
 
 			//basic check on tokens
 			if (validateTokens(consumer_key, consumer_secret, access_key, access_secret) == false) {
-				alert('Tokens not setup! Check console for errors.');
+				alert('Tokens not setup! Check options page for instructions.');
 				return;
 			}
 
