@@ -220,6 +220,7 @@ class GamesWithGold {
     private function postTweet($sTweet) {
 
 		echo 'Posting tweet..<br>';
+		$sTweet = rtrim($sTweet, '- ');
 
         //tweet
         $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));

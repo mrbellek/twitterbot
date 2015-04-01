@@ -280,7 +280,13 @@ if ($sth->execute()) {
                     </tr>
                     <?php foreach ($aUpcomingGames as $aGame) { ?>
                         <tr class="table-striped <?= $aGame['platformclass'] ?>">
-                            <td><a href="<?= $aGame['link'] ?>" target="_blank"><?= $aGame['game'] ?></a></td>
+							<td>
+								<?php if ($aGame['link']) { ?>
+									<a href="<?= $aGame['link'] ?>" target="_blank"><?= $aGame['game'] ?></a>
+								<?php } else { ?>
+									<?= $aGame['game'] ?>
+								<?php } ?>
+							</td>
                             <td><?= $aGame['platform'] ?></td>
                             <td><?= $aGame['startdate'] ?></td>
                             <td><?= $aGame['enddate'] ?></td>
