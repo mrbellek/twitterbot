@@ -11,6 +11,7 @@ if ($_POST) {
     }
 
     $aNotes = explode("\r\n", $_POST['notes']);
+	$iNotesCount = count($aNotes);
     printf('checking %d notes for duplicates in database..' . "\r\n", count($aNotes));
     $i = 0;
     foreach ($aNotes as $key => $sNote) {
@@ -41,7 +42,7 @@ if ($_POST) {
             $i++;
         }
     }
-    printf('done, %d out of %d notes already in database</pre>' . "\r\n", $i, count($aNotes));
+    printf('done, %d out of %d notes already in database</pre>' . "\r\n", $i, $iNotesCount);
 
     //convert the whole thing into a query for inserting into database
     $aQuery = array('insert into notes(note, tx) values');
