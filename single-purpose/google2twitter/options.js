@@ -14,7 +14,6 @@ $(function() {
 	$('#auth').click(function(e) {
 		e.preventDefault();
 
-		$('#pinfield_container').show();
 		chrome.storage.local.get([ 'consumer_key', 'consumer_secret' ], function(storage) {
 
 			var cb = new Codebird;

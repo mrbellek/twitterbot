@@ -3,12 +3,18 @@
 
 	"name": "Tweet my Googles",
 	"description": "A simple extension that posts your Google searches to Twitter in realtime.",
-	"version": "1.0",
+	"version": "0.2",
 	"icons": {
 		"128": "img/icon_128.png",
 		"48": "img/icon_48.png",
 		"32": "img/icon_32.png",
 		"16": "img/icon_16.png"
+	},
+
+	"background": {
+		"scripts": [
+			"background.js"
+		]
 	},
 
 	"content_scripts": [ {
