@@ -1,9 +1,3 @@
-/*
- * TODO:
- * . fix so that script doesn't trigger again when going back from link to search results
- * - use google analytics with chrome.runtime.onInstalled event
- */
-
 $(function() {
 
 	var iPopupTimer;
@@ -110,6 +104,7 @@ $(function() {
 						//if successful, save search to prevent duplicates
 						chrome.storage.local.get({'savedSearches': []}, function(result) {
 							result.savedSearches.push(tweet);
+							result.savedSearches = result.savedSearches.slice(1, 10);
 							chrome.storage.local.set({'savedSearches': result.savedSearches });
 						});
 					}
