@@ -2,8 +2,8 @@
 chrome.runtime.onMessage.addListener(
 
 	function (request, sender) {
-		//the only possible message is to retrieve settings
-		if (request == 'getOptions') {
+		//retrieve settings
+		if (request.line == 'getOptions') {
 
 			var params = {
 				consumer_key: localStorage.consumer_key,
@@ -15,6 +15,24 @@ chrome.runtime.onMessage.addListener(
 			//reply
 			chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
 				chrome.tabs.sendMessage(tabs[0].id, params);
+			});
+
+		//save last few searches to prevent duplicate tweets
+		} else if (request.line == 'saveSearch') {
+
+			//TODO: trim search history
+			if (!localStorage.savedSearches || localStorage.savedSearches.constructor != Array) {
+				localStorage.savedSearches = new Array();
+			}
+			localStorage.savedSearches.push(request.search);
+
+		//retrieve last searches
+		} else if (request.line == 'getSearches') {
+
+			var searches = localStorage.savedSearches || [];
+
+			chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+				chrome.tabs.sendMessage(tabs[0].id, { 'line': 'sendSearches', 'history': searches });
 			});
 		}
 	}

@@ -9,7 +9,8 @@ $(function() {
 		console.log('saved');
 	});
 
-	$('#auth').click(function() {
+	$('#auth').click(function(e) {
+		e.preventDefault();
 
 		$('#pinfield_container').show();
 		var cb = new Codebird;
@@ -26,7 +27,6 @@ $(function() {
 					"oauth_authorize",
 					{},
 					function (auth_url) {
-						alert(auth_url);
 						window.codebird_auth = window.open(auth_url);
 					}
 				);
@@ -35,18 +35,25 @@ $(function() {
 
 	});
 
-	$('#verifypin').click(function() {
+	$('#verifypin').click(function(e) {
+		e.preventDefault();
 
+		var cb = new Codebird;
+		cb.setConsumerKey(localStorage.consumer_key, localStorage.consumer_secret);
+		alert($('#pinfield').val());
 		cb.__call(
 			"oauth_accessToken",
 			{ oauth_verifier: $('#pinfield').val() },
 			function(reply) {
+				alert('test');
 				//store the authenticated token, which may be different from the request token (!)
+				alert(reply.oauth_token, reply.oauth_token_secret);
 				cb.setToken(reply.oauth_token, reply.oauth_token_secret);
 
 				//persist access tokens
 				localStorage.access_token = reply.oauth_token;
 				localStorage.access_secret = reply.oauth_secret;
+				alert(localStorage.access_token);
 			}
 		);
 	});
@@ -57,13 +64,6 @@ $(function() {
 		$('#access_key').val(localStorage.access_key);
 		$('#access_secret').val(localStorage.access_secret);
 		console.log('loaded');
-
-		//track options page view, but only on first pageload (to prevent submitting tokens to analytics)
-		if (location.search.length == 0) {
-			ga('set', 'checkProtocolTask', function() {});
-			ga('require', 'displayfeatures');
-			ga('send', 'pageview', '/options.html');
-		}
 	}
 
 	document.addEventListener('DOMContentLoaded', loadSettings());

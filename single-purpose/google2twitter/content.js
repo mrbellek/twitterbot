@@ -1,22 +1,10 @@
 /*
  * TODO:
- * v abstract messaging to getOptions for clarity
- * v also hook image search etc, prefix searches with 'image search:' or something
- * v pretty up the options dialog (bootstrap.css?)
- * v popup with twitter logo that stays for 2 seconds, then tweets - and cancels tweet when clicked
- *   - above delay configurable?
- * v google analytics
- * v fix so that twitter icon appears above search results on image search
- * . figure out how to allow user to auth the app/extension instead of manually entering tokens?
- *   - broken in codebird.js :(
- * . package the whole thing, submit to Chrome Web Store as well as Opera Store
- *   v icon
- * - fix so that script doesn't trigger again when going back from link to search results
+ * . fix so that script doesn't trigger again when going back from link to search results
+ * - use google analytics with chrome.runtime.onInstalled event
  */
 
 $(function() {
-
-	//search box is input[type="text"] with id 'lst-ib' for any search type
 
 	var iPopupTimer;
 
@@ -33,20 +21,50 @@ $(function() {
 	});
 
 	//catch when someone clicks the search button
+	//(google automatically blocks this if it's identical to the previous search)
 	$('button[name="btnG"]').click(function() {
 		onBeforeSearch();
 	});
 
 	function onBeforeSearch() {
 
-		console.log('showing twitter popup');
-		$('body').prepend('<link rel="stylesheet" href="' + chrome.extension.getURL('css/popup.css') + '" />');
-		$('body').append('<div id="popupDelay"><img src="' + chrome.extension.getURL('img/twitter.png') + '" width="48" height="48" alt="Click to cancel tweet" title="Click to cancel tweet" /></div>');
-		$('#popupDelay').animate({ bottom: 20 }, 'slow');
-		iPopupTimer = window.setTimeout(onSearch, 3500);
+		//get search query
+		var tweet = $.trim($('#lst-ib').val());
+		if (tweet.length == 0) {
+			return;
+		}
+
+		//we're prefixing the search type if it's not a regular web search
+		type = getSearchType();
+		if (type != 'web') {
+			tweet = type + ' search: ' + tweet;
+		}
+
+		//set handler to catch message reply
+		chrome.runtime.onMessage.addListener(function(reply) {
+
+			//check if this search hasn't been tweeted before
+			if (reply.line == 'sendSearches') {
+				if ($.inArray(tweet, reply.history) == -1) {
+
+					console.log('showing twitter popup');
+					$('body').prepend('<link rel="stylesheet" href="' + chrome.extension.getURL('css/popup.css') + '" />');
+					$('body').append('<div id="popupDelay"><img src="' + chrome.extension.getURL('img/twitter.png') + '" width="48" height="48" alt="Click to cancel tweet" title="Click to cancel tweet" /></div>');
+					$('#popupDelay').animate({ bottom: 20 }, 'slow');
+					iPopupTimer = window.setTimeout(onSearch, 3500);
+
+				} else {
+					console.log('skipping duplicate search');
+				}
+			}
+		});
+
+		//send message to get previous few searches
+		chrome.runtime.sendMessage({ 'line': 'getSearches' });
 	}
 
-	$('#popupDelay').click(function() {
+	//handle clicking on twitter icon to cancel tweet
+	$('body').on('click', '#popupDelay', function() {
 		console.log('tweet canceled.');
 		window.clearTimeout(iPopupTimer);
 		$('#popupDelay').animate({ bottom: -50 }, 'fast');
@@ -94,13 +112,14 @@ $(function() {
 						console.log('twitter error: ' + reply.errors[0].message);
 					} else {
 						console.log('tweet posted.');
+						chrome.runtime.sendMessage({ 'line': 'saveSearch', 'search': tweet });
 					}
 				}
 			);
 		});
 
 		//send message to background script to fetch keys + secrets from settings
-		chrome.runtime.sendMessage('getOptions');
+		chrome.runtime.sendMessage({ 'line': 'getOptions' });
 	}
 
 	//fetch search type from 'tbm' query param
