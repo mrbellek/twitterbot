@@ -21,7 +21,6 @@ $(function() {
 	});
 
 	//catch when someone clicks the search button
-	//(google automatically blocks this if it's identical to the previous search)
 	$('button[name="btnG"]').click(function() {
 		onBeforeSearch();
 	});
@@ -40,27 +39,22 @@ $(function() {
 			tweet = type + ' search: ' + tweet;
 		}
 
-		//set handler to catch message reply
-		chrome.runtime.onMessage.addListener(function(reply) {
+		//fetch previous searches
+		chrome.storage.local.get({'savedSearches': []}, function(result) {
 
 			//check if this search hasn't been tweeted before
-			if (reply.line == 'sendSearches') {
-				if ($.inArray(tweet, reply.history) == -1) {
+			if ($.inArray(tweet, result.savedSearches) == -1) {
 
-					console.log('showing twitter popup');
-					$('body').prepend('<link rel="stylesheet" href="' + chrome.extension.getURL('css/popup.css') + '" />');
-					$('body').append('<div id="popupDelay"><img src="' + chrome.extension.getURL('img/twitter.png') + '" width="48" height="48" alt="Click to cancel tweet" title="Click to cancel tweet" /></div>');
-					$('#popupDelay').animate({ bottom: 20 }, 'slow');
-					iPopupTimer = window.setTimeout(onSearch, 3500);
+				console.log('showing twitter popup');
+				$('body').prepend('<link rel="stylesheet" href="' + chrome.extension.getURL('css/popup.css') + '" />');
+				$('body').append('<div id="popupDelay"><img src="' + chrome.extension.getURL('img/twitter.png') + '" width="48" height="48" alt="Click to cancel tweet" title="Click to cancel tweet" /></div>');
+				$('#popupDelay').animate({ bottom: 20 }, 'slow');
+				iPopupTimer = window.setTimeout(onSearch, 3500);
 
-				} else {
-					console.log('skipping duplicate search');
-				}
+			} else {
+				console.log('skipping duplicate search');
 			}
 		});
-
-		//send message to get previous few searches
-		chrome.runtime.sendMessage({ 'line': 'getSearches' });
 	}
 
 	//handle clicking on twitter icon to cancel tweet
@@ -84,13 +78,13 @@ $(function() {
 			tweet = type + ' search: ' + tweet;
 		}
 
-		//set handler to catch message reply
-		chrome.runtime.onMessage.addListener(function(message) {
+		//fetch tokens from storage
+		chrome.storage.local.get([ 'consumer_key', 'consumer_secret', 'access_key', 'access_secret' ], function(storage) {
 
-			var consumer_key = message.consumer_key;
-			var consumer_secret = message.consumer_secret;
-			var access_key = message.access_key;
-			var access_secret = message.access_secret;
+			var consumer_key = storage.consumer_key;
+			var consumer_secret = storage.consumer_secret;
+			var access_key = storage.access_key;
+			var access_secret = storage.access_secret;
 
 			//basic check on tokens
 			if (validateTokens(consumer_key, consumer_secret, access_key, access_secret) == false) {
@@ -112,14 +106,16 @@ $(function() {
 						console.log('twitter error: ' + reply.errors[0].message);
 					} else {
 						console.log('tweet posted.');
-						chrome.runtime.sendMessage({ 'line': 'saveSearch', 'search': tweet });
+
+						//if successful, save search to prevent duplicates
+						chrome.storage.local.get({'savedSearches': []}, function(result) {
+							result.savedSearches.push(tweet);
+							chrome.storage.local.set({'savedSearches': result.savedSearches });
+						});
 					}
 				}
 			);
 		});
-
-		//send message to background script to fetch keys + secrets from settings
-		chrome.runtime.sendMessage({ 'line': 'getOptions' });
 	}
 
 	//fetch search type from 'tbm' query param

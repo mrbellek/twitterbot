@@ -11,12 +11,6 @@
 		"16": "img/icon_16.png"
 	},
 
-	"background": {
-		"scripts": [
-			"background.js"
-		]
-	},
-
 	"content_scripts": [ {
 		"matches": [
 			"*://*.google.com/*",
@@ -39,6 +33,10 @@
 	"web_accessible_resources": [
 		"img/twitter.png",
 		"css/popup.css"
+	],
+
+	"permissions": [
+		"storage"
 	],
 
 	"content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'"
