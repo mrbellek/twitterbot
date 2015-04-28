@@ -12,9 +12,7 @@
 	},
 
 	"background": {
-		"scripts": [
-			"background.js"
-		]
+		"page": "background.html"
 	},
 
 	"content_scripts": [ {
@@ -29,7 +27,6 @@
 		"js": [
 			"js/jquery.min.js",
 			"js/codebird.js",
-			"js/analytics.js",
 			"content.js"
 		]
 	} ],
