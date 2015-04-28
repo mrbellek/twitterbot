@@ -4,6 +4,7 @@ set_time_limit(0);
 /*
  * TODO:
  * - when done, display stats on which filters are hit most often
+ *   - merge most hit filters with most hit filters from last time instead of replacing them
  * - use above data to construct better google query
  *
  * for future reference, these are the addresses with probably the funniest public notes:
@@ -83,9 +84,11 @@ class NotesScraper {
                 (100 * $this->lNotesFiltered / $this->lNotesFound)
             );
 
-            arsort($this->aFilterCounts);
             echo "\nsaving 10 most hit filters for next run:\n";
-            $aTopFilters = array_slice($this->aFilterCounts, 0, 10);
+            $aLastFilters = json_decode(file_get_contents($this->sFiltersFile), TRUE);
+			$aTopFilters = array_merge($aLastFilters, $this->aFilterCounts);
+			arsort($aTopFilters);
+            $aTopFilters = array_slice($aTopFilters, 0, 10, TRUE);
             foreach ($aTopFilters as $sFilter => $iCount) {
                 printf("- %d: %s\n", $iCount, $sFilter);
             }
