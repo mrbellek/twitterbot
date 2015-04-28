@@ -85,13 +85,14 @@ class NotesScraper {
             );
 
             echo "\nsaving 10 most hit filters for next run:\n";
+			arsort($this->aFilterCounts);
+            foreach (array_slice($this->aFilterCounts, 0, 10) as $sFilter => $iCount) {
+                printf("- %d: %s\n", $iCount, $sFilter);
+            }
             $aLastFilters = json_decode(file_get_contents($this->sFiltersFile), TRUE);
 			$aTopFilters = array_merge($aLastFilters, $this->aFilterCounts);
 			arsort($aTopFilters);
             $aTopFilters = array_slice($aTopFilters, 0, 10, TRUE);
-            foreach ($aTopFilters as $sFilter => $iCount) {
-                printf("- %d: %s\n", $iCount, $sFilter);
-            }
             file_put_contents($this->sFiltersFile, json_encode($aTopFilters, JSON_PRETTY_PRINT));
 
         } else {
