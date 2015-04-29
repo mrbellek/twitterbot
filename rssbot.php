@@ -219,6 +219,24 @@ class RssBot {
                 //get variable value from xml object
                 $sValue = $this->getVariable($oItem, $aVar);
 
+				//apply filters, if any
+				if ($this->aFilters) {
+					foreach ($this->aFilters as $sFilter) {
+						//check if it's a regex
+						if (preg_match('/^\/.+\/i?$/', $sFilter)) {
+							if (preg_match($sFilter, $sValue)) {
+								//skip tweet
+								return FALSE;
+							}
+						} else {
+							if (strpos($sValue, $sFilter) !== FALSE) {
+								//skip tweet
+								return FALSE;
+							}
+						}
+					}
+				}
+
                 //if field is image AND bAttachImage is TRUE, don't put the image url in the tweet since it will be included as a pic.twitter.com link
                 if (!empty($aVar['bAttachImage']) && $aVar['bAttachImage'] == TRUE && $this->sMediaId) {
                     $sValue = '';
@@ -227,24 +245,6 @@ class RssBot {
                 $sTweet = str_replace($aVar['sVar'], $sValue, $sTweet);
             }
         }
-
-		//apply filters, if any
-		if ($this->aFilters) {
-			foreach ($this->aFilters as $sFilter) {
-				//check if it's a regex
-				if (preg_match('/^\/.+\/i?$/', $sFilter)) {
-					if (preg_match($sFilter, $sTweet)) {
-						//skip tweet
-						return FALSE;
-					}
-				} else {
-					if (strpos($sTweet, $sFilter) !== FALSE) {
-						//skip tweet
-						return FALSE;
-					}
-				}
-			}
-		}
 
         //determine maximum length left over for truncated field (links are shortened to t.co format of max 22 chars)
         $sTempTweet = preg_replace('/http:\/\/\S+/', str_repeat('x', $iShortUrlLength), $sTweet);
