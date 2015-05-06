@@ -2,19 +2,6 @@
 require_once('twitteroauth.php');
 require_once('gameswithgold.inc.php');
 
-$o = new GamesWithGold(array(
-    'sUsername'             => 'XboxPSfreegames',
-
-    'sTweetFormatStartXbox' => '[:platform] Starting today, :game is free for #Xbox Live Gold members - :link',
-    'sTweetFormatStopXbox'  => '[:platform] Today is the last day :game is free for #Xbox Live Gold members - :link',
-    'sDefaultLinkXbox'      => 'http://www.xbox.com/en-US/live/games-with-gold',
-
-    'sTweetFormatStartPSN'  => '[:platform] Starting today, :game is free for members with #Playstation Plus - :link',
-    'sTweetFormatStopXPSN'  => '[:platform] Today is the last day :game is free for members with #Playstation Plus - :link',
-    'sDefaultLinkPSN'       => 'http://www.playstation.com/en-us/explore/playstation-plus/',
-));
-$o->run();
-
 /*
  * TODO:
  * V fetch record from database, tweet it
@@ -27,8 +14,25 @@ $o->run();
  *   V delete button in edit dialog to it's password protected
  *
  * V maybe announce free games for PSN Plus too? http://blog.us.playstation.com/tag/playstation-plus/
- * - retweet @majorlenson and @thevowel when tweeting about games with gold?
+ * V tweets with really really long game titles aren't truncated (e.g. Guacamelee! Super Turbo Championship Edition)
+ * V default links aren't used
+ * x retweet @majorlenson and @thevowel when tweeting about games with gold?
  */
+
+$o = new GamesWithGold(array(
+    'sUsername'             => 'XboxPSfreegames',
+
+    'sTweetFormatStartXbox' => '[:platform] Starting today, :game is free for #Xbox Live Gold members - :link',
+    'sTweetFormatStopXbox'  => '[:platform] Today is the last day :game is free for #Xbox Live Gold members - :link',
+    'sDefaultLinkXbox'      => 'http://www.xbox.com/en-US/live/games-with-gold',
+	'sTruncateFieldXbox'	=> 'game',
+
+    'sTweetFormatStartPSN'  => '[:platform] Starting today, :game is free for members with #Playstation Plus - :link',
+    'sTweetFormatStopXPSN'  => '[:platform] Today is the last day :game is free for members with #Playstation Plus - :link',
+    'sDefaultLinkPSN'       => 'http://www.playstation.com/en-us/explore/playstation-plus/',
+	'sTruncateFieldPSN'		=> 'game',
+));
+$o->run();
 
 class GamesWithGold {
 
@@ -38,6 +42,9 @@ class GamesWithGold {
     private $sLogFile;
     private $iLogLevel = 3; //increase for debugging
     private $aSettings;
+
+	private $iTweetMaxLength = 140;
+	private $iTweetLinkLength = 22;
 
     public function __construct($aArgs) {
 
@@ -67,14 +74,17 @@ class GamesWithGold {
 
         $this->sUsername                = (!empty($aArgs['sUsername'])              ? $aArgs['sUsername']               : '');
         $this->sLogFile                 = (!empty($aArgs['sLogFile'])               ? $aArgs['sLogFile']                : strtolower(__CLASS__) . '.log');
-
         $this->aDbVars                  = (!empty($aArgs['aDbVars'])                ? $aArgs['aDbVars']                 : array());
+
         $this->sTweetFormatStartXbox    = (!empty($aArgs['sTweetFormatStartXbox'])  ? $aArgs['sTweetFormatStartXbox']   : '');
         $this->sTweetFormatStopXbox     = (!empty($aArgs['sTweetFormatStopXbox'])   ? $aArgs['sTweetFormatStopXbox']    : '');
-        $this->sDefaultLinkXbox         = (!empty($aArgs['sDefaultLink'])           ? $aArgs['sDefaultLink']            : '');
+        $this->sDefaultLinkXbox         = (!empty($aArgs['sDefaultLinkXbox'])       ? $aArgs['sDefaultLinkXbox']        : '');
+		$this->sTruncateFieldXbox       = (!empty($aArgs['sTruncateFieldXbox'])     ? $aArgs['sTruncateFieldXbox']      : '');
+
         $this->sTweetFormatStartPSN     = (!empty($aArgs['sTweetFormatStartPSN'])   ? $aArgs['sTweetFormatStartPSN']    : '');
         $this->sTweetFormatStopPSN      = (!empty($aArgs['sTweetFormatStopPSN'])    ? $aArgs['sTweetFormatStopPSN']     : '');
-        $this->sDefaultLinkPSN          = (!empty($aArgs['sDefaultLink'])           ? $aArgs['sDefaultLink']            : '');
+        $this->sDefaultLinkPSN          = (!empty($aArgs['sDefaultLinkPSN'])        ? $aArgs['sDefaultLinkPSN']         : '');
+		$this->sTruncateFieldPSN        = (!empty($aArgs['sTruncateFieldPSN'])      ? $aArgs['sTruncateFieldPSN']       : '');
 
         if ($this->sLogFile == '.log') {
             $this->sLogFile = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME) . '.log';
@@ -99,9 +109,9 @@ class GamesWithGold {
 
                     //determine platform and format start tweet
                     if (stripos($aRecord['platform'], 'xbox') !== FALSE) {
-                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStartXbox);
+                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStartXbox, 'xbox');
                     } elseif (stripos($aRecord['platform'], 'playstation') !== FALSE) {
-                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStartPSN);
+                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStartPSN, 'ps');
                     }
 
                     //post tweet
@@ -178,7 +188,7 @@ class GamesWithGold {
             SELECT *
             FROM gameswithgold
             WHERE startdate = CURDATE()'
-        );
+		);
     }
     
     private function fetchStopRecords() {
@@ -207,12 +217,36 @@ class GamesWithGold {
         }
     }
 
-    private function formatTweet($aRecord, $sFormat) {
+    private function formatTweet($aRecord, $sFormat, $sPlatform) {
 
+		//put in default link if game link is missing
+		if (!$aRecord['link']) {
+			if ($sPlatform == 'xbox') {
+				$aRecord['link'] = $this->sDefaultLinkXbox;
+			} elseif ($sPlatform == 'ps') {
+				$aRecord['link'] = $this->sDefaultLinkPSN;
+			}
+		}
+
+		//replace placeholder fields with values
         $sTweet = $sFormat;
         foreach ($aRecord as $sField => $sValue) {
             $sTweet = str_replace(':' . $sField, $sValue, $sTweet);
         }
+
+		//check if tweet (with shortened links) is not too long
+		$iTweetLength = strlen(preg_replace('/https?:\/\/\S+/', str_repeat('x', 22), $sTweet));
+		if ($iTweetLength > $this->iTweetMaxLength) {
+
+			if ($sPlatform == 'xbox') {
+				$sOriginalFieldValue = $aRecord[$this->sTruncateFieldXbox];
+			} elseif ($sPlatform == 'ps') {
+				$sOriginalFieldValue = $aRecord[$this->sTruncateFieldPSN];
+			}
+			//truncate field with ellipsis
+			$sTruncatedFieldValue = substr($sOriginalFieldValue, 0, strlen($sOriginalFieldValue) - ($iTweetLength - $this->iTweetMaxLength + 2)) . '..';
+			$sTweet = str_replace($sOriginalFieldValue, $sTruncatedFieldValue, $sTweet);
+		}
 
         return $sTweet;
     }
