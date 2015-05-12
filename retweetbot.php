@@ -343,6 +343,10 @@ class RetweetBot
 				printf('<b>Skipping tweet because username contains "%s"</b>: %s<br>', $sUsername, $oTweet->user->screen_name);
 				return FALSE;
 			}
+			if (preg_match('/@\S*' . $sUsername . '/', $oTweet->text)) {
+				printf('<b>Skipping tweet because mentioned username contains "%s"</b>: %s<br>', $sUsername, $oTweet->text);
+				return FALSE;
+			}
 		}
 
 		return TRUE;
