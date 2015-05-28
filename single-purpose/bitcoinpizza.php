@@ -5,7 +5,7 @@ require_once('bitcoinpizza.inc.php');
 $o = new BitcoinPizzaBot(array(
     'sUsername' => 'bitcoin_pizza',
     'sLastRunFile' => 'bitcoinpizza.json',
-    'sTweetFormat' => 'The #Bitcoin pizza is worth $:worth today. (:change% from yesterday)',
+    'sTweetFormat' => 'The #Bitcoin pizza is worth $:worth today. (:change from yesterday)',
     'sBirthdaySuffix' => ' Today is Bitcoin pizza day!',
 ));
 $o->run();
@@ -160,11 +160,12 @@ class BitcoinPizzaBot {
         //fetch avg price from last run and calculate percent change
         $aLastRun = @json_decode(file_get_contents(MYPATH . '/' . $this->sLastRunFile), TRUE);
         if ($aLastRun) {
-            $iChange = 100 * ($lBtcPrice - $aLastRun['last_price']) / $aLastRun['last_price'];
-            if ($iChange < 1 && $iChange > 0) {
+
+			$iChange = 100 * ($lBtcPrice - $aLastRun['last_price']) / $aLastRun['last_price'];
+            if ($iChange < 1 && $iChange > -1 && $iChange != 0) {
                 $iChange = number_format($iChange, 2);
             } else {
-                $iChange = (int)$iChange;
+                $iChange = ($iChange > 0 ? '+' : '') . (int)$iChange;
             }
         } else {
             $iChange = 0;
@@ -177,7 +178,7 @@ class BitcoinPizzaBot {
         //construct tweet
         $aReplaces = array(
             ':worth' => number_format(10000 * $lBtcPrice),
-            ':change' => ($iChange > 0 ? '+' : '') . $iChange,
+            ':change' => ($iChange == 0 ? 'no change' : $iChange . '%'),
         );
         $sTweet = str_replace(array_keys($aReplaces), array_values($aReplaces), $this->sTweetFormat);
 
