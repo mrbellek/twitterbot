@@ -164,6 +164,8 @@ class BitcoinPizzaBot {
 			$iChange = 100 * ($lBtcPrice - $aLastRun['last_price']) / $aLastRun['last_price'];
             if ($iChange < 1 && $iChange > -1 && $iChange != 0) {
                 $iChange = number_format($iChange, 2);
+
+                $iChange = ($iChange > 0 ? '+' : '') . $iChange;
             } else {
                 $iChange = ($iChange > 0 ? '+' : '') . (int)$iChange;
             }
