@@ -4,7 +4,7 @@
 		"#bot",
 		"twitch",
 		"toothbrush",
-		"@youtube",
+		"@youtube", "youtube",
 		"hug bot", "hugbotph",
 		"gamergate",
 		"retweeted", "rted"
@@ -12,7 +12,8 @@
 	"userfilters": [
 		"bot",
 		"ebook",
-		"worst_user"
+		"worst_user",
+		"youtube"
 	],
 	"dice": {
 		"media": 1.0,
