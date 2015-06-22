@@ -124,6 +124,8 @@ class NotesScraper {
         //sort by newest first
         $sArgs = '?sort=0';
 
+		$oContext = stream_context_create(array('http' => array('ignore_errors' => TRUE)));
+
         //loop through addresses
         foreach ($this->aAddresses as $iKey => $sAddress) {
 
@@ -139,7 +141,7 @@ class NotesScraper {
             //get first page
             printf("fetching address %d/%d..\r\n", $iKey + 1, count($this->aAddresses));
             try {
-                $sHTML = file_get_contents($sAddress . $sArgs);
+                $sHTML = file_get_contents($sAddress . $sArgs, FALSE, $oContext);
                 $this->lDataDownloaded += strlen($sHTML);
                 if (empty($sHTML)) {
                     //got disconnected, just move on
@@ -158,7 +160,12 @@ class NotesScraper {
                     //get next pages, as long as next link is present AND it is not disabled (max 100 pages)
                     while (preg_match('/<li class="next ?">/', $sHTML) && !preg_match('/<li class="next disabled/', $sHTML) && $iOffset <= 5000) {
 
-                        $sHTML = @file_get_contents($sAddress . '?offset=' . $iOffset . '&filter=0');
+                        $sHTML = file_get_contents($sAddress . '?offset=' . $iOffset . '&filter=0', FALSE, $oContext);
+						if (strpos($http_response_header[0], 'HTTP/1.1 429') !== FALSE) {
+							//HTTP 429 Too Many Requests, pause 5s
+							echo '/flood ';
+							sleep(5);
+						}
                         $this->lDataDownloaded += strlen($sHTML);
                         if (empty($sHTML)) {
                             //disconnected
