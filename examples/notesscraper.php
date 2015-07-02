@@ -1,4 +1,5 @@
 <?php
+require('notesscraper.inc.php');
 set_time_limit(0);
 
 /*
@@ -26,6 +27,7 @@ $o = new NotesScraper();
 class NotesScraper {
 
     private $aAddresses = array();
+	private $hCurl;
 
     private $aFilters = array();
     private $aFilterCounts = array();
@@ -61,6 +63,9 @@ class NotesScraper {
         if (!empty($_SERVER['DOCUMENT_ROOT'])) {
             echo '<pre>';
         }
+
+		//start cURL
+		$this->hCurl = curl_init();
 
         //get public notes from blockchain.info in the past 30 days (week?)
         $this->searchGoogle();
@@ -98,6 +103,8 @@ class NotesScraper {
         } else {
             echo "searchGoogle() failed! bot throttling?";
         }
+
+		curl_close($this->hCurl);
     }
 
     private function resetFiles() {
@@ -124,8 +131,6 @@ class NotesScraper {
         //sort by newest first
         $sArgs = '?sort=0';
 
-		$oContext = stream_context_create(array('http' => array('ignore_errors' => TRUE)));
-
         //loop through addresses
         foreach ($this->aAddresses as $iKey => $sAddress) {
 
@@ -141,7 +146,7 @@ class NotesScraper {
             //get first page
             printf("fetching address %d/%d..\r\n", $iKey + 1, count($this->aAddresses));
             try {
-                $sHTML = file_get_contents($sAddress . $sArgs, FALSE, $oContext);
+				$sHTML = $this->getAddress($sAddress . $sArgs);
                 $this->lDataDownloaded += strlen($sHTML);
                 if (empty($sHTML)) {
                     //got disconnected, just move on
@@ -160,12 +165,7 @@ class NotesScraper {
                     //get next pages, as long as next link is present AND it is not disabled (max 100 pages)
                     while (preg_match('/<li class="next ?">/', $sHTML) && !preg_match('/<li class="next disabled/', $sHTML) && $iOffset <= 5000) {
 
-                        $sHTML = file_get_contents($sAddress . '?offset=' . $iOffset . '&filter=0', FALSE, $oContext);
-						if (strpos($http_response_header[0], 'HTTP/1.1 429') !== FALSE) {
-							//HTTP 429 Too Many Requests, pause 5s
-							echo '/flood ';
-							sleep(5);
-						}
+                        $sHTML = $this->getAddress($sAddress . '?offset=' . $iOffset . '&filter=0');
                         $this->lDataDownloaded += strlen($sHTML);
                         if (empty($sHTML)) {
                             //disconnected
@@ -197,6 +197,28 @@ class NotesScraper {
             echo "\r\n\r\n";
         }
     }
+
+	private function getAddress($sUrl, $bUseApiCode = TRUE) {
+
+		curl_setopt($this->hCurl, CURLOPT_URL, $sUrl . ($bUseApiCode ? '&api_code=' . API_CODE : ''));
+		curl_setopt($this->hCurl, CURLOPT_RETURNTRANSFER, TRUE);
+		curl_setopt($this->hCurl, CURLOPT_SSL_VERIFYPEER, FALSE);
+		curl_setopt($this->hCurl, CURLOPT_FOLLOWLOCATION, TRUE);
+		curl_setopt($this->hCurl, CURLOPT_AUTOREFERER, TRUE);
+		curl_setopt($this->hCurl, CURLOPT_HTTPHEADER, array('Accept-Language: en-US;q=0.6,en;q=0.4'));
+		curl_setopt($this->hCurl, CURLOPT_CONNECTTIMEOUT, 5);
+		curl_setopt($this->hCurl, CURLOPT_TIMEOUT, 5);
+		curl_setopt($this->hCurl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36');
+
+		$sResponse = curl_exec($this->hCurl);
+		$sHttpCode = curl_getinfo($this->hCurl, CURLINFO_HTTP_CODE);
+		if ($sHttpCode != '200') {
+			echo 'HTTP ' . $sHttpCode . "\n";
+			return FALSE;
+		}
+
+		return $sResponse;
+	}
 
     private function parseNotes($sHTML) {
 
@@ -263,6 +285,9 @@ class NotesScraper {
 
         echo 'searching google for recent transactions with public notes';
 
+		//next link whenever google feels like giving it to me in the wrong language
+		$sNextLink = '>Volgende</span>';
+
         //basic search query
         $sQuery = 'site:blockchain.info "public note"';
 
@@ -285,22 +310,18 @@ class NotesScraper {
         //prepare the whole url
         $sUrl = 'https://google.com/search?q=' . urlencode($sQuery) . '&safe=off&tbs=qdr:m';
 
-        //add some http headers
-        $oContext = stream_context_create(array('http' => array(
-            'method' => 'GET',
-            'header' => 'Referer: https://google.com' . PHP_EOL .
-                'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/38.0.2125.122 Safari/537.36 OPR/25.0.1614.71' . PHP_EOL .
-                'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' . PHP_EOL .
-                'Accept-Language: en-US,en;q=0.8' . PHP_EOL
-        )));
-
         //fetch the first page
-        $sResults = file_get_contents($sUrl, FALSE, $oContext);
+		$sResults = $this->getAddress($sUrl, FALSE);
+
+		if (strpos($sResults, $sNextLink) === FALSE) {
+			die("\nfirst page of results ok, but can't find \"Next\" link!");
+		}
+
         $iOffset = 10;
         $aAddresses = array();
 
         //keep going until the 'next page' link is no longer present
-        while (strpos($sResults, '>Next</span>') !== FALSE) {
+        while (strpos($sResults, $sNextLink) !== FALSE) {
 
             //this isn't perfect (urls get truncated) but it'll do
             if (preg_match_all('/(https:\/\/blockchain.info\/address\/[a-zA-Z0-9]+)/', $sResults, $aMatches)) {
@@ -308,9 +329,12 @@ class NotesScraper {
                 $aAddresses = array_merge($aAddresses, $aMatches[1]);
             }
 
-            $sResults = file_get_contents($sUrl . '&start=' . $iOffset, FALSE, $oContext);
+			$sResults = $this->getAddress($sUrl . '&start=' . $iOffset, FALSE);
             $iOffset += 10;
             echo '.';
+
+			//workaround for google ignoring Accept-Language in first request
+			$sNextLink = '>Next</span>';
         }
 
         //merge into global array of addresses
