@@ -18,7 +18,6 @@ require_once('dstbot.inc.php');
  *   V either in coutry or 'worldwide'
  * V abstract formatting of aGroup into aCountryInfo into a function
  *
- * - refactor this horrible mess, use flowcharts and shit
  */
 
 $o = new DstBot(array('sUsername' => 'DSTnotify'));
@@ -33,6 +32,32 @@ class DstBot {
 
     //error margin for cronjobs not firing exactly when they should
     private $iErrorMargin = 180;
+
+	private $aAnswerPhrases = array(
+		'reply_default'			=> 'I didn\'t understand your question! You can ask when #DST starts or ends in any country, or since when it\'s (not) used.',
+		'reply_no_dst'			=> '%s does not observe DST. %s',
+									//e.g.: DST starts in Belgium on the last Sunday of March (2015: 29th. 2016: 28th). More info: ..
+		'reply_dst_startstop'	=> '#DST in %s %ss on the %s (%s). %s', 
+									//e.g.: DST has not been observed in Russia since 1947. More info: ...
+		'reply_dst_since'		=> '#DST has%s been observed in %s since %s. %s', 
+									//e.g.: DST is not observed in Mongolia. More info: ...
+		'reply_dst'				=> '#DST is%s observed in %s. %s', 
+									//e.g.: Next DST change is: DST starts in United States etc...
+		'reply_dst_next'		=> 'Next change: %s', 
+
+		'extra_perma_since'		=> 'It has permanently been in effect since %d.',
+		'extra_not_since'		=> 'It has not since %d',
+		'extra_more_info'		=> ' More info: %s',
+		'extra_perma_always'	=> ' DST is permanently in effect.',
+        'extra_perma_never'		=> ' DST is permanently not in effect.',
+	);
+
+    private $aQuestionKeywords = array(
+		'next' => array('next'),                //when is next DST change for..
+		'start' => array('start', 'begin'),     //when does DST start in..
+		'end' => array('stop', 'end' , 'over'), //when does DST end in..
+		'since' => array('since', 'when'),      //since when does .. have DST
+	);
 
     public function __construct($aArgs) {
 
@@ -106,19 +131,21 @@ class DstBot {
         $oMention->id_str = 1;
         $oMention->user = new stdClass;
         $oMention->user->screen_name = 'testuser';
+		$oMention->user->location = '';
         $oMention->text = '@dstnotify when does dst start?';
         $oMention->text = '@dstnotify when is next dst change?';
         $oMention->user->location = 'Netherlands';
+        $oMention->text = '@dstnotify when is next dst change?';
         $oMention->text = '@dstnotify when does dst start here?';
         $oMention->text = '@dstnotify when does dst start in belgium?';
         $oMention->text = '@dstnotify since when do united states observe dst?';
         $oMention->text = '@dstnotify since when do we observe dst?';
         $oMention->text = '@dstnotify when is next dst change?';
         $oMention->text = '@dstnotify when is next worldwide dst change?';
-        $oMention->user->location = '';
-        $oMention->text = '@dstnotify when is next worldwide dst change?';
+		$oMention->user->location = '';
+		$oMention->text = '@dstnotify when is next worldwide dst change?';
         $this->parseMention($oMention);
-        die();*/
+		die();*/
 
         //check if auth is ok
         if ($this->getIdentity()) {
@@ -356,7 +383,7 @@ class DstBot {
             return FALSE;
         }
 
-        //reply to followers only
+        //reply
         $sMaxId = '0';
         foreach ($aMentions as $oMention) {
             if ($oMention->id_str > $sMaxId) {
@@ -386,76 +413,119 @@ class DstBot {
 
     private function parseMention($oMention) {
 
-        $sDefaultReply = 'I didn\'t understand your question! You can ask when #DST starts or ends in any country, or since when it\'s (not) used.';
-        $sNoDSTReply = '%s does not observe DST. %s';
-
         //ignore mentions where our name is not at the start of the tweet
         if (stripos($oMention->text, '@' . $this->sUsername) !== 0) {
             return TRUE;
         }
 
-        //reply to questions from everyon in DMs if possible, mention otherwise
+        //get actual question from tweet
         $sId = $oMention->id_str;
         $sQuestion = str_replace('@' . strtolower($this->sUsername) . ' ', '', strtolower($oMention->text));
         printf("Parsing question '%s' from %s..\n", $sQuestion, $oMention->user->screen_name);
 
         //find type of question
-        $sEvent = '';
-        $aKeywords = array(
-            'next' => array('next'),                //when is next DST change for..
-            'start' => array('start', 'begin'),     //when does DST start in..
-            'end' => array('stop', 'end' , 'over'), //when does DST end in..
-            'since' => array('since', 'when'),      //since when does .. have DST
-        );
-
-        //the order of the arrays above is the order we're searching in
-        foreach ($aKeywords as $sEvent => $aKeywords) {
-            if ($this->stringContainsWord($sQuestion, $aKeywords)) {
-                //keyword match, break so $sEvent has the proper event
-                break;
-            }
-        }
-
+		$sEvent = $this->findQuestionType($oMention);
         if (!$sEvent) {
-            return $this->replyToQuestion($oMention, $sDefaultReply);
+            return $this->replyToQuestion($oMention, $this->aAnswerPhrases['reply_default']);
         }
 
-        //try to find country in tweet
-        $aCountryInfo = $this->findCountryInQuestion($oMention->text);
-        if (!$aCountryInfo && !empty($oMention->user->location) && stripos($oMention->text, 'worldwide') === FALSE) {
+		//find country in question, if any
+		$aCountryInfo = $this->findQuestionCountry($oMention, $sEvent);
 
-            //try to find country name in 'location' field of user profile (unless tweet contains 'worldwide')
-            $aCountryInfo = $this->findCountryInQuestion($oMention->user->location);
-        }
+		//construct info beyond basic reply
+		$sExtra = $this->getExtraInfo($aCountryInfo);
 
-        if (!$aCountryInfo) {
-            if ($sEvent == 'next') {
-                //for 'next' event without country, use 'worldwide' i.e. get next DST change anywhere
-                $aCountryInfo = $this->getNextDSTChange();
-            } else {
-                //no country found, reply default
-                return $this->replyToQuestion($oMention, $sDefaultReply);
-            }
+		if (!$aCountryInfo) {
+            return $this->replyToQuestion($oMention, $this->aAnswerPhrases['reply_default']);
+		} elseif ($aCountryInfo['group'] == 'no dst') {
+            return $this->replyToQuestion($oMention, sprintf($this->aAnswerPhrases['reply_no_dst'], $aCountryInfo['name'], $sExtra));
+		}
 
-        } elseif ($aCountryInfo && $sEvent == 'next') {
-            //if country was found AND no event was specified ('when is next change'), find whichever is soonest
-            $aNextChange = $this->getNextChange($aCountryInfo);
-            if ($aNextChange['event']) {
-                $aCountryInfo['event'] = $aNextChange['event'];
-            }
-        }
+		//reply based on event
+		switch ($sEvent) {
+			case 'start':
+			case 'end':
 
-        //skip question type parsing if country does not observe DST
-        if ($aCountryInfo['group'] == 'no dst') {
+				//example: #DST [start]s in [Belgium] on the [last sunday of march] ([2015: 29th, 2016: 28th). [More info: ...]
+				return $this->replyToQuestion($oMention, sprintf($this->aAnswerPhrases['reply_dst_startstop'],
+					$aCountryInfo['name'],
+					$sEvent,
+					$aCountryInfo[$sEvent],
+					$aCountryInfo[$sEvent . 'day'],
+					trim($sExtra)
+				));
+				break;
+
+			case 'since':
+
+				//example: DST has not been observed in Russia since 1947
+				//return $this->replyToQuestion($oMention, sprintf('#DST has%s been observed in %s since %s. %s',
+				if (!empty($aCountryInfo['since'])) {
+
+					return $this->replyToQuestion($oMention, sprintf($this->aAnswerPhrases['reply_dst_since'],
+						($aCountryInfo['group'] == 'no dst' ? ' not' : ''),
+						$aCountryInfo['name'],
+						$aCountryInfo['since'],
+						trim($sExtra)
+					));
+
+				} else {
+
+					return $this->replyToQuestion($oMention, sprintf($this->aAnswerPhrases['reply_dst'],
+						($aCountryInfo['group'] == 'no dst' ? ' not' : ''),
+						$aCountryInfo['name'],
+						trim($sExtra)
+					));
+				}
+				break;
+
+			case 'next':
+
+				//'next' event is special: aCountryInfo can either contain start or stop event info
+				//so determine which of the two occurs first from now
+				if (!isset($aCountryInfo['event'])) {
+					$iNextStart = strtotime($aCountryInfo['start'] . ' ' . date('Y'));
+					$iNextStartY = strtotime($aCountryInfo['start'] . ' ' . (date('Y') + 1));
+					$iNextEnd = strtotime($aCountryInfo['end'] . ' ' . date('Y'));
+					$iNextEndY = strtotime($aCountryInfo['end'] . ' ' . (date('Y') + 1));
+
+					$iNextStart = ($iNextStart < time() ? $iNextStartY : $iNextStart);
+					$iNextEnd = ($iNextEnd < time() ? $iNextEndY : $iNextEnd);
+
+					$sEvent = ($iNextStart < $iNextEnd ? 'start' : 'end');
+				} else {
+					$sEvent = $aCountryInfo['event'];
+				}
+
+				//example: Next change: DST starts in United States on the last Sunday of March (2014: 29th, 2015: 28th).
+				return $this->replyToQuestion($oMention, sprintf(sprintf($this->aAnswerPhrases['reply_dst_next'],
+						$this->aAnswerPhrases['reply_dst_startstop']),
+					$aCountryInfo['name'],
+					$sEvent,
+					$aCountryInfo[$sEvent],
+					$aCountryInfo[$sEvent . 'day'],
+					trim($sExtra)
+				));
+		}
+
+        return FALSE;
+    }
+
+	private function getExtraInfo($aCountryInfo) {
+
+		if ($aCountryInfo['group'] == 'no dst') {
+			//skip question type parsing if country does not observe DST
             $sExtra = '';
             if (!empty($aCountryInfo['since'])) {
+				//normally just mention the year they stopped observing DST, unless it's permanently in effect
                 if (isset($aCountryInfo['permanent']) && $aCountryInfo['permanent'] == 1) {
-                    $sExtra = sprintf('It has been in permanent DST time since %d.', $aCountryInfo['since']);
+					$sExtra = sprintf($this->aAnswerPhrases['extra_perma_since'], $aCountryInfo['since']);
                 } else {
-                    $sExtra = sprintf('It has not since %d', $aCountryInfo['since']);
+					$sExtra = sprintf($this->aAnswerPhrases['extra_not_since'], $aCountryInfo['since']);
                 }
             }
-            return $this->replyToQuestion($oMention, sprintf($sNoDSTReply, $aCountryInfo['name'], $sExtra));
+
+			return $sExtra;
         }
 
         //construct extra information
@@ -468,81 +538,67 @@ class DstBot {
         if (!empty($aCountryInfo['info'])) {
 
             //some countries are complicated, and have their own wiki page with more info
-            $sExtra .= ' More info: ' . $aCountryInfo['info'];
+            $sExtra .= sprintf($this->aAnswerPhrases['extra_more_info'], $aCountryInfo['info']);
         }
 
         if (isset($aCountryInfo['permanent'])) {
             //some countries have permanent DST in effect
             if ($aCountryInfo['permanent'] == 1) {
-                $sExtra .= ' DST is permanently in effect.';
+				$sExtra .= $this->aAnswerPhrases['extra_perma_always'];
             } else {
                 //just in case, never used
-                $sExtra .= ' DST is permanently not in effect.';
+				$sExtra .= $this->aAnswerPhrases['extra_perma_never'];
             }
         }
 
-        if ($sEvent == 'start' || $sEvent == 'end') {
+		return $sExtra;
+	}
 
-            //example: DST starts in Belgium on the last sunday of march (2014-03-21)
-            $this->replyToQuestion($oMention, sprintf('#DST in %s %ss on the %s (%s). %s',
-                $aCountryInfo['name'],
-                $sEvent,
-                $aCountryInfo[$sEvent],
-                $aCountryInfo[$sEvent . 'day'],
-                trim($sExtra)
-            ));
+	private function findQuestionType($oMention) {
 
-        } elseif ($sEvent == 'since') {
+        $sQuestion = str_replace('@' . strtolower($this->sUsername) . ' ', '', strtolower($oMention->text));
 
-            //example: DST has not been observed in Russia since 1947
-            if (!empty($aCountryInfo['since'])) {
-
-                $this->replyToQuestion($oMention, sprintf('#DST has%s been observed in %s since %s. %s',
-                    ($aCountryInfo['group'] == 'no dst' ? ' not' : ''),
-                    $aCountryInfo['name'],
-                    $aCountryInfo['since'],
-                    trim($sExtra)
-                ));
-
-            } else {
-
-                $this->replyToQuestion($oMention, sprintf('#DST is%s observed in %s. %s',
-                    ($aCountryInfo['group'] == 'no dst' ? ' not' : ''),
-                    $aCountryInfo['name'],
-                    trim($sExtra)
-                ));
-            }
-
-        } elseif ($sEvent == 'next') {
-            //'next' event is special: aCountryInfo can either contain start or stop event info
-            //so determine which of the two occurs first from now
-            if (!isset($aCountryInfo['event'])) {
-                $iNextStart = strtotime($aCountryInfo['start'] . ' ' . date('Y'));
-                $iNextStartY = strtotime($aCountryInfo['start'] . ' ' . (date('Y') + 1));
-                $iNextEnd = strtotime($aCountryInfo['end'] . ' ' . date('Y'));
-                $iNextEndY = strtotime($aCountryInfo['end'] . ' ' . (date('Y') + 1));
-
-                $iNextStart = ($iNextStart < time() ? $iNextStartY : $iNextStart);
-                $iNextEnd = ($iNextEnd < time() ? $iNextEndY : $iNextEnd);
-
-                $sEvent = ($iNextStart < $iNextEnd ? 'start' : 'end');
-            } else {
-                $sEvent = $aCountryInfo['event'];
-            }
-
-            //example: The next DST change is: DST starts in United States on the last sunday of march (2014-03-21)
-            $this->replyToQuestion($oMention, sprintf('The next %s change is: #DST %ss in %s on the %s (%s). %s',
-                ($aCountryInfo['group'] == 'worldwide' ? $aCountryInfo['group'] : ''),
-                $sEvent,
-                $aCountryInfo['name'],
-                $aCountryInfo[$sEvent],
-                $aCountryInfo[$sEvent . 'day'],
-                trim($sExtra)
-            ));
+        //the order of the arrays above is the order we're searching in
+        foreach ($this->aQuestionKeywords as $sEvent => $aWords) {
+			foreach ($aWords as $sWord) {
+				if (stripos($oMention->text, $sWord) !== FALSE) {
+					return $sEvent;
+				}
+			}
         }
 
-        return TRUE;
-    }
+		return FALSE;
+	}
+
+	private function findQuestionCountry($oMention, $sEvent) {
+
+        //try to find country in tweet
+        $aCountryInfo = $this->findCountryInText($oMention->text);
+        if (!$aCountryInfo && !empty($oMention->user->location) && stripos($oMention->text, 'worldwide') === FALSE) {
+
+            //try to find country name in 'location' field of user profile (unless tweet contains 'worldwide')
+            $aCountryInfo = $this->findCountryInText($oMention->user->location);
+        }
+
+        if (!$aCountryInfo) {
+            if ($sEvent == 'next') {
+                //for 'next' event without country, use 'worldwide' i.e. get next DST change anywhere
+                $aCountryInfo = $this->getNextDSTChange();
+            } else {
+                //no country found, reply default
+                return FALSE;
+            }
+
+        } elseif ($aCountryInfo && $sEvent == 'next') {
+            //if country was found AND no event was specified ('when is next change'), find whichever is soonest
+            $aNextChange = $this->getNextCountryChange($aCountryInfo);
+            if ($aNextChange['event']) {
+                $aCountryInfo['event'] = $aNextChange['event'];
+            }
+        }
+
+		return $aCountryInfo;
+	}
 
     private function replyToQuestion($oMention, $sReply) {
 
@@ -591,7 +647,7 @@ class DstBot {
         return TRUE;
     }
 
-    private function findCountryInQuestion($sQuestion) {
+    private function findCountryInText($sQuestion) {
 
         $aCountryInfo = array();
 
@@ -658,7 +714,7 @@ class DstBot {
                 $aGroup['group'] = $sGroupName;
 
                 //get next DST change for this group
-                $aChange = $this->getNextChange($aGroup);
+                $aChange = $this->getNextCountryChange($aGroup);
 
                 //save closest change
                 if ($aChange['event'] && $aChange['timestamp'] < $iNextChange) {
@@ -708,7 +764,7 @@ class DstBot {
         return $aCountryInfo;
     }
 
-    private function getNextChange($aGroup) {
+    private function getNextCountryChange($aGroup) {
 
         $aReturn = array(
             'event' => FALSE,
@@ -759,17 +815,6 @@ class DstBot {
         }
 
         return $sString;
-    }
-
-    private function stringContainsWord($sString, $aWords) {
-
-        foreach ($aWords as $sWord) {
-            if (stripos($sString, $sWord) !== FALSE) {
-                return TRUE;
-            }
-        }
-
-        return FALSE;
     }
 
     private function halt($sMessage = '') {
