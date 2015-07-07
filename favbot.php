@@ -286,9 +286,9 @@ class FavBot
 			);
 			$oRet = $this->oTwitter->post('favorites/create/' . $oTweet->id_str, array('include_entities' => FALSE));
 
-			if (!empty($oRet->error)) {
-				$this->logger(2, sprintf('Twitter API call failed: POST favorites/create (%s)', $oRet->error));
-				$this->halt(sprintf('- Favoriting failed, halting. (%s)', $oRet->error));
+			if (!empty($oRet->errors)) {
+				$this->logger(2, sprintf('Twitter API call failed: POST favorites/create (%s)', $oRet->errors[0]->message));
+				$this->halt(sprintf('- Favoriting failed, halting. (%s)', $oRet->errors[0]->message));
 				return FALSE;
 			}
 		}

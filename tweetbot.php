@@ -234,9 +234,9 @@ class TweetBot {
                     //do retweet
                     $oRet = $this->oTwitter->post('statuses/retweet/' . $m[1], array('trim_user' => TRUE));
 
-                    if (!empty($oRet->error)) {
-                        $this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s)', $oRet->error));
-                        $this->halt(sprintf('- Retweet failed, halting. (*%s)', $oRet->error));
+                    if (!empty($oRet->errors)) {
+                        $this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s)', $oRet->errors[0]->message));
+                        $this->halt(sprintf('- Retweet failed, halting. (*%s)', $oRet->errors[0]->message));
                         return FALSE;
                     } else {
                         printf("- Retweeted: %s\n", $sTweetUrl);
