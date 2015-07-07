@@ -159,8 +159,7 @@ $sth = $oPDO->prepare('
 	SELECT *, PERIOD_DIFF(DATE_FORMAT(NOW(), "%Y%m"), DATE_FORMAT(enddate, "%Y%m")) AS months_ago
 	FROM gameswithgold
 	WHERE enddate < CURDATE()
-	ORDER BY startdate, enddate, platform, game
-	LIMIT 30'
+	ORDER BY startdate, enddate, platform, game'
 );
 if ($sth->execute()) {
 	$aPastGames = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -296,7 +295,7 @@ if ($sth->execute()) {
             </form>
 
             <?php if ($aUpcomingGames) { ?>
-                <table class="table table-condensed">
+                <table class="table table-condensed table-hover">
                     <caption>Upcoming free games</caption>
                     <tr>
                         <th>Game</th><th>Platform</th><th>Start date</th><th>End date</th><th></th>
@@ -320,21 +319,24 @@ if ($sth->execute()) {
             <?php } ?>
 
             <?php if ($aPastGames) { ?>
-                <table class="table table-condensed">
+                <table class="table table-condensed table-hover" id="pastgames">
                     <caption>Past free games</caption>
-                    <tr>
-                        <th>Game</th><th>Platform</th><th>End date</th><th></th>
+                    <tr class="headers">
+						<th>
+							<input type="text" id="search" placeholder="Search.." />
+						</th>
+						<th>Platform</th><th>End date</th><th></th>
                     </tr>
                     <?php foreach ($aPastGames as $aGame) { ?>
-                        <tr class="table-striped <?= $aGame['platformclass'] ?>">
-							<td>
+                        <tr class="table-striped hidden <?= $aGame['platformclass'] ?>">
+							<td class="game">
 								<?php if ($aGame['link']) { ?>
 									<a href="<?= $aGame['link'] ?>" target="_blank"><?= $aGame['game'] ?></a>
 								<?php } else { ?>
 									<?= $aGame['game'] ?>
 								<?php } ?>
 							</td>
-                            <td><?= $aGame['platform'] ?></td>
+                            <td class="platform"><?= $aGame['platform'] ?></td>
                             <td><?= $aGame['enddate'] ?></td>
 							<td><?= $aGame['months_ago'] ?> months ago</td>
                         </tr>
@@ -342,5 +344,25 @@ if ($sth->execute()) {
                 </table>
             <?php } ?>
         </div>
+
+
+	<script type="text/javascript">
+		$(function() {
+
+			$('#search').on('input', function() {
+				$('tr:not(.headers)', '#pastgames').each(function(k, row) {
+					if ($('#search').val().trim().length > 0) {
+						var game = $('.game', row);
+						var platform = $('.platform', row);
+						if (game.text().toLowerCase().indexOf($('#search').val()) > -1 || platform.text().toLowerCase().indexOf($('#search').val()) > -1) {
+							$(row).removeClass('hidden');
+						} else {
+							$(row).addClass('hidden');
+						}
+					}
+				});
+			});
+		});
+	</script>
     </body>
 </html>
