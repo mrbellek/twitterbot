@@ -152,6 +152,29 @@ if ($sth->execute()) {
         }
     }
 }
+
+//no form submit: list some past games
+$aPastGames = array();
+$sth = $oPDO->prepare('
+	SELECT *, PERIOD_DIFF(DATE_FORMAT(NOW(), "%Y%m"), DATE_FORMAT(enddate, "%Y%m")) AS months_ago
+	FROM gameswithgold
+	WHERE enddate < CURDATE()
+	ORDER BY startdate, enddate, platform, game
+	LIMIT 30'
+);
+if ($sth->execute()) {
+	$aPastGames = $sth->fetchAll(PDO::FETCH_ASSOC);
+
+    //make xbox games green color and playstation games blue color
+    foreach ($aPastGames as $key => $aGame) {
+        $sPlatform = (!empty($aPlatforms[$aGame['platform']]) ? $aPlatforms[$aGame['platform']] : '');
+        if ($sPlatform == 'xbox') {
+            $aPastGames[$key]['platformclass'] = 'success';
+        } elseif ($sPlatform == 'playstation') {
+            $aPastGames[$key]['platformclass'] = 'info';
+        }
+    }
+}
 ?>
 <html>
     <head>
@@ -291,6 +314,29 @@ if ($sth->execute()) {
                             <td><?= $aGame['startdate'] ?></td>
                             <td><?= $aGame['enddate'] ?></td>
                             <td><a href="?id=<?= $aGame['id']?>"><span class="glyphicon glyphicon-pencil"></span></a></td>
+                        </tr>
+                    <?php } ?>
+                </table>
+            <?php } ?>
+
+            <?php if ($aPastGames) { ?>
+                <table class="table table-condensed">
+                    <caption>Past free games</caption>
+                    <tr>
+                        <th>Game</th><th>Platform</th><th>End date</th><th></th>
+                    </tr>
+                    <?php foreach ($aPastGames as $aGame) { ?>
+                        <tr class="table-striped <?= $aGame['platformclass'] ?>">
+							<td>
+								<?php if ($aGame['link']) { ?>
+									<a href="<?= $aGame['link'] ?>" target="_blank"><?= $aGame['game'] ?></a>
+								<?php } else { ?>
+									<?= $aGame['game'] ?>
+								<?php } ?>
+							</td>
+                            <td><?= $aGame['platform'] ?></td>
+                            <td><?= $aGame['enddate'] ?></td>
+							<td><?= $aGame['months_ago'] ?> months ago</td>
                         </tr>
                     <?php } ?>
                 </table>
