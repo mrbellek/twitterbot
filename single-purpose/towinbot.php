@@ -238,6 +238,8 @@ class ToWinBot
 			printf('- %d friends<br><br>', count($oFollowing->ids));
 			$this->aFollowing = $oFollowing->ids;
 		}
+
+		return TRUE;
 	}
 
 	private function doSearch($sSearchString, $iIndex) {
