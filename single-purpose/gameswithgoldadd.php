@@ -190,6 +190,20 @@ if ($sth->execute()) {
                         return false;
                     }
                 });
+
+				$('#search').on('input', function() {
+					$('tr:not(.headers)', '#pastgames').each(function(k, row) {
+						if ($('#search').val().trim().length > 0) {
+							var game = $('.game', row);
+							var platform = $('.platform', row);
+							if (game.text().toLowerCase().indexOf($('#search').val()) > -1 || platform.text().toLowerCase().indexOf($('#search').val()) > -1) {
+								$(row).removeClass('hidden');
+							} else {
+								$(row).addClass('hidden');
+							}
+						}
+					});
+				});
             });
         </script>
     </head>
@@ -344,25 +358,5 @@ if ($sth->execute()) {
                 </table>
             <?php } ?>
         </div>
-
-
-	<script type="text/javascript">
-		$(function() {
-
-			$('#search').on('input', function() {
-				$('tr:not(.headers)', '#pastgames').each(function(k, row) {
-					if ($('#search').val().trim().length > 0) {
-						var game = $('.game', row);
-						var platform = $('.platform', row);
-						if (game.text().toLowerCase().indexOf($('#search').val()) > -1 || platform.text().toLowerCase().indexOf($('#search').val()) > -1) {
-							$(row).removeClass('hidden');
-						} else {
-							$(row).addClass('hidden');
-						}
-					}
-				});
-			});
-		});
-	</script>
     </body>
 </html>

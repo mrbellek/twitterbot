@@ -3,7 +3,7 @@
 
 	"name": "Tweet my Googles",
 	"description": "A simple extension that posts your Google searches to Twitter in realtime.",
-	"version": "0.2",
+	"version": "0.5",
 	"icons": {
 		"128": "img/icon_128.png",
 		"48": "img/icon_48.png",
@@ -39,7 +39,11 @@
 	],
 
 	"permissions": [
-		"storage"
+		"storage",
+		"https://ssl.google-analytics.com/*",
+		"https://upload.twitter.com/*",
+		"https://api.twitter.com/*",
+		"https://api.jublo.net/*"
 	],
 
 	"content_security_policy": "script-src 'self' https://ssl.google-analytics.com; object-src 'self'"
