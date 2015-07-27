@@ -7,11 +7,12 @@ $oTwitterBot = new RetweetBot(array(
    'sSettingsFile'      => 'iwantabot.json',
    'sLastSearchFile'   => 'iwantabot-last%d.json',
    'aSearchStrings'   => array(
-      1 => '"i want a bot"',
-      2 => '"i want a twitter bot"',
-      3 => '"i need a * bot"',
-      4 => '"i need a twitter bot"',
+      1 => '"want a twitter bot"',
+      2 => '"need a twitter bot"',
+      3 => '"want a * bot"',
+      4 => '"need a * bot"',
       5 => '"make a * bot"',
+	  6 => '"made a * bot"',
    ),
 ));
 $oTwitterBot->run();
