@@ -47,7 +47,8 @@ class NotesScraper {
 
     public function __construct($aAddresses = array()) {
 
-        $this->iNoteAgeThreshold = 3600 * 24 * 30 * 6;
+		//max age of public note (1 month)
+        $this->iNoteAgeThreshold = 3600 * 24 * 30;
 
         $this->aAddresses = $aAddresses;
 
