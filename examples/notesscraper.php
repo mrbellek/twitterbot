@@ -296,6 +296,13 @@ class NotesScraper {
 
             $aLastFilters = json_decode(file_get_contents($this->sFiltersFile), TRUE);
             $aTopFilters = array_keys($aLastFilters);
+
+			//don't put regex filters in google query string, this confuses google
+			foreach ($aTopFilters as $key => $sFilter) {
+				if (preg_match('/^\/.+\/i?$/', $sFilter)) {
+					unset($aTopFilters[$key]);
+				}
+			}
             shuffle($aTopFilters);
             $sQuery .= substr(' -"' . implode('" -"', $aTopFilters) . '"', 0, 512);
 
@@ -313,7 +320,9 @@ class NotesScraper {
         //fetch the first page
 		$sResults = $this->getAddress($sUrl, FALSE);
 
-		if (strpos($sResults, $sNextLink) === FALSE) {
+		if (strlen($sResults) == 0) {
+			die("\ngoogle returned 0 bytes\n");
+		} elseif (strpos($sResults, $sNextLink) === FALSE) {
 			die("\nfirst page of results ok, but can't find \"Next\" link!");
 		}
 
