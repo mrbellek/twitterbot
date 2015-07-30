@@ -324,7 +324,10 @@ if ($sth->execute()) {
 								<?php } ?>
 							</td>
                             <td><?= $aGame['platform'] ?></td>
-                            <td><?= $aGame['startdate'] ?></td>
+							<td>
+								<?= ($aGame['startdate'] < date('Y-m-d') ? '<small><i class="glyphicon glyphicon-play"></i></small>' : '') ?>
+								<?= $aGame['startdate'] ?>
+							</td>
                             <td><?= $aGame['enddate'] ?></td>
                             <td><a href="?id=<?= $aGame['id']?>"><span class="glyphicon glyphicon-pencil"></span></a></td>
                         </tr>
