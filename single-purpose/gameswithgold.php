@@ -196,7 +196,7 @@ class GamesWithGold {
         return $this->fetchRecords('
             SELECT *
             FROM gameswithgold
-            WHERE enddate = CURDATE() + INTERVAL 1 DAY'
+            WHERE enddate = CURDATE()'
         );
     }
 
