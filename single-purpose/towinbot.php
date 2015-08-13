@@ -1,14 +1,12 @@
 <?php
-require_once('../twitteroauth.php');
+require_once('twitteroauth.php');
 require_once('towinbot.inc.php');
 
 $o = new ToWinBot(array(
 	'sUsername'			=> 'lAlwaysWin',
 	'aSearchStrings'	=> array(
-		1 => 'giveaway retweet OR rt',
-		2 => 'giveaway fav OR favorite',
-		3 => 'contest retweet OR rt',
-		4 => 'contest fav OR favorite',
+		1 => '(giveaway OR contest OR "to win") RT',
+		2 => '(giveaway OR contest OR "to win") retweet',
 	)
 ));
 $o->run();
@@ -18,6 +16,7 @@ class ToWinBot
 	//stuff we get from twitter
 	private $oTwitter;
 	private $aBlockedUsers;
+	private $aFollowing;
 
 	//stuff from settings
 	private $aSearchFilters = array();
@@ -35,6 +34,8 @@ class ToWinBot
 	private $sLastSearchFile;	//where to save data from last search
 	private $sLogFile;			//where to log stuff
     private $iLogLevel = 3;     //increase for debugging
+
+	private $iMaxFollowing = 2000; //max number of people to follow (to prevent being blocked)
 
 	public function __construct($aArgs) {
 
@@ -169,9 +170,10 @@ class ToWinBot
 	private function getRateLimitStatus() {
 
 		echo 'Fetching rate limit status..<br>';
-		$oStatus = $this->oTwitter->get('application/rate_limit_status', array('resources' => 'search,blocks'));
+		$oStatus = $this->oTwitter->get('application/rate_limit_status', array('resources' => 'search,blocks,friends'));
 		$oRateLimit = $oStatus->resources->search->{'/search/tweets'};
 		$oBlockedLimit = $oStatus->resources->blocks->{'/blocks/ids'};
+		$oFollowingLimit = $oStatus->resources->friends->{'/friends/ids'};
         $this->oRateLimitStatus = $oStatus;
 
 		//check if remaining calls for search is lower than threshold (after reset: 180)
@@ -197,13 +199,31 @@ class ToWinBot
 			));
 			return FALSE;
 		} else {
-			printf('- Remaining %d/%d calls (blocked users), next reset at %s.<br><br>',
+			printf('- Remaining %d/%d calls (blocked users), next reset at %s.<br>',
 				$oBlockedLimit->remaining,
 				$oBlockedLimit->limit,
 				date('Y-m-d H:i:s', $oBlockedLimit->reset)
 			);
 		}
 
+		//check if remaining calls for following is lower than treshold (after reset: 15)
+		if ($oFollowingLimit->remaining < $this->iMinRateLimit) {
+			$this->logger(3, sprintf('Rate limit for GET friends/ids hit, waiting until %s', date('Y-m-d H:i:s', $oFollowingLimit->reset)));
+			$this->halt(sprintf('- Remaining %d/%d calls for following users! Aborting search until next reset at %s.',
+				$oFollowingLimit->remaining,
+				$oFollowingLimit->limit,
+				date('Y-m-d H:i:s', $oFollowingLimit->reset)
+			));
+			return FALSE;
+		} else {
+			printf('- Remaining %d/%d calls (following), next reset at %s.<br>',
+				$oFollowingLimit->remaining,
+				$oFollowingLimit->limit,
+				date('Y-m-d H:i:s', $oFollowingLimit->reset)
+			);
+		}
+
+		echo '<br>';
 		return TRUE;
 	}
 
@@ -237,6 +257,25 @@ class ToWinBot
 		} else {
 			printf('- %d friends<br><br>', count($oFollowing->ids));
 			$this->aFollowing = $oFollowing->ids;
+
+			//if we follow too many people, unfollow oldest until it's below limit again
+			if (count($this->aFollowing) > $this->iMaxFollowing) {
+				printf('Following %d people, unfollowing %d...<br>', count($this->aFollowing), count($this->aFollowing) - $this->iMaxFollowing);
+				$this->unfollowOldest(count($this->aFollowing) - $this->iMaxFollowing);
+			}
+		}
+
+		return TRUE;
+	}
+
+	private function unfollowOldest($iCount) {
+
+		if ($this->aFollowing && count($this->aFollowing) > $this->iMaxFollowing && $iCount > 0) {
+
+			for ($i = 0; $i < $iCount; $i++) {
+				$iUserId = array_pop($this->aFollowing);
+				$this->oTwitter->post('friendships/destroy', array('user_id' => $iUserId));
+			}
 		}
 
 		return TRUE;
@@ -250,7 +289,12 @@ class ToWinBot
 			return FALSE;
 		}
 
-		printf('Searching for max %d tweets with: %s..<br>', $this->iSearchMax, $sSearchString);
+		printf('%d: Searching for max %d tweets with: <a href="http://twitter.com/search?f=tweets&q=%s">%s</a>..',
+			$iIndex,
+			$this->iSearchMax,
+			urlencode($sSearchString),
+			$sSearchString
+		);
 
 		//retrieve data for last search to prevent duplicates
 		$aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . sprintf($this->sLastSearchFile, $iIndex)), TRUE);
@@ -262,6 +306,8 @@ class ToWinBot
 			'since_id'		=> ($aLastSearch && !empty($aLastSearch['max_id']) ? $aLastSearch['max_id'] : 1),
 		));
 
+		printf('%d results.<br>', count($oSearch->statuses));
+		
 		if (empty($oSearch->search_metadata)) {
 			$this->logger(2, sprintf('Twitter API call failed: GET /search/tweets (%s)', $oSearch->errors[0]->message));
 			$this->halt(sprintf('- Unable to get search results, halting. (%s)', $oSearch->errors[0]->message));
@@ -300,9 +346,29 @@ class ToWinBot
 			//replace shortened links
 			$oTweet = $this->expandUrls($oTweet);
 
-			//don't do anything with retweets
-			if (strpos($oTweet->text, 'RT @') ===0) {
-				continue;
+			//replace retweets with original tweet if possible
+			if (strpos($oTweet->text, 'RT @') === 0) {
+
+				if (!empty($oTweet->retweeted_status)) {
+					printf('Converting retweet: <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
+						$oTweet->user->screen_name,
+						$oTweet->id_str,
+						$oTweet->user->screen_name,
+						str_replace("\n", ' ', $oTweet->text)
+					);
+
+					$oTweet = $oTweet->retweeted_status;
+
+				} else {
+					printf('Skipping manual retweet: <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
+						$oTweet->user->screen_name,
+						$oTweet->id_str,
+						$oTweet->user->screen_name,
+						str_replace("\n", ' ', $oTweet->text)
+					);
+
+					continue;
+				}
 			}
 
 			//perform post-search filters
@@ -311,27 +377,21 @@ class ToWinBot
 			}
 
 			//if tweet contains 'fav ' or 'favo(rite)'
-			if (preg_match('/fav\s|favorite/', $oTweet->text)) {
+			if (preg_match('/fav\s|favorite/i', $oTweet->text)) {
 
-				if (!$this->favoriteTweet($oTweet)) {
-					return FALSE;
-				}
+				$this->favoriteTweet($oTweet);
 			}
 
 			//if tweet contains 'rt ' or 'retweet'
-			if (preg_match('/rt\s|retweet/', $oTweet->text)) {
+			if (preg_match('/rt\s|retweet/i', $oTweet->text)) {
 
-				if (!$this->retweetTweet($oTweet)) {
-					return FALSE;
-				}
+				$this->retweetTweet($oTweet);
 			}
 
 			//if tweet contains 'follow'
-			if (preg_match('/follow\s/', $oTweet->text)) {
+			if (preg_match('/follow\s/i', $oTweet->text)) {
 
-				if (!$this->followAuthor($oTweet)) {
-					return FALSE;
-				}
+				$this->followAuthor($oTweet);
 			}
 		}
 
@@ -342,7 +402,7 @@ class ToWinBot
 
 	private function favoriteTweet($oTweet) {
 
-		printf('Favoriting: <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
+		printf('<b>Favoriting:</b> <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
 			$oTweet->user->screen_name,
 			$oTweet->id_str,
 			$oTweet->user->screen_name,
@@ -352,7 +412,7 @@ class ToWinBot
 
 		if (!empty($oRet->errors)) {
 			$this->logger(2, sprintf('Twitter API call failed: POST favorites/create (%s)', $oRet->errors[0]->message));
-			$this->halt(sprintf('- Favorite failed. (%s)', $oRet->errors[0]->message));
+			//$this->halt(sprintf('- Favorite failed. (%s)', $oRet->errors[0]->message));
 			return FALSE;
 		}
 
@@ -361,7 +421,7 @@ class ToWinBot
 
 	private function retweetTweet($oTweet) {
 
-		printf('Retweeting: <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
+		printf('<b>Retweeting:</b> <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
 			$oTweet->user->screen_name,
 			$oTweet->id_str,
 			$oTweet->user->screen_name,
@@ -371,7 +431,7 @@ class ToWinBot
 
 		if (!empty($oRet->errors)) {
 			$this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s)', $oRet->errors[0]->message));
-			$this->halt(sprintf('- Retweet failed, halting. (%s)', $oRet->errors[0]->message));
+			//$this->halt(sprintf('- Retweet failed, halting. (%s)', $oRet->errors[0]->message));
 			return FALSE;
 		}
 
@@ -381,11 +441,15 @@ class ToWinBot
 	private function followAuthor($oTweet) {
 
 	if (in_array($oTweet->user->id_str, $this->aFollowing)) {
-			printf('Skipped following <a href="http://twitter.com/%s/statuses/%s">@%s</a> because we already follow them.<br>');
+			printf('<b>Skipped following</b> <a href="http://twitter.com/%s/statuses/%s">@%s</a> because we already follow them.<br>',
+				$oTweet->user->screen_name,
+				$oTweet->id_str,
+				$oTweet->user->screen_name
+			);
 			return TRUE;
 		}
 
-		printf('Following: <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
+		printf('<b>Following:</b> <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
 			$oTweet->user->screen_name,
 			$oTweet->id_str,
 			$oTweet->user->screen_name,
@@ -395,7 +459,7 @@ class ToWinBot
 
 		if (!empty($oRet->errors)) {
 			$this->logger(2, sprintf('Twitter API call failed: POST friendships/create (%s)', $oRet->errors[0]->message));
-			$this->halt(sprintf('- Follow failed, halting. (%s)', $oRet->errors[0]->message));
+			//$this->halt(sprintf('- Follow failed, halting. (%s)', $oRet->errors[0]->message));
 			return FALSE;
 		}
 
@@ -433,7 +497,13 @@ class ToWinBot
 
 		foreach ($this->aSearchFilters as $sFilter) {
 			if (strpos(strtolower($oTweet->text), $sFilter) !== FALSE) {
-				printf('<b>Skipping tweet because it contains "%s"</b>: %s<br>', $sFilter, str_replace("\n", ' ', $oTweet->text));
+				printf('<b>Skipping tweet because it contains "%s"</b>: <a href="http://twitter.com/%s/statuses/%s">%s</a>: %s<br>',
+					$sFilter,
+					$oTweet->user->screen_name,
+					$oTweet->id_str,
+					$oTweet->user->screen_name,
+					str_replace("\n", ' ', $oTweet->text)
+				);
 				return FALSE;
 			}
 		}
@@ -446,11 +516,23 @@ class ToWinBot
 
 		foreach ($this->aUsernameFilters as $sUsername) {
 			if (strpos(strtolower($oTweet->user->screen_name), $sUsername) !== FALSE) {
-				printf('<b>Skipping tweet because username contains "%s"</b>: %s<br>', $sUsername, $oTweet->user->screen_name);
+				printf('<b>Skipping tweet because username contains "%s"</b>: <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
+					$sUsername,
+					$oTweet->user->screen_name,
+					$oTweet->id_str,
+					$oTweet->user->screen_name,
+					str_replace("\n", ' ', $oTweet->text)
+				);
 				return FALSE;
 			}
 			if (preg_match('/@\S*' . $sUsername . '/', $oTweet->text)) {
-				printf('<b>Skipping tweet because mentioned username contains "%s"</b>: %s<br>', $sUsername, $oTweet->text);
+				printf('<b>Skipping tweet because mentioned username contains "%s"</b>: <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
+					$sUsername,
+					$oTweet->user->screen_name,
+					$oTweet->id_str,
+					$oTweet->user->screen_name,
+					str_replace("\n", ' ', $oTweet->text)
+				);
 				return FALSE;
 			}
 		}
@@ -463,7 +545,12 @@ class ToWinBot
 
 		foreach ($this->aBlockedUsers as $iBlockedId) {
 			if ($oTweet->user->id == $iBlockedId) {
-				printf('<b>Skipping tweet because user "%s" is blocked</b><br>', $oTweet->user->screen_name);
+				printf('<b>Skipping tweet because user is blocked</b>: <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
+					$oTweet->user->screen_name,
+					$oTweet->id_str,
+					$oTweet->user->screen_name,
+					str_replace("\n", ' ', $oTweet->text)
+				);
 				return FALSE;
 			}
 		}
@@ -496,7 +583,12 @@ class ToWinBot
 		//compare probability (0.0 to 1.0) against random number
 		$random = mt_rand() / mt_getrandmax();
 		if (mt_rand() / mt_getrandmax() > $lProbability) {
-			printf('<b>Skipping tweet because the dice said so</b>: %s<br>', str_replace("\n", ' ', $oTweet->text));
+			printf('<b>Skipping tweet because the dice said so</b>: <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
+				$oTweet->user->screen_name,
+				$oTweet->id_str,
+				$oTweet->user->screen_name,
+				str_replace("\n", ' ', $oTweet->text)
+			);
 			return FALSE;
 		}
 

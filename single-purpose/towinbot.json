@@ -1,6 +1,9 @@
 {
 	"filters": [
 		"gain",
+		"my favorite",
+		"your favorite",
+		"vote"
 	],
 	"userfilters": [
 	],
