@@ -5,8 +5,8 @@ require_once('towinbot.inc.php');
 $o = new ToWinBot(array(
 	'sUsername'			=> 'lAlwaysWin',
 	'aSearchStrings'	=> array(
-		1 => '(giveaway OR contest OR "to win") RT',
-		2 => '(giveaway OR contest OR "to win") retweet',
+		1 => 'RT giveaway OR contest OR "to win"',
+		2 => 'retweet giveaway OR contest OR "to win"',
 	)
 ));
 $o->run();
@@ -402,6 +402,15 @@ class ToWinBot
 
 	private function favoriteTweet($oTweet) {
 
+		if ($oTweet->favorited) {
+			printf('<b>Skipped favorite</b> <a href="http://twitter.com/%s/statuses/%s">@%s</a> because we already favorited this.<br>',
+				$oTweet->user->screen_name,
+				$oTweet->id_str,
+				$oTweet->user->screen_name
+			);
+			return TRUE;
+		}
+
 		printf('<b>Favoriting:</b> <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
 			$oTweet->user->screen_name,
 			$oTweet->id_str,
@@ -420,6 +429,15 @@ class ToWinBot
 	}
 
 	private function retweetTweet($oTweet) {
+
+		if ($oTweet->retweeted) {
+			printf('<b>Skipped retweet</b> <a href="http://twitter.com/%s/statuses/%s">@%s</a> because we already retweeted this.<br>',
+				$oTweet->user->screen_name,
+				$oTweet->id_str,
+				$oTweet->user->screen_name
+			);
+			return TRUE;
+		}
 
 		printf('<b>Retweeting:</b> <a href="http://twitter.com/%s/statuses/%s">@%s</a>: %s<br>',
 			$oTweet->user->screen_name,
@@ -440,7 +458,7 @@ class ToWinBot
 
 	private function followAuthor($oTweet) {
 
-	if (in_array($oTweet->user->id_str, $this->aFollowing)) {
+		if (in_array($oTweet->user->id_str, $this->aFollowing) || $oTweet->user->following || $oTweet->user->follow_request_sent) {
 			printf('<b>Skipped following</b> <a href="http://twitter.com/%s/statuses/%s">@%s</a> because we already follow them.<br>',
 				$oTweet->user->screen_name,
 				$oTweet->id_str,
