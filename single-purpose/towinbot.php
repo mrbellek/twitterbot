@@ -403,7 +403,7 @@ class ToWinBot
 	private function favoriteTweet($oTweet) {
 
 		if ($oTweet->favorited) {
-			printf('<b>Skipped favorite</b> <a href="http://twitter.com/%s/statuses/%s">@%s</a> because we already favorited this.<br>',
+			printf('Skipped favorite <a href="http://twitter.com/%s/statuses/%s">@%s</a> because we already favorited this.<br>',
 				$oTweet->user->screen_name,
 				$oTweet->id_str,
 				$oTweet->user->screen_name
@@ -431,7 +431,7 @@ class ToWinBot
 	private function retweetTweet($oTweet) {
 
 		if ($oTweet->retweeted) {
-			printf('<b>Skipped retweet</b> <a href="http://twitter.com/%s/statuses/%s">@%s</a> because we already retweeted this.<br>',
+			printf('Skipped retweet <a href="http://twitter.com/%s/statuses/%s">@%s</a> because we already retweeted this.<br>',
 				$oTweet->user->screen_name,
 				$oTweet->id_str,
 				$oTweet->user->screen_name
@@ -459,7 +459,7 @@ class ToWinBot
 	private function followAuthor($oTweet) {
 
 		if (in_array($oTweet->user->id_str, $this->aFollowing) || $oTweet->user->following || $oTweet->user->follow_request_sent) {
-			printf('<b>Skipped following</b> <a href="http://twitter.com/%s/statuses/%s">@%s</a> because we already follow them.<br>',
+			printf('Skipped following <a href="http://twitter.com/%s/statuses/%s">@%s</a> because we already follow them.<br>',
 				$oTweet->user->screen_name,
 				$oTweet->id_str,
 				$oTweet->user->screen_name
