@@ -54,6 +54,10 @@ class NotesScraper {
 
         //load filters and initialize filter counter
         $this->aSettings = json_decode(file_get_contents($this->sSettingsFile), TRUE);
+		if (!$this->aSettings && json_last_error_msg()) {
+			printf('failed to read settings file %s.', $this->sSettingsFile);
+			die();
+		}
         $this->aFilters = $this->aSettings['filters'];
 		$this->aBanned = $this->aSettings['banned'];
         foreach ($this->aFilters as $sFilter) {
@@ -322,7 +326,7 @@ class NotesScraper {
 		$sResults = $this->getAddress($sUrl, FALSE);
 
 		if (strlen($sResults) == 0) {
-			die("\ngoogle returned 0 bytes\n");
+			die("\ngoogle returned 0 bytes\n$sUrl");
 		} elseif (strpos($sResults, $sNextLink) === FALSE) {
 			die("\nfirst page of results ok, but can't find \"Next\" link!");
 		}
