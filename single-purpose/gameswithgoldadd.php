@@ -325,7 +325,7 @@ if ($sth->execute()) {
 							</td>
                             <td><?= $aGame['platform'] ?></td>
 							<td>
-								<?= ($aGame['startdate'] < date('Y-m-d') ? '<small><i class="glyphicon glyphicon-play"></i></small>' : '') ?>
+								<?= ($aGame['startdate'] <= date('Y-m-d') ? '<small><i class="glyphicon glyphicon-play"></i></small>' : '') ?>
 								<?= $aGame['startdate'] ?>
 							</td>
                             <td><?= $aGame['enddate'] ?></td>
