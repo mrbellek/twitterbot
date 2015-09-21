@@ -336,7 +336,7 @@ class NotesScraper {
         $aAddresses = array();
 
         //keep going until the 'next page' link is no longer present
-        while (strpos($sResults, $sNextLink) !== FALSE && strpos($sResults, $sNextLink2) === FALSE) {
+        while (strpos($sResults, $sNextLink) !== FALSE && strpos($sResults, $sNextLink2) !== FALSE) {
 
             //this isn't perfect (urls get truncated) but it'll do
             if (preg_match_all('/(https:\/\/blockchain.info\/address\/[a-zA-Z0-9]+)/', $sResults, $aMatches)) {
@@ -348,6 +348,7 @@ class NotesScraper {
             $iOffset += 10;
             echo '.';
         }
+		echo '/last';
 
         //merge into global array of addresses
         $this->aAddresses = array_values(array_unique(array_merge($this->aAddresses, $aAddresses)));
