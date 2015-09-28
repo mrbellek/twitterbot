@@ -4,8 +4,8 @@ require_once('twitteroauth.php');
 /*
  * TODO:
  * - commands through mentions, replies through mentions/DMs like retweetbot
+ * - use xpath for fetching elements from image pages
  * x somehow r/buttcoin items are sometimes posted multiple times - bug? does the timestamp of items change?
- * v implement filters to combat spam
  */
 
 //runs every 15 minutes, mirroring & attaching images might take a while
@@ -22,7 +22,7 @@ class RssBot {
     private $sTweetFormat;
     private $aTweetVars;
 
-    private $sMediaId = FALSE;
+    private $aMediaIds = array();
 
     public function __construct($aArgs) {
 
@@ -146,10 +146,10 @@ class RssBot {
 
                 printf("- %s\n", utf8_decode($sTweet) . ' - ' . $oItem->pubDate);
 
-                if ($this->sMediaId) {
-                    $this->logger(5, sprintf('Posting item %d (with picture attached) to Twitter', $i));
-                    $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE, 'media_ids' => $this->sMediaId));
-                    $this->sMediaId = FALSE;
+                if ($this->aMediaIds) {
+                    $this->logger(5, sprintf('Posting item %d (with %d pictures attached) to Twitter', $i, count($this->aMediaIds)));
+                    $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE, 'media_ids' => implode(',', $this->aMediaIds)));
+                    $this->aMediaIds = array();
                 } else {
                     $this->logger(5, sprintf('Posting item %d to Twitter', $i));
                     $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
@@ -238,7 +238,8 @@ class RssBot {
 				}
 
                 //if field is image AND bAttachImage is TRUE, don't put the image url in the tweet since it will be included as a pic.twitter.com link
-                if (!empty($aVar['bAttachImage']) && $aVar['bAttachImage'] == TRUE && $this->sMediaId) {
+				//TODO: possibly don't exclude the image url in case it's a gallery with multiple pictures?
+                if (!empty($aVar['bAttachImage']) && $aVar['bAttachImage'] == TRUE && in_array($sValue, $this->aMediaIds)) {
                     $sValue = '';
                 }
 
@@ -265,7 +266,7 @@ class RssBot {
                 $iTruncateLimit += strlen($aVar['sVar']);
 
                 //if media is present, substract that plus a space
-                if ($this->sMediaId) {
+                if ($this->aMediaIds) {
                     $iTruncateLimit -= ($iMediaUrlLength + 1);
                 }
 
@@ -368,14 +369,30 @@ class RssBot {
                     } elseif (preg_match('/reddit\.com/i', $sText)) {
                         $sResult = 'internal';
                     } elseif (preg_match('/\.png|\.gif$|\.jpe?g/i', $sText)) {
+						//naked image url
                         $sResult = 'image';
                         if ($bAttachImage) {
-                            $this->uploadImage($sText);
+                            $this->uploadImageToTwitter($sText);
                         }
-					} elseif (preg_match('/imgur\.com\/.[^\/]/i', $sText)) {
-						$sResult = 'image'; //image, but not one we can attach
+					} elseif (preg_match('/imgur\.com\/.[^\/]/i', $sText) || preg_match('/imgur\/.com/gallery\//', $sText)) {
+						//single image on imgur.com page
+						$sResult = 'image';
+						if ($bAttachImage) {
+							$this->uploadImageFromPage($sText);
+						}
                     } elseif (preg_match('/imgur\.com\/a\//i', $sText)) {
+						//multiple images on imgur.com page
                         $sResult = 'gallery';
+						if ($bAttachImage) {
+							$this->uploadImageFromGallery($sText);
+						}
+					} elseif (preg_match('/instagram\.com\/.[^/]/i', $sText) || preg_match('/instagram\.com\/p\//i', $sText)) {
+						//instagram account or instagram photo
+						$sResult = 'instagram';
+						if ($bAttachImage) {
+							$this->uploadImageFromInstagram($sText);
+						}
+
                     } elseif (preg_match('/\.gifv|\.webm|youtube\.com\/|youtu\.be\/|vine\.co\/|vimeo\.com\/|liveleak\.com\//i', $sText)) {
                         $sResult = 'video';
                     } else {
@@ -390,28 +407,119 @@ class RssBot {
         }
     }
 
-    private function uploadImage($sImage) {
+	private function uploadImageFromGallery($sUrl) {
 
-        $sImageBinary = base64_encode(file_get_contents($sImage));
-        if ($sImageBinary && (
-                (preg_match('/\.gif/i', $sImage) && strlen($sImageBinary) < 3 * 1024^2) ||      //max size is 3MB for gif
-                (preg_match('/\.png|\.jpe?g/i', $sImage) && strlen($sImageBinary) < 5 * 1024^2) //max size is 5MB for png or jpeg
-                )) {
-            $oRet = $this->oTwitter->upload('media/upload', array('media' => $sImageBinary));
-            if (isset($oRet->errors)) {
-                $this->logger(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message));
-                $this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
-                return FALSE;
-            } else {
-                $this->sMediaId = $oRet->media_id_string;
-                printf("- uploaded %s to attach to next tweet\n", $sImage);
-            }
+		//imgur implements meta tags that indicate to twitter which urls to use for inline preview
+		//so we're going to use those same meta tags to determine which urls to upload
+		//format: <meta name="twitter:image[0-3]:src" content="http://i.imgur.com/[a-zA-Z0-9].ext"/>
+		$aImageUrls = array();
 
-            return TRUE;
-        }
+		//fetch twitter meta tag values, up to 4
+		libxml_use_internal_errors(TRUE);
+		$oDocument = new DOMDocument();
+		$oDocument->loadHTML(file_get_contents($sUrl));
+		$oMetaTags = $oDocument->getElementsByTagName('meta');
+		foreach ($oMetaTags as $oTag) {
+			if (preg_match('/twitter:image\d:src/', $oTag->getAttribute('name'))) {
+				if ($oTag->getAttribute('content')) {
+					$aImageUrls[] = $oTag->getAttribute('content');
+				}
+			}
 
-        return FALSE;
-    }
+			if (count($aImageUrls) == 4) {
+				break;
+			}
+		}
+
+		//if we have at least one image, upload it to attach to tweet
+		if ($aImageUrls) {
+
+			foreach ($aImageUrls as $sImage) {
+				$this->uploadImageToTwitter($sImage);
+			}
+
+			return TRUE;
+		}
+
+		return FALSE;
+	}
+
+	private function uploadImageFromPage($sUrl) {
+
+		//imgur implements meta tags that indicate to twitter which urls to use for inline preview
+		//so we're going to use those same meta tags to determine which urls to upload
+		//format: <meta name="twitter:image:src" content="http://i.imgur.com/[a-zA-Z0-9].ext"/>
+
+		//fetch image from twitter meta tag
+		libxml_use_internal_errors(TRUE);
+		$oDocument = new DOMDocument();
+		$oDocument->loadHTML(file_get_contents($sUrl));
+		$oMetaTags = $oDocument->getElementsByTagName('meta');
+		foreach ($oMetaTags as $oTag) {
+			if ($oTag->getAttribute('name') == 'twitter:image:src') {
+				if ($oTag->getAttribute('content')) {
+					$sImage = $oTag->getAttribute('content');
+				}
+				break;
+			}
+		}
+
+		if (!empty($sImage)) {
+			return $this->uploadImageToTwitter($sImage);
+		}
+
+		return FALSE;
+	}
+
+	private function uploadImageFromInstagram($sUrl) {
+
+		//instagram implements og:image meta tag listing exact url of image
+		//this works on both account pages (tag contains user avatar) and photo pages (tag contains photo url)
+
+		//fetch image from twitter meta tag
+		libxml_use_internal_errors(TRUE);
+		$oDocument = new DOMDocument();
+		$oDocument->loadHTML(file_get_contents($sUrl));
+		$oMetaTags = $oDocument->getElementsByTagName('meta');
+		foreach ($oMetaTags as $oTag) {
+			if ($oTag->getAttribute('property') == 'og:image') {
+				if ($oTag->getAttribute('content')) {
+					$sImage = $oTag->getAttribute('content');
+				}
+				break;
+			}
+		}
+
+		if (!empty($sImage)) {
+			return $this->uploadImageToTwitter($sImage);
+		}
+
+		return FALSE;
+	}
+
+	private function uploadImageToTwitter($sImage) {
+
+		//upload image and save media id to attach to tweet
+		$sImageBinary = base64_encode(file_get_contents($sImage));
+		if ($sImageBinary && (
+			(preg_match('/\.gif/i', $sImage) && strlen($sImageBinary) < 3 * 1024^2) ||      //max size is 3MB for gif
+			(preg_match('/\.png|\.jpe?g/i', $sImage) && strlen($sImageBinary) < 5 * 1024^2) //max size is 5MB for png or jpeg
+		)) {
+			$oRet = $this->oTwitter->upload('media/upload', array('media' => $sImageBinary));
+			if (isset($oRet->errors)) {
+				$this->logger(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message));
+				$this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
+				return FALSE;
+			} else {
+				$this->aMediaIds[$sImage] = $oRet->media_id_string;
+				printf("- uploaded %s to attach to next tweet\n", $sImage);
+			}
+
+			return TRUE;
+		}
+
+		return FALSE;
+	}
 
     private function halt($sMessage = '') {
         echo $sMessage . "\n\nDone!\n\n";
