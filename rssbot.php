@@ -4,6 +4,7 @@ require_once('twitteroauth.php');
 /*
  * TODO:
  * - commands through mentions, replies through mentions/DMs like retweetbot
+ * v change aMediaIds array so naked image urls, image pages, instagram photos aren't included in tweets, but gallery urls and instagram accounts are
  */
 
 //runs every 15 minutes, mirroring & attaching images might take a while
@@ -461,7 +462,8 @@ class RssBot {
 		}
 
 		if (!empty($sImage)) {
-			return $this->uploadImageToTwitter($sImage);
+			//we want the page url truncated from the tweet, so use it as the index name
+			return $this->uploadImageToTwitter($sImage, $sUrl);
 		}
 
 		return FALSE;
@@ -471,6 +473,15 @@ class RssBot {
 
 		//instagram implements og:image meta tag listing exact url of image
 		//this works on both account pages (tag contains user avatar) and photo pages (tag contains photo url)
+
+		//we want instagram photo urls to be truncated from the tweet, but not instagram account urls
+		if (preg_match('/instagram\.com\/p\//i', $sUrl)) {
+			//custom name equal to original url
+			$sName = $sUrl;
+		} else {
+			//use url as index name
+			$sName = FALSE;
+		}
 
 		//fetch image from twitter meta tag
 		libxml_use_internal_errors(TRUE);
@@ -486,13 +497,17 @@ class RssBot {
 		}
 
 		if (!empty($sImage)) {
-			return $this->uploadImageToTwitter($sImage);
+			return $this->uploadImageToTwitter($sImage, $sName);
 		}
 
 		return FALSE;
 	}
 
-	private function uploadImageToTwitter($sImage) {
+	private function uploadImageToTwitter($sImage, $sName = FALSE) {
+
+		if (!$sName) {
+			$sName = $sImage;
+		}
 
 		//upload image and save media id to attach to tweet
 		$sImageBinary = base64_encode(file_get_contents($sImage));
@@ -506,7 +521,9 @@ class RssBot {
 				$this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
 				return FALSE;
 			} else {
-				$this->aMediaIds[$sImage] = $oRet->media_id_string;
+				//the index used here is the image url by default, and a later check removes the url from the
+				//tweet if it's equal to the index. if it needs to stay in the tweet, give a custom index.
+				$this->aMediaIds[$sName] = $oRet->media_id_string;
 				printf("- uploaded %s to attach to next tweet\n", $sImage);
 			}
 
