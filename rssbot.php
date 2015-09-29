@@ -4,8 +4,6 @@ require_once('twitteroauth.php');
 /*
  * TODO:
  * - commands through mentions, replies through mentions/DMs like retweetbot
- * - use xpath for fetching elements from image pages
- * x somehow r/buttcoin items are sometimes posted multiple times - bug? does the timestamp of items change?
  */
 
 //runs every 15 minutes, mirroring & attaching images might take a while
@@ -417,14 +415,13 @@ class RssBot {
 		//fetch twitter meta tag values, up to 4
 		libxml_use_internal_errors(TRUE);
 		$oDocument = new DOMDocument();
+		$oDocument->preserveWhiteSpace = FALSE;
 		$oDocument->loadHTML(file_get_contents($sUrl));
-		$oMetaTags = $oDocument->getElementsByTagName('meta');
+
+		$oXpath = new DOMXpath($oDocument);
+		$oMetaTags = $oXpath->query('//meta[contains(@name,"twitter:image")]');
 		foreach ($oMetaTags as $oTag) {
-			if (preg_match('/twitter:image\d:src/', $oTag->getAttribute('name'))) {
-				if ($oTag->getAttribute('content')) {
-					$aImageUrls[] = $oTag->getAttribute('content');
-				}
-			}
+			$aImageUrls[] = $oTag->getAttribute('content');
 
 			if (count($aImageUrls) == 4) {
 				break;
@@ -453,15 +450,14 @@ class RssBot {
 		//fetch image from twitter meta tag
 		libxml_use_internal_errors(TRUE);
 		$oDocument = new DOMDocument();
+		$oDocument->preserveWhiteSpace = FALSE;
 		$oDocument->loadHTML(file_get_contents($sUrl));
-		$oMetaTags = $oDocument->getElementsByTagName('meta');
+
+		$oXpath = new DOMXpath($oDocument);
+		$oMetaTags = $oXpath->query('//meta[@name="twitter:image:src"]');
 		foreach ($oMetaTags as $oTag) {
-			if ($oTag->getAttribute('name') == 'twitter:image:src') {
-				if ($oTag->getAttribute('content')) {
-					$sImage = $oTag->getAttribute('content');
-				}
-				break;
-			}
+			$sImage = $oTag->getAttribute('content');
+			break;
 		}
 
 		if (!empty($sImage)) {
@@ -479,15 +475,14 @@ class RssBot {
 		//fetch image from twitter meta tag
 		libxml_use_internal_errors(TRUE);
 		$oDocument = new DOMDocument();
+		$oDocument->preserveWhiteSpace = FALSE;
 		$oDocument->loadHTML(file_get_contents($sUrl));
-		$oMetaTags = $oDocument->getElementsByTagName('meta');
+
+		$oXpath = new DOMXpath($oDocument);
+		$oMetaTags = $oXpath->query('//meta[@property="og:image"]');
 		foreach ($oMetaTags as $oTag) {
-			if ($oTag->getAttribute('property') == 'og:image') {
-				if ($oTag->getAttribute('content')) {
-					$sImage = $oTag->getAttribute('content');
-				}
-				break;
-			}
+			$sImage = $oTag->getAttribute('content');
+			break;
 		}
 
 		if (!empty($sImage)) {
