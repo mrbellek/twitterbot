@@ -237,8 +237,7 @@ class RssBot {
 				}
 
                 //if field is image AND bAttachImage is TRUE, don't put the image url in the tweet since it will be included as a pic.twitter.com link
-				//TODO: possibly don't exclude the image url in case it's a gallery with multiple pictures?
-                if (!empty($aVar['bAttachImage']) && $aVar['bAttachImage'] == TRUE && in_array($sValue, $this->aMediaIds)) {
+                if (!empty($aVar['bAttachImage']) && $aVar['bAttachImage'] == TRUE && isset($this->aMediaIds[$sValue])) {
                     $sValue = '';
                 }
 
