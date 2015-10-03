@@ -325,6 +325,7 @@ class NotesScraper {
 
         //fetch the first page
 		$sResults = $this->getAddress($sUrl, FALSE);
+		file_put_contents('./lastwebpage.html', $sResults)
 
 		if (strlen($sResults) == 0) {
 			die("\ngoogle returned 0 bytes\n$sUrl");
@@ -336,7 +337,7 @@ class NotesScraper {
         $aAddresses = array();
 
         //keep going until the 'next page' link is no longer present
-        while (strpos($sResults, $sNextLink) !== FALSE && strpos($sResults, $sNextLink2) !== FALSE) {
+        while (strpos($sResults, $sNextLink) !== FALSE || strpos($sResults, $sNextLink2) !== FALSE) {
 
             //this isn't perfect (urls get truncated) but it'll do
             if (preg_match_all('/(https:\/\/blockchain.info\/address\/[a-zA-Z0-9]+)/', $sResults, $aMatches)) {
@@ -345,6 +346,7 @@ class NotesScraper {
             }
 
 			$sResults = $this->getAddress($sUrl . '&start=' . $iOffset, FALSE);
+			file_put_contents('./lastwebpage.html', $sResults);
             $iOffset += 10;
             echo '.';
         }
