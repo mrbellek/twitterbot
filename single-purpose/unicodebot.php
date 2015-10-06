@@ -1,6 +1,7 @@
 <?php
 require_once('unicodebot.inc.php');
 require_once('twitteroauth.php');
+define('DS', DIRECTORY_SEPARATOR);
 
 /*
  * TODO:
@@ -120,7 +121,7 @@ class TweetBot {
 
 		echo "Getting random record from json file..\n";
 
-		$aUnicodeLines = file($this->sJsonFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		$aUnicodeLines = file(MYPATH . DS . $this->sJsonFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		if ($aUnicodeLines) {
 			unset($aUnicodeLines[0]);
 			unset($aUnicodeLines[count($aUnicodeLines) - 1]);
@@ -241,7 +242,7 @@ class TweetBot {
 			}
 		}
 		$iChar = $aEmoticons[mt_rand(0, count($aEmoticons) - 1)];
-		$aUnicodeLines = file($this->sJsonFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+		$aUnicodeLines = file(MYPATH . DS . $this->sJsonFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 		$sDescription = '';
 		foreach ($aUnicodeLines as $sLine) {
 			if (strpos($sLine, '"' . strtoupper(dechex($iChar)) . '"') !== FALSE) {
