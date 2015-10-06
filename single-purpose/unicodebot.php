@@ -5,7 +5,9 @@ define('DS', DIRECTORY_SEPARATOR);
 
 /*
  * TODO:
- * - emojis on sunday
+ * v emojis on sunday
+ * - attach picture of character with google noto font array
+ * - random skin color for emojis that support it
  */
 
 $oTweetBot = new TweetBot(array(
@@ -142,12 +144,6 @@ class TweetBot {
 	}
 
 	private function getSmileyRow() {
-		/*
-		 * TODO:
-		 * v get smiley unicode blocks
-		 * v pick random char
-		 * - if possible, add random skin color where applicable
-		 */
 
 		//hardcoded ranges for emoticons and stuff, via http://en.wikipedia.org/wiki/Emoji
 		$aBlocks = array(
