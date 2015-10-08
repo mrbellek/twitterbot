@@ -124,7 +124,7 @@ class BitcoinPizzaBot {
         $aBtcPrices = array();
         foreach ($this->aBtcTickers as $sName => $aTicker) {
 
-            printf("- Checking BTC price at %s..\n", $sName);
+            printf("- Checking BTC price at %s..", $sName);
             $oResult = @json_decode(file_get_contents($aTicker['url'], FALSE, $oContext));
 
             $aSteps = explode('.', $aTicker['target']);
@@ -140,8 +140,10 @@ class BitcoinPizzaBot {
             }
 
             if (!empty($aResult[0]) && is_numeric($aResult[0])) {
+				echo (float)$aResult[0];
                 $aBtcPrices[$sName] = (float)$aResult[0];
             }
+			echo "\n";
         }
 
         return ($aBtcPrices ? array_sum($aBtcPrices) / count($aBtcPrices) : FALSE);
