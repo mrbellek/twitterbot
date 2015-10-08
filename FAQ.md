@@ -20,7 +20,7 @@ This is possible, depending on what it replies you could use one of the bots in 
 
 You can do this with the tweet bot.
 
-### ..posts mashups of all the things [x] tweets ###
+### ..posts mashups of all the tweets posted by this person ###
 
 You can do this with the Markov bot, feed it a Twitter archive as source.
 
