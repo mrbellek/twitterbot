@@ -32,8 +32,8 @@ class PictureBot {
 		//load args
 		$this->parseArgs($aArgs);
 
-		define('DS', DIRECTORY_SEPARATOR);
-	}
+			define('DS', DIRECTORY_SEPARATOR);
+		}
 
 	private function parseArgs($aArgs) {
 
@@ -84,9 +84,6 @@ class PictureBot {
 	}
 
 	private function getIdentity() {
-
-		//DEBUG
-		return TRUE;
 
 		echo "Fetching identify..\n";
 
@@ -139,7 +136,7 @@ class PictureBot {
 				unset($this->aPictureIndex['.']);
 				unset($this->aPictureIndex['..']);
 
-				file_put_contents(MYPATH . DS . $this->sSettingsFile, json_encode($this->aPictureIndex, JSON_PRETTY_PRINT));
+				file_put_contents(MYPATH . DS . $this->sSettingsFile, json_encode($this->aPictureIndex));
 
 				return TRUE;
 			}
@@ -179,17 +176,17 @@ class PictureBot {
 			$sFilename = array_rand($this->aPictureIndex);
 		}
 
-		$sFilename = $this->sPictureFolder . DS . utf8_decode($sFilename);
-		$aImageInfo = getimagesize($sFilename);
+		$sFilePath = $this->sPictureFolder . DS . utf8_decode($sFilename);
+		$aImageInfo = getimagesize($sFilePath);
 
 		$aFile = array(
-			'filename' => pathinfo($sFilename, PATHINFO_BASENAME),
-			'filepath' => $sFilename,
-			'size' => number_format(filesize($sFilename) / 1024, 0) . 'k',
+			'filename' => $sFilename,
+			'filepath' => $sFilePath,
+			'size' => number_format(filesize($sFilePath) / 1024, 0) . 'k',
 			'width' => $aImageInfo[0],
 			'height' => $aImageInfo[1],
-			'created' => date('Y-m-d', filectime($sFilename)),
-			'modified' => date('Y-m-d', filemtime($sFilename)),
+			'created' => date('Y-m-d', filectime($sFilePath)),
+			'modified' => date('Y-m-d', filemtime($sFilePath)),
 		);
 
 		return $aFile;
@@ -279,10 +276,8 @@ class PictureBot {
 
 	private function updatePostCount($aFile) {
 
-		$sFilename = str_replace(MYPATH . DS, '', $aFile['filepath']);
-
-		$this->aPictureIndex[$sFilename]++;
-		file_put_contents(MYPATH . DS . $this->sSettingsFile, json_encode($this->aPictureIndex, JSON_PRETTY_PRINT));
+		$this->aPictureIndex[$aFile['filename']]++;
+		file_put_contents(MYPATH . DS . $this->sSettingsFile, json_encode($this->aPictureIndex));
 
 		return TRUE;
 	}
