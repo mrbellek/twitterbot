@@ -325,7 +325,7 @@ class NotesScraper {
 
         //fetch the first page
 		$sResults = $this->getAddress($sUrl, FALSE);
-		file_put_contents('./lastwebpage.html', $sResults)
+		file_put_contents('./lastwebpage.html', $sResults);
 
 		if (strlen($sResults) == 0) {
 			die("\ngoogle returned 0 bytes\n$sUrl");
