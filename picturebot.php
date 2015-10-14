@@ -169,19 +169,40 @@ class PictureBot {
 
         if ($this->aTweetSettings['bPostOnlyOnce'] == TRUE) {
 			echo "Getting random unposted file from folder..\n";
+
+			//create temp array of all files that have postcount = 0 
 			$aTempIndex = array_filter($this->aPictureIndex, function($i) { return ($i == 0 ? TRUE : FALSE); });
+
+			//pick random file
 			$sFilename = array_rand($aTempIndex);
 		} else {
-			echo "Getting random file from folder..\n";
-			$sFilename = array_rand($this->aPictureIndex);
+			echo "Getting random file with lowest postcount from folder..\n";
+
+			//get lowest postcount in index
+			global $iLowestCount;
+			$iLowestCount = FALSE;
+			foreach ($this->aPictureIndex as $sFilename => $iCount) {
+				if ($iLowestCount === FALSE || $iCount < $iLowestCount) {
+					$iLowestCount = $iCount;
+				}
+			}
+
+			//create temp array of files with lowest postcount
+			$aTempIndex = array_filter($this->aPictureIndex, function($i) { global $iLowestCount; return ($i == $iLowestCount ? TRUE : FALSE); });
+
+			//pick random file
+			$sFilename = array_rand($aTempIndex);
 		}
 
 		$sFilePath = $this->sPictureFolder . DS . utf8_decode($sFilename);
 		$aImageInfo = getimagesize($sFilePath);
 
 		$aFile = array(
-			'filename' => $sFilename,
 			'filepath' => $sFilePath,
+			'dirname' => pathinfo($sFilePath, PATHINFO_DIRNAME),
+			'filename' => $sFilename,
+			'basename' => pathinfo($sFilePath, PATHINFO_FILENAME),
+			'extension' => pathinfo($sFilePath, PATHINFO_EXTENSION),
 			'size' => number_format(filesize($sFilePath) / 1024, 0) . 'k',
 			'width' => $aImageInfo[0],
 			'height' => $aImageInfo[1],
