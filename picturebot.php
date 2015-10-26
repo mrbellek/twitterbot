@@ -136,6 +136,18 @@ class PictureBot {
 				unset($this->aPictureIndex['.']);
 				unset($this->aPictureIndex['..']);
 
+				//merge with existing index
+				if (is_file(MYPATH . DS . $this->sSettingsFile) && filesize(MYPATH . DS . $this->sSettingsFile) > 0) {
+
+					$aOldPictureIndex = json_decode(file_get_contents(MYPATH . DS . $this->sSettingsFile), TRUE);
+					foreach ($aOldPictureIndex as $sFile => $iPostcount) {
+
+						//carry over postcount from existing files
+						if (isset($this->aPictureIndex[$sFile])) {
+							$this->aPictureIndex[$sFile] = $iPostcount;
+						}
+					}
+				}
 				file_put_contents(MYPATH . DS . $this->sSettingsFile, json_encode($this->aPictureIndex));
 
 				return TRUE;
