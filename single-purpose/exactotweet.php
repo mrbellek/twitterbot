@@ -1,19 +1,20 @@
 <?php
-require_once('../twitteroauth.php');
+require_once('twitteroauth.php');
 require_once('exactotweet.inc.php');
 
 /*
  * TODO:
- * - get followers
- * - get timeline tweets since last run (stream?)
- * - check which tweets are exactly 140 chars
- * - award 1 point to user
- * - notify the user some way that they scored a point. options:
+ * v get followers
+ * v get timeline tweets since last run (stream?)
+ * v check which tweets are exactly 140 chars
+ * v award 1 point to user
+ * v notify the user some way that they scored a point. options:
  *   - fav tweet
  *   - reply to tweet
- *   - quote tweet (more room for including running score)
- * - keep scoreboard of past 7 days
+ *   v quote tweet (more room for including running score)
+ * v keep scoreboard of past 7 days
  * - reply with scoreboard on demand (possibly top 10 and 'you are here' section?)
+ * - BUG: different path is used when called by cronjob then by browser
  */
 
 $o = new ExactoTweet(array('sUsername' => 'ExactoTweet'));

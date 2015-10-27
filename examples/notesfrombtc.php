@@ -1,4 +1,8 @@
 <?php
+/*
+ * TODO:
+ * - BUG: tweets are sometimes too long (check logfile and last_posted timestamp)
+ */
 require_once('notesfrombtc.inc.php');
 require_once('tweetbot.php');
 
