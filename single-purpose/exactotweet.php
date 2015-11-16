@@ -5,6 +5,7 @@ require_once('exactotweet.inc.php');
 /*
  * TODO:
  * v get followers
+ * - follow who follows us (send welcome message?)
  * v get timeline tweets since last run (stream?)
  * v check which tweets are exactly 140 chars
  * v award 1 point to user
@@ -32,7 +33,7 @@ class ExactoTweet {
 	private $aAnswerPhrases = array(
 		'scoreboard'	=> 'Your current scoreboard position is #%d, with %d points.',
 		'score'			=> 'Your current score is %d.',
-		'point'			=> 'ExactoTweet! 1 point to @%s for a 7-day score of %d. %s',
+		'point'			=> 'ExactoTweet! 1 point to @%s for a %d-day score of %d. %s',
 	);
 
 	public function __construct($aArgs) {
@@ -80,6 +81,8 @@ class ExactoTweet {
 		if ($this->getIdentity()) {
 
 			$this->checkTimeline();
+
+			//$this->postLeaderboard();
 
 			//$this->checkMentions();
 
@@ -138,7 +141,7 @@ class ExactoTweet {
 		foreach ($aTimeline as $oTweet) {
 
 			//check length, filter retweets
-			if (strlen($oTweet->text) == 140 && substr($oTweet->text, 3) !== 'RT ') {
+			if (strlen($oTweet->text) == 140 && substr($oTweet->text, 0, 3) !== 'RT ') {
 
 				//exactotweet!
 				printf('Exactotweet by <b>@%s</b>: %s<br>', $oTweet->user->screen_name, str_replace("\n", ' ', $oTweet->text));
@@ -175,13 +178,63 @@ class ExactoTweet {
 
 		$sTweetId = $oTweet->id_str;
 		$sTweetUrl = 'https://twitter.com/' . $oTweet->user->screen_name . '/status/' . $sTweetId;
-		$sMessage = sprintf($this->aAnswerPhrases['point'], $oTweet->user->screen_name, $iTotalScore, $sTweetUrl);
+		$sMessage = sprintf($this->aAnswerPhrases['point'],
+			$oTweet->user->screen_name,
+			$this->iLeaderboardTime / (3600 * 24),
+			$iTotalScore,
+			$sTweetUrl
+		);
 
 		$aReturn = $this->oTwitter->post('statuses/update', array('status' => $sMessage, 'trim_user' => TRUE));
 		if (is_object($aReturn) && !empty($aReturn->errors[0]->message)) {
 			$this->logger(2, sprintf('Twitter API call failed: POST statuses/update (%s)', $aReturn->errors[0]->message));
 			$this->halt(sprintf('- Failed posting tweet, halting. (%s)', $aReturn->errors[0]->message));
 			return FALSE;
+		}
+	}
+
+	private function postLeaderboard() {
+
+		//NB: image preview in timeline is 1024x512
+		$this->aSettings['scores']['test'] = array(1,2,3);
+		$this->aSettings['scores']['testuser'] = array(1,2,3);
+
+		//post leaderboard on Sunday 6 AM (-ish)
+		if (date('N') == 7 && substr(date('H:i'), 3) == '6:0') {
+
+			$iWidth = 600;
+			$iHeight = 300;
+			$sFont = MYPATH . '/arialbd.ttf';
+			$hImage = imagecreatetruecolor($iWidth, $iHeight);
+
+			$cWhite = imagecolorallocate($hImage, 255, 255, 255);
+			$cBlack = imagecolorallocate($hImage, 0, 0, 0);
+			imagefilledrectangle($hImage, 0, 0, $iWidth - 1, $iHeight - 1, $cWhite);
+
+			//print header
+			$sHeader = sprintf('ExactoTweet leaderboard for %s %s %d', date('M'), date('j') . date('S'), date('Y'));
+			imagettftext($hImage, 20, 0, 15, 35, $cBlack, $sFont, $sHeader);
+
+			//print leaderboard (first 5 users)
+			$iLineCount = 0;
+			foreach ($this->aSettings['scores'] as $sName => $aTweets) {
+				$sLine = sprintf('@%s: %d points', $sName, count($aTweets));
+				imagettftext($hImage, 10, 0, 15, 65 + 30 * $iLineCount, $cBlack, $sFont, $sLine);
+				$iLineCount++;
+
+				if ($iLineCount >= 5) {
+					break;
+				}
+			}
+
+			//print footer
+			$sFooter = 'Remember: tweet \'score\' or \'leaderboard\' to @ExactoTweet at any time to hear your score!';
+			imagettftext($hImage, 10, 0, 10, $iHeight - 30, $cBlack, $sFont, $sFooter);
+
+			imagepng($hImage, MYPATH . '/image.png');
+			imagedestroy($hImage);
+			echo('<img src="image.png" style="border: 1px solid black;">');
+			die();
 		}
 	}
 
