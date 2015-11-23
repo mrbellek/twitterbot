@@ -115,7 +115,7 @@ class PictureBot {
 	private function getIndex() {
 
 		//read file from disk if present from prev run
-		if (is_file(MYPATH . DS . $this->sSettingsFile) && filesize(MYPATH . DS . $this->sSettingsFile) > 0 && filemtime(MYPATH . DS . $this->sSettingsFile) + $this->iMaxIndexAge > time()) {
+		if (is_file(MYPATH . DS . $this->sSettingsFile) && filesize(MYPATH . DS . $this->sSettingsFile) > 0 && filemtime(MYPATH . DS . $this->sSettingsFile) + $this->iMaxIndexAge < time()) {
 
 			$this->aPictureIndex = json_decode(file_get_contents(MYPATH . DS . $this->sSettingsFile), TRUE);
 
