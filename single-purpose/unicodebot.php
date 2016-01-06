@@ -7,8 +7,8 @@ define('DS', DIRECTORY_SEPARATOR);
  * TODO:
  * v emojis on sunday
  * - replace unicode entities in description with unicode character ('ancient form of \u6055')
- * - attach picture of character with google noto font array
  * - random skin color for emojis that support it - http://www.unicode.org/reports/tr51/index.html
+ * ? attach picture of character with google noto font array
  */
 
 $oTweetBot = new TweetBot(array(

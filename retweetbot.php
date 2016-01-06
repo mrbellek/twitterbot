@@ -203,7 +203,7 @@ class RetweetBot
 		$oBlockedUsers = $this->oTwitter->get('blocks/ids', array('stringify_ids' => TRUE));
 		//note that not providing the 'cursor' param causes pagination in batches of 5000 ids
 
-		if (empty($oBlockedUsers->ids)) {
+		if (!empty($oBlockedUsers->errors)) {
 			$this->logger(2, sprintf('Twitter API call failed: GET blocks/ids (%s)', $oBlockedUsers->errors[0]->message));
 			$this->halt(sprintf('- Unable to get blocked users, halting. (%s)', $oBlockedUsers->errors[0]->message));
 			return FALSE;
