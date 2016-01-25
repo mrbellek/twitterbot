@@ -43,11 +43,12 @@ class RssBot {
         $this->sUsername = (!empty($aArgs['sUsername']) ? $aArgs['sUsername'] : '');
         $this->sUrl = (!empty($aArgs['sUrl']) ? $aArgs['sUrl'] : '');
         $this->sLastRunFile = (!empty($aArgs['sLastRunFile']) ? $aArgs['sLastRunFile'] : $this->sUsername . '-last.json');
+		$this->sFeedFormat = (!empty($aArgs['sFeedFormat']) ? $aArgs['sFeedFormat'] : 'xml');
 
         $this->aTweetSettings = array(
             'sFormat'       => (isset($aArgs['sTweetFormat']) ? $aArgs['sTweetFormat'] : ''),
             'aVars'         => (isset($aArgs['aTweetVars']) ? $aArgs['aTweetVars'] : array()),
-            'sTimestampXml' => (isset($aArgs['sTimestampXml']) ? $aArgs['sTimestampXml'] : 'pubDate'),
+            'sTimestampField' => (isset($aArgs['sTimestampField']) ? $aArgs['sTimestampField'] : 'pubDate'),
         );
 
 		$this->aFilters = (isset($aArgs['aFilters']) ? $aArgs['aFilters'] : array());
@@ -105,7 +106,14 @@ class RssBot {
 
     private function getRssFeed() {
 
-        $this->oFeed = simplexml_load_file($this->sUrl);
+		if ($this->sFeedFormat == 'json') {
+
+			$this->oFeed = json_decode(file_get_contents($this->sUrl));
+
+		} else {
+
+			$this->oFeed = simplexml_load_file($this->sUrl);
+		}
 
         return ($this->oFeed ? TRUE : FALSE);
     }
@@ -114,24 +122,25 @@ class RssBot {
 
         try {
             $oNewestItem = FALSE;
-            $sTimestampVar = $this->aTweetSettings['sTimestampXml'];
+            $sTimestampVar = $this->aTweetSettings['sTimestampField'];
             $aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . sprintf($this->sLastRunFile, 1)), TRUE);
-            $this->logger(5, sprintf('Starting postTweets() on %d items in XML feed, last search was %s', count($this->oFeed->channel->item), date('Y-m-d H:i:s', $aLastSearch['timestamp'])));
+            $this->logger(5, sprintf('Starting postTweets() on %d items in XML feed, last search was %s', count($this->oFeed->data->children), date('Y-m-d H:i:s', $aLastSearch['timestamp'])));
 
             $i = 0;
-            foreach ($this->oFeed->channel->item as $oItem) {
+			foreach ($this->oFeed->data->children as $oItem) {
                 $i++;
+				$oItem = $oItem->data;
 
                 //save newest item to set timestamp for next run
-                if (!$oNewestItem || strtotime($oItem->$sTimestampVar) > strtotime($oNewestItem->$sTimestampVar)) {
-                    $this->logger(5, sprintf('Item %d has timestamp %s, currently newest item', $i, date('Y-m-d H:i:s', strtotime($oItem->$sTimestampVar))));
+                if (!$oNewestItem || $oItem->$sTimestampVar > $oNewestItem->$sTimestampVar) {
+                    $this->logger(5, sprintf('Item %d has timestamp %s, currently newest item', $i, date('Y-m-d H:i:s', $oItem->$sTimestampVar)));
                     $oNewestItem = $oItem;
                 }
 
                 //don't tweet items we've already done last in run
                 if (!empty($oItem->$sTimestampVar)) {
-                    if (strtotime($oItem->$sTimestampVar) <= $aLastSearch['timestamp']) {
-                        $this->logger(5, sprintf('Item %d is older (%s) than newest item from last run, skipping', $i, date('Y-m-d H:i:s', strtotime($oItem->$sTimestampVar))));
+                    if ($oItem->$sTimestampVar <= $aLastSearch['timestamp']) {
+                        $this->logger(5, sprintf('Item %d is older (%s) than newest item from last run, skipping', $i, date('Y-m-d H:i:s', $oItem->$sTimestampVar)));
                         continue;
                     }
                 }
@@ -143,8 +152,9 @@ class RssBot {
                 }
                 $this->logger(5, sprintf('Formatted item %d into tweet "%s"', $i, $sTweet));
 
-                printf("- %s\n", utf8_decode($sTweet) . ' - ' . $oItem->pubDate);
+                printf("- %s\n", utf8_decode($sTweet) . ' - ' . $oItem->$sTimestampVar);
 
+				//post tweet, attach image if present
                 if ($this->aMediaIds) {
                     $this->logger(5, sprintf('Posting item %d (with %d pictures attached) to Twitter', $i, count($this->aMediaIds)));
                     $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE, 'media_ids' => implode(',', $this->aMediaIds)));
@@ -162,10 +172,10 @@ class RssBot {
 
             //save timestamp of last item to disk
             if (!empty($oNewestItem->$sTimestampVar)) {
-                if(strtotime($oNewestItem->$sTimestampVar) > $aLastSearch['timestamp']) {
-                    $this->logger(5, sprintf('Saving timestamp %s of newest item to disk', date('Y-m-d H:i:s', strtotime($oNewestItem->$sTimestampVar))));
+                if($oNewestItem->$sTimestampVar > $aLastSearch['timestamp']) {
+                    $this->logger(5, sprintf('Saving timestamp %s of newest item to disk', date('Y-m-d H:i:s', $oNewestItem->$sTimestampVar)));
                     $aLastItem = array(
-                        'timestamp' => strtotime($oNewestItem->$sTimestampVar),
+                        'timestamp' => $oNewestItem->$sTimestampVar,
                     );
                     file_put_contents(MYPATH . '/' . $this->sLastRunFile, json_encode($aLastItem));
                 } else {
@@ -185,10 +195,10 @@ class RssBot {
             $this->halt(sprintf('- Fatal error in postTweets(): %s', $e->getMessage()));
 
             //save timestamp of last item to disk
-            $this->logger(5, sprintf('[Exception] Saving timestamp %s of newest item to disk', date('Y-m-d H:i:s', strtotime($oNewestItem->$sTimestampVar))));
+            $this->logger(5, sprintf('[Exception] Saving timestamp %s of newest item to disk', date('Y-m-d H:i:s', $oNewestItem->$sTimestampVar)));
             if (!empty($oNewestItem->$sTimestampVar)) {
                 $aLastItem = array(
-                    'timestamp' => strtotime($oNewestItem->$sTimestampVar),
+                    'timestamp' => $oNewestItem->$sTimestampVar,
                 );
                 file_put_contents(MYPATH . '/' . $this->sLastRunFile, json_encode($aLastItem));
             }
@@ -234,6 +244,10 @@ class RssBot {
 							}
 						}
 					}
+				}
+
+				if (!empty($aVar['sPrefix'])) {
+					$sValue = $aVar['sPrefix'] . $sValue;
 				}
 
                 //if field is image AND bAttachImage is TRUE, don't put the image url in the tweet since it will be included as a pic.twitter.com link
@@ -372,7 +386,7 @@ class RssBot {
                         if ($bAttachImage) {
                             $this->uploadImageToTwitter($sText);
                         }
-					} elseif (preg_match('/imgur\.com\/.[^\/]/i', $sText) || preg_match('/imgur\/.com/gallery\//', $sText)) {
+					} elseif (preg_match('/imgur\.com\/.[^\/]/i', $sText) || preg_match('/imgur\/.com\/gallery\//', $sText)) {
 						//single image on imgur.com page
 						$sResult = 'image';
 						if ($bAttachImage) {
@@ -384,7 +398,7 @@ class RssBot {
 						if ($bAttachImage) {
 							$this->uploadImageFromGallery($sText);
 						}
-					} elseif (preg_match('/instagram\.com\/.[^/]/i', $sText) || preg_match('/instagram\.com\/p\//i', $sText)) {
+					} elseif (preg_match('/instagram\.com\/.[^\/]/i', $sText) || preg_match('/instagram\.com\/p\//i', $sText)) {
 						//instagram account or instagram photo
 						$sResult = 'instagram';
 						if ($bAttachImage) {
