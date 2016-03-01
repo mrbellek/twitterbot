@@ -424,6 +424,8 @@ class RssBot {
 		//imgur implements meta tags that indicate to twitter which urls to use for inline preview
 		//so we're going to use those same meta tags to determine which urls to upload
 		//format: <meta name="twitter:image[0-3]:src" content="http://i.imgur.com/[a-zA-Z0-9].ext"/>
+
+		//march 2016: imgur changed their meta tags, only the first (or random?) image is listed
 		$aImageUrls = array();
 
 		//fetch twitter meta tag values, up to 4
@@ -467,11 +469,21 @@ class RssBot {
 		$oDocument->preserveWhiteSpace = FALSE;
 		$oDocument->loadHTML(file_get_contents($sUrl));
 
+		$sImage = '';
 		$oXpath = new DOMXpath($oDocument);
 		$oMetaTags = $oXpath->query('//meta[@name="twitter:image:src"]');
 		foreach ($oMetaTags as $oTag) {
 			$sImage = $oTag->getAttribute('content');
 			break;
+		}
+
+		//march 2016: imgur changed their meta tags
+		if (empty($sImage)) {
+			$oMetaTags = $oXpath->query('//meta[@name="twitter:image"]');
+			foreach ($oMetaTags as $oTag) {
+				$sImage = $oTag->getAttribute('content');
+				break;
+			}
 		}
 
 		if (!empty($sImage)) {
