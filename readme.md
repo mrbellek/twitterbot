@@ -127,3 +127,36 @@ The Markov bot will grab a body of text, generate Markov Chains from it, and the
 Required arguments:
 * **sUsername** - the username of the Twitter account the bot will be posting from
 * **sInputFile** - the filename of the source body of text
+ 
+[to be finished later]
+
+## Picture bot ##
+
+This bot type will scan a folder filled with pictures and pick a random one to attach to a tweet. The tweet itself can use placeholders that are filled with properties of the chosen file, like filename, subfolder, file size, file type, etc. The folder is scanned recursively, so it can contain files as well as folders with files. The script will keep track of how many times each files was posted and always pick the one that was posted the least. You can opt to have it stop after every file was posted, or let it keep going indefinitely.
+
+The available placeholders to use in the tweet format are:
+* filepath - the full path + filename of the picture, including document root path
+* dirname - the subdirectory the picture is in
+* filename - filename of the picture
+* basename - filename of the picture, excluding extension
+* extension - extension of the picture filename
+* size - file size of the picture, in kilobytes
+* width - width of the picture, in pixels
+* height - height of the picture, in pixels
+* created - date when the file was created, yyyy-mm-dd
+* modified - date when the file was last modified, yyyy-mm-dd
+
+Required arguments:
+* **sUsername** - the username of the Twitter account the bot will be posting from
+* **sPictureFolder** - the folder containing all the pictures
+* **sTweetFormat** - format of the tweets
+
+Optional arguments:
+* **sSettingsFile** - the filename of the settings file. default: [twitter username].json
+* **iMaxIndexAge** - how often to rescan the picture folder for changed files. default: 24h
+* **bPostOnlyOnce** - post all files once, then stop. default: false
+* **sLogFile** - the filename of the log file. default: [twitter username].log
+
+## Finishing up your Twitter bot ##
+
+If all went well, you should have a small script that invokes one of the above base scripts, depending on the type. If you run that script, your bot will run once, and post one tweet. Once that works, the final step is to upload those files to your webhosting provider, and setup a task (a cronjob) to run that script periodically. Consult your provider's documentation on how to do this.
