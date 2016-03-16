@@ -1,17 +1,27 @@
 <?php
+/*$a = file_get_contents('c:\users\merijn.MBICASH\Downloads\holidaysbot_test.txt');
+$a = mb_convert_encoding($a, 'UTF-8', 'UTF-16');
+file_put_contents('c:\users\merijn.MBICASH\Downloads\holidaysbot_test.json', json_encode(str_replace(chr(0), '', $a)));
+echo '<pre>';
+var_dump($a, json_encode(str_replace(chr(0), '', $a)));
+var_dumP(json_last_error_msg());
+die();*/
 require_once('../twitteroauth.php');
 require_once('holidaysbot.inc.php');
 
 /**
  * TODO:
- * - fix '?' characters in json file
- * - Christian feast days
- * - not listing the 12 days of xmas
- * - holidays spanning multiple days
- * - variable holidays?
- * - jan 19 theophany/epiphany?
  * v search google image search for holiday + country and attach first image?
- * - tweet random holiday 4x daily, keep track of which we have tweeted about today
+ * - index the rest of the year's holidays lol
+ * - fix '?' characters in json file
+ * - removed consciously from list:
+ *   - Christian feast days
+ *   - 12 days of xmas
+ *   - holidays spanning multiple days
+ *   - variable holidays?
+ *   - jan 19 theophany/epiphany?
+ *   - eve's
+ * . tweet random holiday 4x daily, keep track of which we have tweeted about today
  * - international/worldwide note, and remove from name
  */
 
@@ -21,15 +31,15 @@ $o = new HolidaysBot(array(
 		 'Today is :name :url'												=> array('country' => FALSE, 'region' => FALSE, 'note' => FALSE),	//nothing
 		 'Today is :name in :country :url'									=> array('country' => TRUE, 'region' => FALSE, 'note' => FALSE),	//country
 		 'Today is :name in :region (:country) :url'						=> array('country' => TRUE, 'region' => TRUE, 'note' => FALSE),		//region + country
-		 'Today :name is celebrated by :note :url'							=> array('country' => FALSE, 'region' => FALSE, 'note' => TRUE),	//note
-		 'Today :name is celebrated by :note in :country :url'				=> array('country' => TRUE, 'region' => FALSE, 'note' => TRUE),		//note + country
-		 'Today :name is celebrated by :note in :region (:country) :url'	=> array('country' => TRUE, 'region' => TRUE, 'note' => TRUE),		//note + region + country
+		 'Today, :name is celebrated by :note :url'							=> array('country' => FALSE, 'region' => FALSE, 'note' => TRUE),	//note
+		 'Today, :name is celebrated by :note in :country :url'				=> array('country' => TRUE, 'region' => FALSE, 'note' => TRUE),		//note + country
+		 'Today, :name is celebrated by :note in :region (:country) :url'	=> array('country' => TRUE, 'region' => TRUE, 'note' => TRUE),		//note + region + country
 	),
 ));
 
-$o->run();
-//$o->test();
-//$o->importCsv();
+//$o->run();
+$o->importCsv();
+$o->test();
 
 class HolidaysBot {
 
@@ -71,6 +81,8 @@ class HolidaysBot {
 			foreach ($aDays as $iMonth => $aDays) {
 				foreach ($aDays as $iDay => $aHolidays) {
 					foreach ($aHolidays as $aHoliday) {
+						$aHoliday['month'] = $iMonth;
+						$aHoliday['day'] = $iDay;
 						$this->testPostMessage((object)$aHoliday);
 					}
 				}
@@ -200,9 +212,9 @@ class HolidaysBot {
 
 		//check if formatted tweet has room for attached image (23 + 1 chars)
 		if (strlen($sTempTweet) > 140 - 24) {
-			printf("- <b style='color: red;'>[%d]</b> %s\n", strlen($sTempTweet), $sTweet);
+			printf("<hr>- %d-%d <b style='color: red;'>[%d]</b> %s<hr>\n", $oHoliday->day, $oHoliday->month, strlen($sTempTweet), $sTweet);
 		} else {
-			printf("- <b>[%d]</b> %s\n", strlen($sTempTweet), $sTweet);
+			printf("- %d-%d <b>[%d]</b> %s\n", $oHoliday->day, $oHoliday->month, strlen($sTempTweet), $sTweet);
 		}
 		return TRUE;
 	}
@@ -217,13 +229,16 @@ class HolidaysBot {
 			return FALSE;
 		}
 
+		//die(var_dump($sTweet, 'ALMOST TWEETED HERE'));
+
 		$sMediaId = $this->attachPicture($oHoliday);
 		
 		//tweet
 		if ($sMediaId) {
-			$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE, 'media_ids' => $sMediaId));
+			//TODO: do we need the mb convert here?
+			$oRet = $this->oTwitter->post('statuses/update', array('status' => mb_convert_encoding($sTweet, 'UTF-8', 'HTML-ENTITIES'), 'trim_users' => TRUE, 'media_ids' => $sMediaId));
 		} else {
-			$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
+			$oRet = $this->oTwitter->post('statuses/update', array('status' => mb_convert_encoding($sTweet, 'UTF-8', 'HTML-ENTITIES'), 'trim_users' => TRUE));
 		}
 		if (isset($oRet->errors)) {
 			$this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
@@ -280,7 +295,7 @@ class HolidaysBot {
 			'q' => implode(' ', array_filter(array($oHoliday->name, $oHoliday->country, $oHoliday->region, $oHoliday->note))),
 			'num' => 5,
 			'start' => 1,
-			'imgSize' => 'large',
+			//'imgSize' => 'large',
 			'searchType' => 'image',
 			'key' => GOOGLE_CSE_API_KEY,
 			'cx' => '016694130760739954414:myhrixvr3k8',
@@ -392,25 +407,34 @@ class HolidaysBot {
 
 	public function importCsv() {
 
-		$hFile = fopen('C:/Users/merijn.MBICASH/Downloads/holidaysbot.csv', 'r');
+		$sFile = 'C:/Users/merijn.MBICASH/Downloads/holidaysbot.txt';
+		$sContents = file_get_contents($sFile);
+		$sContents = explode("\r\n", mb_convert_encoding($sContents, 'UTF-8', 'UTF-16'));
+
+		//replace the wikipedia nbsp (\u00a0)
+		$sContents = str_replace(' ', ' ', $sContents);
+
 		$aHolidays = array();
-		while (($aData = fgetcsv($hFile, 0, ';')) !== FALSE) {
-			if (is_numeric($aData[0])) {
+		foreach ($sContents as $sData) {
+			$aData = explode("\t", $sData);
+
+			//skip first line with column headers
+			if (is_numeric(trim($aData[0]))) {
+
 				list($iMonth, $iDay, $sCountry, $sRegion, $sNote, $sName, $sUrl) = $aData;
 
 				$aHolidays[$iMonth][$iDay][] = array(
-					'country' => utf8_encode($sCountry),
-					'region' => utf8_encode($sRegion),
-					'note' => utf8_encode($sNote),
-					'name' => utf8_encode($sName),
-					'url' => $sUrl,
+					'country' => $sCountry,
+					'region' => $sRegion,
+					'note' => $sNote,
+					'name' => $sName,
+					'url' => rtrim($sUrl),
 				);
 			}
 		}
-		fclose ($hFile);
+
 		file_put_contents('C:/Users/merijn.MBICASH/Documents/twitterbot.localhost/single-purpose/holidaysbot.json', json_encode($aHolidays, JSON_PRETTY_PRINT));
 		var_dumP(json_last_error_msg());
 		echo "done.\n";
-
 	}
 }
