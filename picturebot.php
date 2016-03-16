@@ -211,7 +211,7 @@ class PictureBot {
 
 		$aFile = array(
 			'filepath' => $sFilePath,
-			'dirname' => pathinfo($sFilePath, PATHINFO_DIRNAME),
+			'dirname' => pathinfo($sFilename, PATHINFO_DIRNAME),
 			'filename' => $sFilename,
 			'basename' => pathinfo($sFilePath, PATHINFO_FILENAME),
 			'extension' => pathinfo($sFilePath, PATHINFO_EXTENSION),
