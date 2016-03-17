@@ -6,10 +6,12 @@ require_once('holidaysbot.inc.php');
  * TODO:
  * v search google image search for holiday + country and attach first image?
  * v fix '?' characters in json file
- * . tweet random holiday 4x daily, keep track of which we have tweeted about today
- * - index the rest of the year's holidays lol
- * - international/worldwide note, and remove from name
+ * v tweet random holiday 4x daily, keep track of which we have tweeted about today
+ * v edge cases, like countries with notes, regions without countries, etc
+ * . index the rest of the year's holidays lol
+ * - replace 'England' with 'England, United Kingdom'?
  * - denote holidays 'important' that we always want to tweet
+ * ? international/worldwide note, and remove from name
  * - consciously not included:
  *   - Christian feast days
  *   - 12 days of xmas
@@ -23,11 +25,12 @@ $o = new HolidaysBot(array(
 	'sUsername' => 'HolidaysBot',
 	'aTweetFormats' => array(
 		 'Today is :name :url'												=> array('country' => FALSE, 'region' => FALSE, 'note' => FALSE),	//nothing
-		 'Today is :name in :country :url'									=> array('country' => TRUE, 'region' => FALSE, 'note' => FALSE),	//country
-		 'Today is :name in :region (:country) :url'						=> array('country' => TRUE, 'region' => TRUE, 'note' => FALSE),		//region + country
+		 'Today is :name in :country :url'									=> array('country' => TRUE,  'region' => FALSE, 'note' => FALSE),	//country
+		 'Today is :name in :region :url'									=> array('country' => FALSE, 'region' => TRUE,  'note' => FALSE),	//region
+		 'Today is :name in :region (:country) :url'						=> array('country' => TRUE,  'region' => TRUE,  'note' => FALSE),	//region + country
 		 'Today, :name is celebrated by :note :url'							=> array('country' => FALSE, 'region' => FALSE, 'note' => TRUE),	//note
-		 'Today, :name is celebrated by :note in :country :url'				=> array('country' => TRUE, 'region' => FALSE, 'note' => TRUE),		//note + country
-		 'Today, :name is celebrated by :note in :region (:country) :url'	=> array('country' => TRUE, 'region' => TRUE, 'note' => TRUE),		//note + region + country
+		 'Today, :name is celebrated by :note in :country :url'				=> array('country' => TRUE,  'region' => FALSE, 'note' => TRUE),	//note + country
+		 'Today, :name is celebrated by :note in :region (:country) :url'	=> array('country' => TRUE,  'region' => TRUE,  'note' => TRUE),	//note + region + country
 	),
 ));
 
@@ -190,7 +193,7 @@ class HolidaysBot {
 
 		//make note that we picked this holiday to prevent picking it again later
 		$aLastRun[date('n-j')][] = sha1(json_encode($oHoliday));
-		file_put_contents($this->sLastRunFile, json_encode($aLastRun, JSON_PRETTY_PRINT));
+		file_put_contents($this->sLastRunFile, json_encode($aLastRun));
 
 		return $oHoliday;
 	}
@@ -210,6 +213,7 @@ class HolidaysBot {
 		} else {
 			printf("- %d-%d <b>[%d]</b> %s\n", $oHoliday->day, $oHoliday->month, strlen($sTempTweet), $sTweet);
 		}
+
 		return TRUE;
 	}
 
@@ -262,13 +266,21 @@ class HolidaysBot {
 		}
 
 		//find correct tweet format for holiday information
-		foreach ($this->aTweetFormats as $sTweet => $aPlaceholders) {
-			if ($aPlaceholders['country'] == ($oHoliday->country ? TRUE : FALSE) &&
-				$aPlaceholders['region'] == ($oHoliday->region ? TRUE : FALSE) &&
-				$aPlaceholders['note'] == ($oHoliday->note ? TRUE : FALSE)) {
+		$sTweet = '';
+		foreach ($this->aTweetFormats as $sTweetFormat => $aPlaceholders) {
+			if (trim($aPlaceholders['country']) == ($oHoliday->country ? TRUE : FALSE) &&
+				trim($aPlaceholders['region']) == ($oHoliday->region ? TRUE : FALSE) &&
+				trim($aPlaceholders['note']) == ($oHoliday->note ? TRUE : FALSE)) {
 
+				$sTweet = $sTweetFormat;
 				break;
 			}
+		}
+
+		if (!$sTweet) {
+			$this->logger(2, sprintf('No tweet format found for holiday. (%s)', $oHoliday->name));
+			$this->halt('- No tweet format could be found for this holiday, halting.');
+			return FALSE;
 		}
 
 		//construct tweet
@@ -276,7 +288,8 @@ class HolidaysBot {
 			$sTweet = str_replace(':' . $sProperty, $sValue, $sTweet);
 		}
 
-		return $sTweet;
+		//trim trailing space for holidays without url
+		return trim($sTweet);
 	}
 
 	private function imageSearch($oHoliday) {
