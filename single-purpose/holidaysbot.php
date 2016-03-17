@@ -1,28 +1,22 @@
 <?php
-/*$a = file_get_contents('c:\users\merijn.MBICASH\Downloads\holidaysbot_test.txt');
-$a = mb_convert_encoding($a, 'UTF-8', 'UTF-16');
-file_put_contents('c:\users\merijn.MBICASH\Downloads\holidaysbot_test.json', json_encode(str_replace(chr(0), '', $a)));
-echo '<pre>';
-var_dump($a, json_encode(str_replace(chr(0), '', $a)));
-var_dumP(json_last_error_msg());
-die();*/
-require_once('../twitteroauth.php');
+require_once('twitteroauth.php');
 require_once('holidaysbot.inc.php');
 
 /**
  * TODO:
  * v search google image search for holiday + country and attach first image?
+ * v fix '?' characters in json file
+ * . tweet random holiday 4x daily, keep track of which we have tweeted about today
  * - index the rest of the year's holidays lol
- * - fix '?' characters in json file
- * - removed consciously from list:
+ * - international/worldwide note, and remove from name
+ * - denote holidays 'important' that we always want to tweet
+ * - consciously not included:
  *   - Christian feast days
  *   - 12 days of xmas
  *   - holidays spanning multiple days
  *   - variable holidays?
  *   - jan 19 theophany/epiphany?
  *   - eve's
- * . tweet random holiday 4x daily, keep track of which we have tweeted about today
- * - international/worldwide note, and remove from name
  */
 
 $o = new HolidaysBot(array(
@@ -37,9 +31,9 @@ $o = new HolidaysBot(array(
 	),
 ));
 
-//$o->run();
-$o->importCsv();
-$o->test();
+$o->run();
+//$o->importCsv();
+//$o->test();
 
 class HolidaysBot {
 
@@ -228,8 +222,6 @@ class HolidaysBot {
 		if (!$sTweet) {
 			return FALSE;
 		}
-
-		//die(var_dump($sTweet, 'ALMOST TWEETED HERE'));
 
 		$sMediaId = $this->attachPicture($oHoliday);
 		
