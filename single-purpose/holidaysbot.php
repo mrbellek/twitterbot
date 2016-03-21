@@ -9,9 +9,9 @@ require_once('holidaysbot.inc.php');
  * v tweet random holiday 4x daily, keep track of which we have tweeted about today
  * v edge cases, like countries with notes, regions without countries, etc
  * . index the rest of the year's holidays lol
- * - replace 'England' with 'England, United Kingdom'?
- * - denote holidays 'important' that we always want to tweet
+ * . denote holidays 'important' that we always want to tweet
  * ? international/worldwide note, and remove from name
+ * - replace 'England' with 'England, United Kingdom'?
  * - consciously not included:
  *   - Christian feast days
  *   - 12 days of xmas
@@ -426,12 +426,13 @@ class HolidaysBot {
 			//skip first line with column headers
 			if (is_numeric(trim($aData[0]))) {
 
-				list($iMonth, $iDay, $sCountry, $sRegion, $sNote, $sName, $sUrl) = $aData;
+				list($iMonth, $iDay, $sCountry, $sRegion, $sNote, $bImportant, $sName, $sUrl) = $aData;
 
 				$aHolidays[$iMonth][$iDay][] = array(
 					'country' => $sCountry,
 					'region' => $sRegion,
 					'note' => $sNote,
+					'important' => ($bImportant ? 1 : 0),
 					'name' => $sName,
 					'url' => rtrim($sUrl),
 				);
