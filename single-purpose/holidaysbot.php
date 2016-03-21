@@ -1,5 +1,5 @@
 <?php
-require_once('twitteroauth.php');
+require_once('../twitteroauth.php');
 require_once('holidaysbot.inc.php');
 
 /**
@@ -139,14 +139,14 @@ class HolidaysBot {
 
 	private function getAllHolidays() {
 
-		return json_decode(file_get_contents($this->sSettingsFile), TRUE);
+		return json_decode(file_get_contents(MYPATH . '/' . $this->sSettingsFile), TRUE);
 	}
 
 	private function getHolidays() {
 
 		echo "Fetching holidays..\n";
 
-		$oHolidays = json_decode(file_get_contents($this->sSettingsFile));
+		$oHolidays = json_decode(file_get_contents(MYPATH . '/' . $this->sSettingsFile));
 
 		if (!$oHolidays || json_last_error()) {
 
@@ -162,7 +162,7 @@ class HolidaysBot {
 
 		echo "Getting random holiday from today's that hasn't been posted yet..\n";
 
-		$aLastRun = json_decode(file_get_contents($this->sLastRunFile), TRUE);
+		$aLastRun = json_decode(file_get_contents(MYPATH . '/' . $this->sLastRunFile), TRUE);
 
 		//if file is invalid or from yesterday, delete it
 		if (!$aLastRun || !isset($aLastRun[date('n-j')])) {
@@ -193,7 +193,7 @@ class HolidaysBot {
 
 		//make note that we picked this holiday to prevent picking it again later
 		$aLastRun[date('n-j')][] = sha1(json_encode($oHoliday));
-		file_put_contents($this->sLastRunFile, json_encode($aLastRun));
+		file_put_contents(MYPATH . '/' . $this->sLastRunFile, json_encode($aLastRun));
 
 		return $oHoliday;
 	}
