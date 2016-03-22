@@ -1,5 +1,5 @@
 <?php
-require_once('../twitteroauth.php');
+require_once('twitteroauth.php');
 require_once('holidaysbot.inc.php');
 
 /**
@@ -187,9 +187,26 @@ class HolidaysBot {
 			return FALSE;
 		}
 
-		//pick random holiday from array
-		$aHolidays = array_values($aHolidays);
-		$oHoliday = $aHolidays[mt_rand(0, count($aHolidays) - 1)];
+		//split into holidays marked 'important' to tweet those first
+		$aImportantHolidays = array();
+		foreach ($aHolidays as $i => $oHoliday) {
+			if ($oHoliday->important) {
+				$aImportantHolidays[] = $oHoliday;
+				unset($aHolidays[$i]);
+			}
+		}
+
+		if ($aImportantHolidays) {
+
+			//pick random important holiday from array
+			echo "- Picked a holiday marked important\n";
+			$oHoliday = $aImportantHolidays[mt_rand(0, count($aImportantHolidays) - 1)];
+		} else {
+
+			//pick random holiday from array
+			$aHolidays = array_values($aHolidays);
+			$oHoliday = $aHolidays[mt_rand(0, count($aHolidays) - 1)];
+		}
 
 		//make note that we picked this holiday to prevent picking it again later
 		$aLastRun[date('n-j')][] = sha1(json_encode($oHoliday));
