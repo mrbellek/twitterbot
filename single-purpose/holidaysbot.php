@@ -8,8 +8,8 @@ require_once('holidaysbot.inc.php');
  * v fix '?' characters in json file
  * v tweet random holiday 4x daily, keep track of which we have tweeted about today
  * v edge cases, like countries with notes, regions without countries, etc
+ * v denote holidays 'important' that we always want to tweet
  * . index the rest of the year's holidays lol
- * . denote holidays 'important' that we always want to tweet
  * ? international/worldwide note, and remove from name
  * - replace 'England' with 'England, United Kingdom'?
  * - consciously not included:
@@ -247,18 +247,18 @@ class HolidaysBot {
 		$sMediaId = $this->attachPicture($oHoliday);
 		
 		//tweet
-		if ($sMediaId) {
+		if (!empty($sMediaId)) {
 			//TODO: do we need the mb convert here?
-			$oRet = $this->oTwitter->post('statuses/update', array('status' => mb_convert_encoding($sTweet, 'UTF-8', 'HTML-ENTITIES'), 'trim_users' => TRUE, 'media_ids' => $sMediaId));
+			$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE, 'media_ids' => $sMediaId));
 		} else {
-			$oRet = $this->oTwitter->post('statuses/update', array('status' => mb_convert_encoding($sTweet, 'UTF-8', 'HTML-ENTITIES'), 'trim_users' => TRUE));
+			$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
 		}
 		if (isset($oRet->errors)) {
 			$this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
 			$this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
 			return FALSE;
 		} else {
-			printf("- %s\n", utf8_decode($sTweet));
+			printf("- %s\n", htmlentities($sTweet));
 		}
 
 		return TRUE;
