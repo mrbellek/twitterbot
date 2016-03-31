@@ -2,22 +2,6 @@
     "1": {
         "1": [
             {
-                "country": "Scotland",
-                "region": "",
-                "note": "",
-                "important": 0,
-                "name": "the second day of Hogmanay",
-                "url": "https:\/\/en.wikipedia.org\/wiki\/Hogmanay"
-            },
-            {
-                "country": "",
-                "region": "",
-                "note": "African-Americans",
-                "important": 0,
-                "name": "the last day of Kwanzaa",
-                "url": "https:\/\/en.wikipedia.org\/wiki\/Kwanzaa"
-            },
-            {
                 "country": "Italy",
                 "region": "",
                 "note": "",
@@ -5918,7 +5902,7 @@
                 "region": "",
                 "note": "Bah\u00e1'\u00ed Faith",
                 "important": 0,
-                "name": "The last day of the Festival of Ridv\u00e1n",
+                "name": "the last day of the Festival of Ridv\u00e1n",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Ridv%C3%A1n"
             }
         ],
@@ -11456,7 +11440,7 @@
                 "region": "",
                 "note": "",
                 "important": 0,
-                "name": "\"Nane Nane, Swahili for \"\"8-8\"\" (Father's Day)\"",
+                "name": "Nane Nane, Swahili for \"8-8\" (Father's Day)",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/List_of_holidays_by_country#Tanzania"
             },
             {
@@ -11464,7 +11448,7 @@
                 "region": "",
                 "note": "",
                 "important": 0,
-                "name": "\"B\u0101 b\u0101 Day, Mandarin for \"\"father\"\" and \"\"8-8\"\" (Father's Day)\"",
+                "name": "B\u0101 b\u0101 Day, Mandarin for \"father\" and \"8-8\" (Father's Day)",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Father%27s_Day"
             },
             {
@@ -14990,7 +14974,7 @@
                 "region": "",
                 "note": "Thelema",
                 "important": 0,
-                "name": "\"Feast for Life of Aleister Crowley (\"\"Crowleymas\"\")\"",
+                "name": "Feast for Life of Aleister Crowley (\"Crowleymas\")",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Thelema#Thelemic_holidays"
             },
             {
@@ -17460,6 +17444,1510 @@
                 "important": 0,
                 "name": "Martyrs' Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Martyrs%27_Day_(United_Arab_Emirates)"
+            }
+        ]
+    },
+    "12": {
+        "1": [
+            {
+                "country": "Thailand",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Damrong Rajanubhab Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Damrong_Rajanubhab_Day"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Thelema",
+                "important": 0,
+                "name": "Feast for Death of Aleister Crowley",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Feast_for_Death_of_Aleister_Crowley"
+            },
+            {
+                "country": "Kazakhstan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "First President Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/First_President_Day"
+            },
+            {
+                "country": "Chad",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Freedom and Democracy Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Freedom_and_Democracy_Day"
+            },
+            {
+                "country": "Costa Rica",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Military Abolition Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Military_Abolition_Day"
+            },
+            {
+                "country": "Myanmar",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Day_(Myanmar)"
+            },
+            {
+                "country": "Romania",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Great Union Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Great_Union_Day"
+            },
+            {
+                "country": "Central African Republic",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Republic Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Republic_Day_(Central_African_Republic)"
+            },
+            {
+                "country": "Portugal",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Restoration of Independence Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Restoration_of_Independence_Day_(Portugal)"
+            },
+            {
+                "country": "United States",
+                "region": "Ohio and Oregon",
+                "note": "",
+                "important": 0,
+                "name": "Rosa Parks Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Rosa_Parks_Day"
+            },
+            {
+                "country": "Iceland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Fullveldisdagurinn (Self-governance Day)",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Self-governance_Day"
+            },
+            {
+                "country": "Panama",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Teachers' Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Teachers%27_Day"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "World AIDS Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/World_AIDS_Day"
+            }
+        ],
+        "2": [
+            {
+                "country": "Cuba",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Armed Forces Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Armed_Forces_Day_(Cuba)"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Day for the Abolition of Slavery",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Day_for_the_Abolition_of_Slavery"
+            },
+            {
+                "country": "Laos",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Day_(Laos)"
+            },
+            {
+                "country": "United Arab Emirates",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Day_(United_Arab_Emirates)"
+            }
+        ],
+        "3": [
+            {
+                "country": "India",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Advocate's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Advocate%27s_Day"
+            },
+            {
+                "country": "Cuba",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Doctors' Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Doctors%27_Day"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "United Nations' International Day of Persons with Disabilities",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/United_Nations%27_International_Day_of_Persons_with_Disabilities"
+            }
+        ],
+        "4": [
+            {
+                "country": "India",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Navy Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Navy_Day_(India)"
+            },
+            {
+                "country": "Thailand",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Thai Environment Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Thai_Environment_Day"
+            },
+            {
+                "country": "Tonga",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Tupou I Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Tupou_I_Day"
+            }
+        ],
+        "5": [
+            {
+                "country": "Suriname",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Children's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Children%27s_Day"
+            },
+            {
+                "country": "Day of the Ninja",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Day of the Ninja",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Ninja_Burger#Day_of_the_Ninja"
+            },
+            {
+                "country": "Haiti and Dominican Republic",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Discovery Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Discovery_Day#Hispaniola"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Volunteer Day for Economic and Social Development",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Volunteer_Day"
+            },
+            {
+                "country": "Netherlands",
+                "region": "Schiermonnikoog",
+                "note": "",
+                "important": 0,
+                "name": "Klozum",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Klozum"
+            },
+            {
+                "country": "Europe",
+                "region": "",
+                "note": "",
+                "important": 1,
+                "name": "Saint Nicholas' Eve",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Saint_Nicholas%27_Eve"
+            },
+            {
+                "country": "Austria",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Krampusnacht",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Krampusnacht"
+            },
+            {
+                "country": "Thailand",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "The King's Birthday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/King%27s_Birthday_(Thailand)"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "World Soil Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/World_Soil_Day"
+            }
+        ],
+        "6": [
+            {
+                "country": "Ecuador",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Anniversary of the Founding of Quito",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Anniversary_of_the_Founding_of_Quito"
+            },
+            {
+                "country": "Ukraine",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Armed Forces Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Armed_Forces_Day#Ukraine"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 1,
+                "name": "St Nicholas Day, where St. Nicholas leaves little presents in children's shoes",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/St_Nicholas_Day"
+            },
+            {
+                "country": "Spain",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Constitution Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Constitution_Day_(Spain)"
+            },
+            {
+                "country": "Azerbaijan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Day of the Ministry of Communications and Information Technologies",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Day_of_the_Ministry_of_Communications_and_Information_Technologies_of_Azerbaijan"
+            },
+            {
+                "country": "Finland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Independence Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Independence_Day_of_Finland"
+            },
+            {
+                "country": "Canada",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Day of Remembrance and Action on Violence Against Women",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Day_of_Remembrance_and_Action_on_Violence_Against_Women"
+            }
+        ],
+        "7": [
+            {
+                "country": "India",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Armed Forces Flag Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Armed_Forces_Flag_Day"
+            },
+            {
+                "country": "Colombia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Day of the Little Candles",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Day_of_the_Little_Candles"
+            },
+            {
+                "country": "Guatemala",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Quema del Diablo",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Quema_del_Diablo"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Civil Aviation Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Civil_Aviation_Day"
+            },
+            {
+                "country": "East Timor",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Heroes Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Culture_of_East_Timor#Public_holidays"
+            },
+            {
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Pearl Harbor Remembrance Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Pearl_Harbor_Remembrance_Day"
+            },
+            {
+                "country": "Armenia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Spitak Remembrance Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Spitak_Remembrance_Day"
+            },
+            {
+                "country": "Iran",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Student Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Student_Day_(Iran)"
+            }
+        ],
+        "8": [
+            {
+                "country": "Japan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Bodhi Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Bodhi_Day"
+            },
+            {
+                "country": "Caribbean Community and Cuba",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "CARICOM-Cuba Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/CARICOM%E2%80%93Cuba_Day"
+            },
+            {
+                "country": "Romania",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Constitution Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Constitution_Day_(Romania)"
+            },
+            {
+                "country": "Uzbekistan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Constitution Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Constitution_Day_(Uzbekistan)"
+            },
+            {
+                "country": "Finland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Day of Finnish Music",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Jean_Sibelius"
+            },
+            {
+                "country": "Albania",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Youth Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Youth_Day_(Albania)"
+            }
+        ],
+        "9": [
+            {
+                "country": "Sweden and Finland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Anna's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Name_days_in_Sweden"
+            },
+            {
+                "country": "Tanzania",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Independence Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Independence_Day_(Tanzania)"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Anti-Corruption Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Anti-Corruption_Day"
+            },
+            {
+                "country": "Antigua and Barbuda",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Heroes Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Heroes_Day_(Antigua_and_Barbuda)"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Russian Orthodox Church",
+                "important": 0,
+                "name": "Yuri's Day in the Autumn",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Yuri%27s_Day_in_the_Autumn"
+            }
+        ],
+        "10": [
+            {
+                "country": "Sweden",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Nobeldagen (Alfred Nobel Day)",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Alfred_Nobel_Day"
+            },
+            {
+                "country": "Thailand",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Constitution Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Constitution_Day_(Thailand)"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Human Rights Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Human_Rights_Day"
+            }
+        ],
+        "11": [
+            {
+                "country": "Kiribati",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Human Rights and Peace Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Human_Rights_and_Peace_Day"
+            },
+            {
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Indiana Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Indiana_Day"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Mountain Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Mountain_Day"
+            },
+            {
+                "country": "Buenos Aires",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Tango Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Tango_Day"
+            },
+            {
+                "country": "Philippines",
+                "region": "Pampanga province",
+                "note": "",
+                "important": 0,
+                "name": "Pampanga Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Pampanga_Day"
+            },
+            {
+                "country": "Burkina Faso",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Republic Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Republic_Day_(Burkina_Faso)"
+            }
+        ],
+        "12": [
+            {
+                "country": "Russia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Constitution Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Constitution_Day"
+            },
+            {
+                "country": "Croatia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Croatian Air Force Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Armed_Forces_Day#Croatia"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Bah\u00e1'\u00ed Faith",
+                "important": 0,
+                "name": "Feast of Mas\u00e1'il (Questions)",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Bah%C3%A1%27%C3%AD_calendar"
+            },
+            {
+                "country": "Ukraine",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Ground Forces Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Armed_Forces_Day#Ukraine"
+            },
+            {
+                "country": "Kenya",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Jamhuri Day (Independence Day)",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Jamhuri_Day"
+            },
+            {
+                "country": "Japan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Kanji Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Kanji_of_the_year"
+            },
+            {
+                "country": "Turkmenistan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Neutrality Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Day_of_Neutrality"
+            }
+        ],
+        "13": [
+            {
+                "country": "",
+                "region": "",
+                "note": "Acadian communities",
+                "important": 0,
+                "name": "Acadian Remembrance Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Acadian_Remembrance_Day"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Ancient Rome",
+                "important": 0,
+                "name": "Dies Natalis of the temple of Tellus",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Glossary_of_ancient_Roman_religion#dies_natalis"
+            },
+            {
+                "country": "Saint Lucia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Day_(Saint_Lucia)"
+            },
+            {
+                "country": "Malta",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Republic Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Republic_Day_(Malta)"
+            },
+            {
+                "country": "Brazil",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Sailor's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Armed_Forces_Day#Brazil"
+            },
+            {
+                "country": "Scandinavia,Italy, and Malta",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Saint Lucy's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Saint_Lucy%27s_Day"
+            }
+        ],
+        "14": [
+            {
+                "country": "United States",
+                "region": "Alabama",
+                "note": "",
+                "important": 0,
+                "name": "Alabama Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Alabama_Day"
+            },
+            {
+                "country": "Japan",
+                "region": "Sengaku-ji, Tokyo",
+                "note": "",
+                "important": 0,
+                "name": "Forty-seven Ronin Remembrance Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Forty-seven_Ronin"
+            },
+            {
+                "country": "Bangladesh",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Martyred Intellectuals Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Martyred_Intellectuals_Day"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Monkey Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Monkey_Day"
+            }
+        ],
+        "15": [
+            {
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Bill of Rights Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Bill_of_Rights_Day"
+            },
+            {
+                "country": "United States",
+                "region": "South Carolina",
+                "note": "",
+                "important": 0,
+                "name": "2nd Amendment Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/2nd_Amendment_Day"
+            },
+            {
+                "country": "Alderney",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Homecoming Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Homecoming_Day_(Alderney)"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Tea Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Tea_Day"
+            },
+            {
+                "country": "Netherlands",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Kingdom Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Koninkrijksdag"
+            },
+            {
+                "country": "Russia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Remembrance Day of Journalists Killed in the Line of Duty",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Remembrance_Day_of_Journalists_Killed_in_the_Line_of_Duty"
+            },
+            {
+                "country": "International Esperanto Community",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Zamenhof Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Zamenhof_Day"
+            }
+        ],
+        "16": [
+            {
+                "country": "South Africa",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Day of Reconciliation",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Day_of_Reconciliation"
+            },
+            {
+                "country": "Thailand",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Sports Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Sports_Day_(Thailand)"
+            },
+            {
+                "country": "Mexico, Latin America",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "the first day of Las Posadas",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Las_Posadas"
+            },
+            {
+                "country": "Philippines",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "the first day of the Simbang Gabi novena of masses",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Simbang_Gabi"
+            },
+            {
+                "country": "Bangladesh",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Victory Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Victory_Day_(Bangladesh)"
+            },
+            {
+                "country": "India",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Victory Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Vijay_Diwas_(India)"
+            },
+            {
+                "country": "Kazakhstan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Republic Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Republic_Day_(Kazakhstan)"
+            }
+        ],
+        "17": [
+            {
+                "country": "Bahrain",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Accession Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Accession_Day_(Bahrain)"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Day to End Violence Against Sex Workers",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Day_to_End_Violence_Against_Sex_Workers"
+            },
+            {
+                "country": "Bhutan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Day_(Bhutan)"
+            },
+            {
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Pan American Aviation Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Pan_American_Aviation_Day"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Ancient Rome",
+                "important": 0,
+                "name": "Saturnalia, in honor of Saturn",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Saturnalia"
+            },
+            {
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Wright Brothers Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Wright_Brothers_Day"
+            }
+        ],
+        "18": [
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Migrants Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Migrants_Day"
+            },
+            {
+                "country": "Qatar",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Qatar_National_Day"
+            },
+            {
+                "country": "Niger",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Republic Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Republic_Day_(Niger)"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "United Nations",
+                "important": 0,
+                "name": "UN Arabic Language Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/UN_Arabic_Language_Day"
+            }
+        ],
+        "19": [
+            {
+                "country": "India",
+                "region": "Goa",
+                "note": "",
+                "important": 0,
+                "name": "Liberation day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Indian_annexation_of_Goa"
+            }
+        ],
+        "20": [
+            {
+                "country": "R\u00e9union, French Guiana",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Abolition of Slavery Day, also known as F\u00eate des Cafres",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Cafres"
+            },
+            {
+                "country": "Myanmar",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Bo Aung Kyaw Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Bo_Aung_Kyaw_Day"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Human Solidarity Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Human_Solidarity_Day"
+            },
+            {
+                "country": "Macau",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Macau Special Administrative Region Establishment Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Macau_Special_Administrative_Region_Establishment_Day"
+            }
+        ],
+        "21": [
+            {
+                "country": "Philippines",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Armed Forces Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Armed_Forces_Day"
+            },
+            {
+                "country": "United States",
+                "region": "Plymouth, Massachusetts",
+                "note": "",
+                "important": 0,
+                "name": "Forefathers' Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Forefathers%27_Day"
+            },
+            {
+                "country": "S\u00e3o Tom\u00e9 and Pr\u00edncipe",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "S\u00e3o Tom\u00e9 Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_S%C3%A3o_Tom%C3%A9_and_Pr%C3%ADncipe"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Saiva Siddhanta Church",
+                "important": 0,
+                "name": "the first day of Pancha Ganapati",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Pancha_Ganapati"
+            }
+        ],
+        "22": [
+            {
+                "country": "Vietnam",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Armed Forces Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Armed_Forces_Day_(Vietnam)"
+            },
+            {
+                "country": "Indonesia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Mother's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Mother%27s_Day"
+            },
+            {
+                "country": "India",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Mathematics Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Mathematics_Day"
+            },
+            {
+                "country": "Cuba",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Teachers' Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Teachers%27_Day"
+            },
+            {
+                "country": "Zimbabwe",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Unity Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Unity_Day_(Zimbabwe)"
+            }
+        ],
+        "23": [
+            {
+                "country": "Sweden",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Birthday of the Queen Silvia",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Flag_days_in_Sweden"
+            },
+            {
+                "country": "South Sudan and Sudan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Children's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Children%27s_Day#South_Sudan"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Seinfeld communities",
+                "important": 0,
+                "name": "Festivus",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Festivus"
+            },
+            {
+                "country": "United States",
+                "region": "",
+                "note": "Secular humanism",
+                "important": 0,
+                "name": "HumanLight",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/HumanLight"
+            },
+            {
+                "country": "Mexico",
+                "region": "Oaxaca City",
+                "note": "",
+                "important": 0,
+                "name": "Night of the Radishes",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Night_of_the_Radishes"
+            },
+            {
+                "country": "Japan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Emperor Akihito's Birthday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/The_Emperor%27s_Birthday"
+            },
+            {
+                "country": "Canada",
+                "region": "Newfoundland and Labrador",
+                "note": "",
+                "important": 0,
+                "name": "Tibb's Eve",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Tibb%27s_Eve"
+            },
+            {
+                "country": "United Kingdom",
+                "region": "Mousehole, Cornwall",
+                "note": "",
+                "important": 0,
+                "name": "Tom Bawcock's Eve",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Tom_Bawcock%27s_Eve"
+            },
+            {
+                "country": "Egypt",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Victory Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Victory_Day_(Egypt)"
+            }
+        ],
+        "24": [
+            {
+                "country": "",
+                "region": "",
+                "note": "Christianity",
+                "important": 1,
+                "name": "Christmas Eve",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Christmas_Eve"
+            },
+            {
+                "country": "Iceland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "A\u00f0fangadagskv\u00f6ld",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/A%C3%B0fangadagskv%C3%B6ld"
+            },
+            {
+                "country": "Italy",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Feast of the Seven Fishes",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Feast_of_the_Seven_Fishes"
+            },
+            {
+                "country": "Denmark, Norway, Sweden",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Juleaften\/Julaften\/Julafton",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Juleaften_(Denmark)"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Orthodox Jewish communities",
+                "important": 0,
+                "name": "Nittel Nacht",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Nittel_Nacht"
+            },
+            {
+                "country": "Spain",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Nochebuena",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Nochebuena"
+            },
+            {
+                "country": "Finland",
+                "region": "Old Great Square of Turku",
+                "note": "",
+                "important": 0,
+                "name": "the Declaration of Christmas Peace",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Declaration_of_Christmas_Peace"
+            },
+            {
+                "country": "Libya",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Independence Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Independence_Day_(Libya)"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Anglo-Saxon paganism",
+                "important": 0,
+                "name": "M\u014ddraniht",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/M%C5%8Ddraniht"
+            },
+            {
+                "country": "Russia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Day of Military Honour - Siege of Ismail",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Days_of_Military_Honour"
+            }
+        ],
+        "25": [
+            {
+                "country": "Africa",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Children's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Children%27s_Day"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 1,
+                "name": "Christmas Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Christmas"
+            },
+            {
+                "country": "Taiwan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Constitution Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Constitution_Day_(Taiwan)"
+            },
+            {
+                "country": "India",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Good Governance Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Good_Governance_Day"
+            },
+            {
+                "country": "Russia",
+                "region": "",
+                "note": "Nakh peoples of Chechnya and Ingushetia",
+                "important": 0,
+                "name": "Malkh-Festival",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Malkh-Festival"
+            },
+            {
+                "country": "Pakistan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Quaid-e-Azam's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Quaid-e-Azam%27s_Day"
+            },
+            {
+                "country": "Peru",
+                "region": "Chumbivilcas Province",
+                "note": "",
+                "important": 0,
+                "name": "Takanakuy",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Takanakuy"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Western Christianity",
+                "important": 0,
+                "name": "the first of the Twelve Days of Christmas",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Twelve_Days_of_Christmas"
+            }
+        ],
+        "26": [
+            {
+                "country": "United States, United Kingdom, India, Australia, Southern Africa",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Boxing Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Boxing_Day"
+            },
+            {
+                "country": "South Africa and Namibia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Day of Good Will",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Day_of_Good_Will"
+            },
+            {
+                "country": "Vanuatu",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Family Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Family_Day_(Vanuatu)"
+            },
+            {
+                "country": "Solomon Islands",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Thanksgiving",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Thanksgiving_(Solomon_Islands)"
+            },
+            {
+                "country": "Slovenia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Independence and Unity Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Independence_and_Unity_Day_(Slovenia)"
+            },
+            {
+                "country": "United States",
+                "region": "Houston, Texas",
+                "note": "",
+                "important": 0,
+                "name": "Mauro Hamza Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Mauro_Hamza"
+            },
+            {
+                "country": "United Kingdom",
+                "region": "Padstow, Cornwall",
+                "note": "",
+                "important": 0,
+                "name": "Mummer's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Mummer%27s_Day"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Christianity",
+                "important": 0,
+                "name": "St. Stephen's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/St._Stephen%27s_Day"
+            },
+            {
+                "country": "Bulgaria",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Father's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Father%27s_Day_(Bulgaria)"
+            },
+            {
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "the first day of Kwanzaa",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Kwanzaa"
+            },
+            {
+                "country": "Bahamas",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "the first day of Junkanoo street parade",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Junkanoo"
+            },
+            {
+                "country": "Netherlands",
+                "region": "",
+                "note": "",
+                "important": 1,
+                "name": "Second day of Christmas",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_the_Netherlands"
+            },
+            {
+                "country": "Ireland and the Isle of Man",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Wren Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Wren_Day"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Zoroastrianism communities",
+                "important": 0,
+                "name": "Zartosht No-Diso",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Zartosht_No-Diso"
+            }
+        ],
+        "27": [
+            {
+                "country": "North Korea",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Constitution Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Constitution_Day_(North_Korea)"
+            },
+            {
+                "country": "Russia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Emergency Rescuer's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Emergency_Rescuer%27s_Day"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Eastern Orthodox Church",
+                "important": 0,
+                "name": "St. Stephen's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/St._Stephen%27s_Day"
+            }
+        ],
+        "28": [
+            {
+                "country": "Thailand",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "King Taksin Memorial Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/King_Taksin_Memorial_Day"
+            },
+            {
+                "country": "South Australia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Proclamation Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Proclamation_Day_(South_Australia)"
+            },
+            {
+                "country": "South Sudan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Republic Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Republic_Day_(South_Sudan)"
+            }
+        ],
+        "29": [
+            {
+                "country": "Ireland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Constitution Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Constitution_Day_(Ireland)"
+            },
+            {
+                "country": "Mongolia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Independence Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Independence_Day_(Mongolia)"
+            }
+        ],
+        "30": [
+            {
+                "country": "Slovakia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Day of the Declaration",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Remembrance_days_in_Slovakia"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "Church of Scientology",
+                "important": 0,
+                "name": "Freedom Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Scientology_holidays"
+            },
+            {
+                "country": "Philippines",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Rizal Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Rizal_Day"
+            }
+        ],
+        "31": [
+            {
+                "country": "Azerbaijan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Solidarity Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Solidarity_Day"
+            },
+            {
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 1,
+                "name": "New Year's Eve",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/New_Year%27s_Eve"
+            },
+            {
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "First Night",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/First_Night"
+            },
+            {
+                "country": "Philippines",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Bisper\u00e1s ng Bagong Ta\u00f3n (Last Day of the Year)",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Bisper%C3%A1s_ng_Bagong_Ta%C3%B3n"
+            },
+            {
+                "country": "Japan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "\u014cmisoka",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/%C5%8Cmisoka"
+            },
+            {
+                "country": "United Kingdom",
+                "region": "Scotland",
+                "note": "",
+                "important": 0,
+                "name": "The first day of Hogmanay or \"Auld Year's Night",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Hogmanay"
             }
         ]
     }
