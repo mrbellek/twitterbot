@@ -9,7 +9,9 @@ require_once('holidaysbot.inc.php');
  * v tweet random holiday 4x daily, keep track of which we have tweeted about today
  * v edge cases, like countries with notes, regions without countries, etc
  * v denote holidays 'important' that we always want to tweet
- * . index the rest of the year's holidays lol
+ * v bug where " in Excel turns into "" in tweet
+ * v take next GIS result when downloading first pick fails
+ * v index the rest of the year's holidays lol
  * ? international/worldwide note, and remove from name
  * - replace 'England' with 'England, United Kingdom'?
  * - consciously not included:
@@ -18,7 +20,7 @@ require_once('holidaysbot.inc.php');
  *   - holidays spanning multiple days
  *   - variable holidays?
  *   - jan 19 theophany/epiphany?
- *   - eve's
+ *   - eve's of [x] when there's [x] the next day
  */
 
 $o = new HolidaysBot(array(
@@ -343,10 +345,7 @@ class HolidaysBot {
 			}
 
 			if ($aImages) {
-				$sImage = $aImages[mt_rand(0, count($aImages) - 1)];
-				//printf('<img src="%s" /><br>', $sImage);
-
-				return $sImage;
+				return $aImages;
 			}
 
 			return FALSE;
@@ -361,10 +360,25 @@ class HolidaysBot {
 
 	private function attachPicture($oHoliday) {
 
-		$sImageUrl = $this->imageSearch($oHoliday);
+		//get 5 image urls from google image search
+		$aImages = $this->imageSearch($oHoliday);
 
-		if ($sImageUrl) {
-			$sImageBinary = base64_encode(file_get_contents($sImageUrl));
+		//loop over urls until we find one that's live and accessible
+		$sImageUrl = FALSE;
+		shuffle($aImages);
+		while($aImages) {
+			//take url from array and fetch it
+			$sImageUrl = array_pop($aImages);
+			$sImageBinary = @file_get_contents($sImageUrl);
+
+			//if we succeeded, break from loop
+			if ($sImageBinary) {
+				break;
+			}
+		}
+
+		if ($sImageUrl && $sImageBinary) {
+			$sImageBinary = base64_encode($sImageBinary);
 			if ($sImageBinary && (
 				(preg_match('/\.gif/i', $sImageUrl) && strlen($sImageBinary) < 3 * 1024 ^ 2) ||		//max size is 3MB for gif
 				(preg_match('/\.png|\.jpe?g/i', $sImageUrl) && strlen($sImageBinary) < 5 * 1024 ^ 2) //max size is 5MB for png/jpg
@@ -444,6 +458,11 @@ class HolidaysBot {
 			if (is_numeric(trim($aData[0]))) {
 
 				list($iMonth, $iDay, $sCountry, $sRegion, $sNote, $bImportant, $sName, $sUrl) = $aData;
+
+				//fix names with double quotes in them, causing them to be doubled
+				if (strpos($sName, '"') !== FALSE) {
+					$sName = trim(str_replace('""', '"', $sName), '"');
+				}
 
 				$aHolidays[$iMonth][$iDay][] = array(
 					'country' => $sCountry,
