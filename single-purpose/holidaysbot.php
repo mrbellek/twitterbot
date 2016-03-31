@@ -313,6 +313,8 @@ class HolidaysBot {
 
 	private function imageSearch($oHoliday) {
 
+		echo "- Searching Google Image Search for image\n";
+
 		//use google custom search engine (CSE) to look for images about the holiday name + country + region + note
 		$sBaseCse = 'https://www.googleapis.com/customsearch/v1';
 		$aParams = array(
@@ -378,6 +380,9 @@ class HolidaysBot {
 		}
 
 		if ($sImageUrl && $sImageBinary) {
+
+			printf("- Attaching %s..\n", $sImageUrl);
+
 			$sImageBinary = base64_encode($sImageBinary);
 			if ($sImageBinary && (
 				(preg_match('/\.gif/i', $sImageUrl) && strlen($sImageBinary) < 3 * 1024 ^ 2) ||		//max size is 3MB for gif
@@ -393,6 +398,8 @@ class HolidaysBot {
 					return $oRet->media_id_string;
 				}
 			}
+		} else {
+			echo "- No images could be fetched\n";
 		}
 
 		return FALSE;
