@@ -1,5 +1,6 @@
 <?php
-require_once('twitteroauth.php');
+//die(date('Y-m-d', strtotime('2016-03-01 previous day')));
+require_once('../twitteroauth.php');
 require_once('holidaysbot.inc.php');
 
 /**
@@ -13,12 +14,14 @@ require_once('holidaysbot.inc.php');
  * v take next GIS result when downloading first pick fails
  * v index the rest of the year's holidays lol
  * ? international/worldwide note, and remove from name
+ * . variable holidays?
+ *   - watch out for holidays involving easter that span multiple years
+ * - holidays that only occur on some years
  * - replace 'England' with 'England, United Kingdom'?
  * - consciously not included:
  *   - Christian feast days
- *   - 12 days of xmas
- *   - holidays spanning multiple days
- *   - variable holidays?
+ *   - 12 days of xmas (except first day)
+ *   - holidays spanning multiple days (except first day)
  *   - jan 19 theophany/epiphany?
  *   - eve's of [x] when there's [x] the next day
  */
@@ -223,14 +226,27 @@ class HolidaysBot {
 		if (!$sTweet) {
 			return FALSE;
 		}
-		
+
 		$sTempTweet = preg_replace('/https:\/\/\S+/', str_repeat('x', 23), $sTweet);
 
+		//for dynamic holidays, find date
+		if ($oHoliday->dynamic) {
+			$iDynamicHoliday = $this->calculateDynamicDate($oHoliday);
+
+			//replace month + date, add log note
+			if ($iDynamicHoliday) {
+				$oHoliday->month = date('m', $iDynamicHoliday);
+				$oHoliday->day = date('d', $iDynamicHoliday);
+
+				$sTweet .= ' <b>(dynamic)</b>';
+			}
+		}
+		
 		//check if formatted tweet has room for attached image (23 + 1 chars)
 		if (strlen($sTempTweet) > 140 - 24) {
-			printf("<hr>- %d-%d <b style='color: red;'>[%d]</b> %s<hr>\n", $oHoliday->day, $oHoliday->month, strlen($sTempTweet), $sTweet);
+			printf("<hr>- %d-%d <b style='color: red;'>[%d]</b> %s<hr>\n", $oHoliday->month, $oHoliday->day, strlen($sTempTweet), $sTweet);
 		} else {
-			printf("- %d-%d <b>[%d]</b> %s\n", $oHoliday->day, $oHoliday->month, strlen($sTempTweet), $sTweet);
+			printf("- %d-%d <b>[%d]</b> %s\n", $oHoliday->month, $oHoliday->day, strlen($sTempTweet), $sTweet);
 		}
 
 		return TRUE;
@@ -239,6 +255,17 @@ class HolidaysBot {
 	private function postMessage($oHoliday) {
 
 		echo "Posting tweet..\n";
+
+		//for dynamic holidays, find date
+		if ($oHoliday->dynamic) {
+			$iDynamicHoliday = $this->calculateDynamicDate($oHoliday);
+
+			//replace month + date
+			if ($iDynamicHoliday) {
+				$oHoliday->month = date('m', $iDynamicHoliday);
+				$oHoliday->day = date('d', $iDynamicHoliday);
+			}
+		}
 
 		//construct tweet
 		$sTweet = $this->formatTweet($oHoliday);
@@ -448,6 +475,69 @@ class HolidaysBot {
 		}
 	}
 
+	private function calculateDynamicDate($oHoliday) {
+
+		if (strpos($oHoliday->dynamic, ':easter_orthodox') !== FALSE) {
+
+			//holiday related to date of Orthodox Easter
+			$iDynamicHoliday = strtotime(str_replace(':easter', date('Y-m-d', $this->easter_orthodox_date()), $oHoliday->dynamic));
+		} elseif (strpos($oHoliday->dynamic, ':easter') !== FALSE) {
+
+			//holiday related to date of Easter
+			$iDynamicHoliday = strtotime(str_replace(':easter', date('Y-m-d', easter_date()), $oHoliday->dynamic));
+
+		} elseif (strpos($oHoliday->dynamic, ':equinox_vernal') !== FALSE) {
+
+			//holiday related to the vernal equinox (march 20/21)
+			$iDynamicHoliday = strtotime(str_replace(':equinox_vernal', date('Y-m-d', $this->equinox_vernal_date()), $oHoliday->dynamic));
+
+		} else {
+
+			//normal relative holiday
+			if (isset($oHoliday->day) && $oHoliday->day) {
+				//e.g. 2009-05-01 next sunday
+				$iDynamicHoliday = strtotime(sprintf('%s-%s-%s %s', date('Y'), $oHoliday->month, $oHoliday->day, $oHoliday->dynamic));
+			} else {
+				//e.g. first sunday of may 2009
+				$iDynamicHoliday = strtotime(sprintf('%s of %s %s', $oHoliday->dynamic, date('F', mktime(0, 0, 0, $oHoliday->month)), date('Y')));
+			}
+		}
+
+		return $iDynamicHoliday;
+	}
+
+	//get this year's vernal equinox date (timestamp)
+	private function equinox_vernal_date() {
+
+		//http://www.phpro.org/examples/Get-Vernal-Equinox.html
+
+		$gmt = gmmktime(0, 0, 0, 1, 1, 2000);
+		$days_from_base = 79.3125 + (date('Y') - 2000) * 365.2425;
+		$seconds_from_base = $days_from_base * 86400;
+
+		$equinox = round($gmt + $seconds_from_base);
+
+		return $equinox;
+	}
+
+	//get this year's orthodox easter date (timestamp)
+	private function easter_orthodox_date() {
+
+		//http://php.net/manual/en/function.easter-date.php#83794
+
+		$year = date('Y');
+
+		$a = $year % 4;
+		$b = $year % 7;
+		$c = $year % 19;
+		$d = (19 * $c + 15) % 30;
+		$e = (2 * $a + 4 * $b - $d + 34) % 7;
+		$month = floor(($d + $e + 114) / 31);
+		$day = (($d + $e + 114) % 31) + 1;
+
+		return mktime(0, 0, 0, $month, $day + 13, $year);
+	}
+
 	public function importCsv() {
 
 		$sFile = 'C:/Users/merijn.MBICASH/Downloads/holidaysbot.txt';
@@ -464,7 +554,7 @@ class HolidaysBot {
 			//skip first line with column headers
 			if (is_numeric(trim($aData[0]))) {
 
-				list($iMonth, $iDay, $sCountry, $sRegion, $sNote, $bImportant, $sName, $sUrl) = $aData;
+				list($iMonth, $iDay, $sDynamic, $sCountry, $sRegion, $sNote, $bImportant, $sName, $sUrl) = $aData;
 
 				//fix names with double quotes in them, causing them to be doubled
 				if (strpos($sName, '"') !== FALSE) {
@@ -472,6 +562,7 @@ class HolidaysBot {
 				}
 
 				$aHolidays[$iMonth][$iDay][] = array(
+					'dynamic' => $sDynamic,
 					'country' => $sCountry,
 					'region' => $sRegion,
 					'note' => $sNote,
