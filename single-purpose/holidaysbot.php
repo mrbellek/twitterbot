@@ -15,7 +15,9 @@ require_once('holidaysbot.inc.php');
  * v index the rest of the year's holidays lol
  * ? international/worldwide note, and remove from name
  * . variable holidays?
+ *   v getHolidays should return dynamic holidays' calculated date
  *   - watch out for holidays involving easter that span multiple years
+ *   - lee-jackson day is 0 januari?
  * - holidays that only occur on some years
  * - replace 'England' with 'England, United Kingdom'?
  * - consciously not included:
@@ -160,7 +162,33 @@ class HolidaysBot {
 			return FALSE;
 		}
 
-		return $oHolidays->{date('n')}->{date('j')};
+		$aTodayHolidays = $oHolidays->{date('n')}->{date('j')};
+
+		//for dynamic holidays, find date and add to list if today
+		foreach ($oHolidays as $iMonth => $aMonthHolidays) {
+			foreach ($aMonthHolidays as $iDay => $aDayHolidays) {
+				foreach ($aDayHolidays as $key => $oHoliday) {
+
+					if ($oHoliday->dynamic) {
+						$oHoliday->month = ($iMonth && $iMonth != '_empty_' ? $iMonth : NULL);
+						$oHoliday->day = ($iDay && $iDay != '_empty_' ? $iDay : NULL);
+						
+						$iDynamicHoliday = $this->calculateDynamicDate($oHoliday);
+						if ($iDynamicHoliday) {
+							$iDynamicMonth = date('n', $iDynamicHoliday);
+							$iDynamicDay = date('j', $iDynamicHoliday);
+
+							if ($iDynamicMonth == date('n') && $iDynamicDay == date('j')) {
+								//add to today's holidays
+								$aTodayHolidays[] = $oHoliday;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return $aTodayHolidays;
 	}
 
 	private function getRandomHoliday($aHolidays) {
@@ -255,17 +283,6 @@ class HolidaysBot {
 	private function postMessage($oHoliday) {
 
 		echo "Posting tweet..\n";
-
-		//for dynamic holidays, find date
-		if ($oHoliday->dynamic) {
-			$iDynamicHoliday = $this->calculateDynamicDate($oHoliday);
-
-			//replace month + date
-			if ($iDynamicHoliday) {
-				$oHoliday->month = date('m', $iDynamicHoliday);
-				$oHoliday->day = date('d', $iDynamicHoliday);
-			}
-		}
 
 		//construct tweet
 		$sTweet = $this->formatTweet($oHoliday);
