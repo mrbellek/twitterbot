@@ -144,6 +144,15 @@
                 "important": 0,
                 "name": "Triumph of the Revolution",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Triumph_of_the_Revolution"
+            },
+            {
+                "dynamic": "+ 255 day",
+                "country": "",
+                "region": "",
+                "note": "programmers around the world",
+                "important": 1,
+                "name": "Programmer's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Programmers%27_Day"
             }
         ],
         "": [
@@ -175,7 +184,7 @@
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Martin_Luther_King,_Jr._Day"
             },
             {
-                "dynamic": "third Monday - 3 day",
+                "dynamic": "third Monday of %s - 3 day",
                 "country": "United States",
                 "region": "Virginia",
                 "note": "",
@@ -5484,6 +5493,26 @@
                 "important": 0,
                 "name": "Sham el-Nessim",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Sham_el-Nessim"
+            }
+        ],
+        "": [
+            {
+                "dynamic": "second Friday",
+                "country": "Liberia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Fast and Prayer Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Fast_and_Prayer_Day"
+            },
+            {
+                "dynamic": "third Monday",
+                "country": "Germany",
+                "region": "Z\u00fcrich",
+                "note": "",
+                "important": 0,
+                "name": "Sechsel\u00e4uten",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Sechsel%C3%A4uten"
             },
             {
                 "dynamic": "last Saturday",
@@ -5511,26 +5540,6 @@
                 "important": 0,
                 "name": "Turkmen Racing Horse Festival",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_Turkmenistan"
-            }
-        ],
-        "": [
-            {
-                "dynamic": "second Friday",
-                "country": "Liberia",
-                "region": "",
-                "note": "",
-                "important": 0,
-                "name": "Fast and Prayer Day",
-                "url": "https:\/\/en.wikipedia.org\/wiki\/Fast_and_Prayer_Day"
-            },
-            {
-                "dynamic": "third Monday",
-                "country": "Germany",
-                "region": "Z\u00fcrich",
-                "note": "",
-                "important": 0,
-                "name": "Sechsel\u00e4uten",
-                "url": "https:\/\/en.wikipedia.org\/wiki\/Sechsel%C3%A4uten"
             }
         ],
         "2": [
@@ -7521,7 +7530,7 @@
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Beltane"
             },
             {
-                "dynamic": "second Sunday - 2 day",
+                "dynamic": "second Sunday of %s - 2 day",
                 "country": "United States",
                 "region": "",
                 "note": "",
@@ -7636,6 +7645,15 @@
                 "important": 0,
                 "name": "Turkmen Carpet Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Turkmen_Carpet_Day"
+            },
+            {
+                "dynamic": ":easter + 98 day",
+                "country": "Armenia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Vartavar",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Vartavar"
             }
         ],
         "2": [
@@ -9916,6 +9934,269 @@
                 "url": "https:\/\/en.wikipedia.org\/wiki\/World_Milk_Day"
             }
         ],
+        "": [
+            {
+                "dynamic": "first Sunday",
+                "country": "Canada",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Canadian Forces Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Armed_Forces_Day#Canada"
+            },
+            {
+                "dynamic": "first Sunday",
+                "country": "Lithuania",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Father's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Father%27s_Day"
+            },
+            {
+                "dynamic": "first Monday",
+                "country": "Ireland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "June Holiday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/June_Holiday"
+            },
+            {
+                "dynamic": "first Friday",
+                "country": "Bahamas",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Labour Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Labour_Day"
+            },
+            {
+                "dynamic": "first Sunday",
+                "country": "Hungary",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Teacher's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Teacher%27s_Day"
+            },
+            {
+                "dynamic": "first Monday",
+                "country": "New Zealand, Cook Islands, Fiji",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "the Queen's Birthday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Queen%27s_Official_Birthday"
+            },
+            {
+                "dynamic": "first Sunday",
+                "country": "Iceland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "the Seamen's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_Iceland"
+            },
+            {
+                "dynamic": "first Sunday",
+                "country": "Western Australia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Western Australia Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Western_Australia_Day"
+            },
+            {
+                "dynamic": "second Monday",
+                "country": "Australia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "the Queen's Birthday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Queen%27s_Birthday#Australia"
+            },
+            {
+                "dynamic": "third Sunday",
+                "country": "most of Europe, most of Asia, the Americas",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Father's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Father%27s_Day"
+            },
+            {
+                "dynamic": "last Saturday",
+                "country": "United Kingdom",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Armed Forces Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Armed_Forces_Day_(United_Kingdom)"
+            },
+            {
+                "dynamic": "last Sunday",
+                "country": "Kenya",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Mother's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Mother%27s_Day"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "Northern hemisphere",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "summer solstice",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Summer_solstice"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "Southern hemisphere",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "winter solstice",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Winter_solstice"
+            },
+            {
+                "dynamic": ":summer_solstice next Saturday",
+                "country": "Finland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Day of the Finnish Flag",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Day_of_the_Finnish_Flag"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Surfing Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Surfing_Day"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "Northern hemisphere",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Litha \/ Midsummer",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Midsummer"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "Southern hemisphere",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Yule",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Midsummer"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "Northern Ireland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Day of Private Reflection",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Day_of_Private_Reflection"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "United States",
+                "region": "Fremont, Seattle, Washington",
+                "note": "",
+                "important": 0,
+                "name": "Fremont Solstice Parade",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Fremont_Solstice_Parade"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "India",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Guru Purnima",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Guru_Purnima"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Yoga Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Yoga_Day"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "Finland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Juhannus",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Juhannus"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "Canada",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Aboriginal Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Aboriginal_Day"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "Iran",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Tireg\u0101n",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Tireg%C4%81n"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "World Music Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/F%C3%AAte_de_la_Musique"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "Peru",
+                "region": "Machu Picchu",
+                "note": "",
+                "important": 0,
+                "name": "Inti Raymi",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Inti_Raymi"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "Chile",
+                "region": "Mapuche",
+                "note": "",
+                "important": 0,
+                "name": "We Tripantu",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/We_Tripantu"
+            },
+            {
+                "dynamic": ":summer_solstice",
+                "country": "",
+                "region": "",
+                "note": "Aymara people",
+                "important": 0,
+                "name": "Willkakuti (Andean-Amazonic New Year)",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Willkakuti"
+            }
+        ],
         "2": [
             {
                 "dynamic": "",
@@ -12021,6 +12302,125 @@
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Van_Mahotsav"
             }
         ],
+        "": [
+            {
+                "dynamic": "first Monday",
+                "country": "Guyana",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "CARICOM Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/CARICOM_Day"
+            },
+            {
+                "dynamic": "first Monday",
+                "country": "Cayman Islands",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Constitution Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Constitution_Day"
+            },
+            {
+                "dynamic": "first Monday",
+                "country": "Zambia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Heroes' Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Heroes%27_Day_(Zambia)"
+            },
+            {
+                "dynamic": "first Saturday",
+                "country": "United Kingdom",
+                "region": "Bristol",
+                "note": "",
+                "important": 0,
+                "name": "St Pauls Carnival",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/St_Pauls_Carnival"
+            },
+            {
+                "dynamic": "first Sunday",
+                "country": "Singapore",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Youth Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Youth_Day"
+            },
+            {
+                "dynamic": "third Monday",
+                "country": "Puerto Rico",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "the Birthday of Don Luis Mu\u00f1oz Rivera",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Birthday_of_Don_Luis_Mu%C3%B1oz_Rivera"
+            },
+            {
+                "dynamic": "third Sunday",
+                "country": "Turkmenistan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Galla Bayramy can fall",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Galla_Bayramy"
+            },
+            {
+                "dynamic": "third Monday",
+                "country": "Japan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Marine Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Marine_Day"
+            },
+            {
+                "dynamic": "third Monday",
+                "country": "Botswana",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "President's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/President%27s_Day_(Botswana)"
+            },
+            {
+                "dynamic": "fourth Saturday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Parents' Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Parents%27_Day"
+            },
+            {
+                "dynamic": "last Sunday",
+                "country": "Dominican Republic",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Father's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Father%27s_Day"
+            },
+            {
+                "dynamic": "last Sunday",
+                "country": "Australia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Tree Planting Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Arbor_Day"
+            },
+            {
+                "dynamic": "last Sunday",
+                "country": "Russia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Navy Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Navy_Day"
+            }
+        ],
         "2": [
             {
                 "dynamic": "",
@@ -13613,6 +14013,197 @@
                 "important": 0,
                 "name": "Yorkshire Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Yorkshire_Day"
+            }
+        ],
+        "": [
+            {
+                "dynamic": "first Monday of %s - 3 day",
+                "country": "Bermuda",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Somer's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_Bermuda"
+            },
+            {
+                "dynamic": "first Saturday",
+                "country": "Canada",
+                "region": "Toronto",
+                "note": "",
+                "important": 0,
+                "name": "Caribana",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Caribana"
+            },
+            {
+                "dynamic": "first Monday",
+                "country": "Anguilla, Bahamas, British Virgin Islands",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Emancipation Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Emancipation_Day"
+            },
+            {
+                "dynamic": "first Monday",
+                "country": "Ireland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "August Bank Holiday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/August_Bank_Holiday_(Ireland)"
+            },
+            {
+                "dynamic": "first Monday",
+                "country": "Canada",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Civic Holiday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Civic_Holiday"
+            },
+            {
+                "dynamic": "first Monday",
+                "country": "Iceland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Fr\u00eddagur verslunarmanna (Commerce Day)",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Commerce_Day"
+            },
+            {
+                "dynamic": "first Monday",
+                "country": "Zambia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Farmers' Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Farmers%27_Day"
+            },
+            {
+                "dynamic": "first Friday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Beer Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Beer_Day"
+            },
+            {
+                "dynamic": "first Sunday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Friendship Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Friendship_Day"
+            },
+            {
+                "dynamic": "first Monday",
+                "country": "Barbados",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Kadooment Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Kadooment_Day"
+            },
+            {
+                "dynamic": "first Monday",
+                "country": "Samoa",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Labor Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Labor_Day_(Samoa)"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "Argentina",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Children's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Children%27s_Day"
+            },
+            {
+                "dynamic": "second Tuesday",
+                "country": "Zimbabwe",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Defence Forces Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_Zimbabwe"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "Brazil, Samoa",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Father's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Father%27s_Day"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "Turkmenistan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Melon Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Melon_Day"
+            },
+            {
+                "dynamic": "third Sunday",
+                "country": "Peru",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Children's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Children%27s_Day"
+            },
+            {
+                "dynamic": "third Monday",
+                "country": "Netherlands",
+                "region": "Haarlem, Amsterdam",
+                "note": "",
+                "important": 0,
+                "name": "Hartjesdag (Day of Hearts)",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Hartjesdag"
+            },
+            {
+                "dynamic": "fourth Monday",
+                "country": "Philippines",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Heroes' Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Heroes%27_Day_(Philippines)"
+            },
+            {
+                "dynamic": "last Monday of %s - 1 day",
+                "country": "United Kingdom",
+                "region": "Notting Hill",
+                "note": "",
+                "important": 0,
+                "name": "Notting Hill Carnival",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Notting_Hill_Carnival"
+            },
+            {
+                "dynamic": "last Monday",
+                "country": "South Sudan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Father's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Father%27s_Day"
+            },
+            {
+                "dynamic": "last Wednesday",
+                "country": "Spain",
+                "region": "Bu\u00f1ol",
+                "note": "",
+                "important": 0,
+                "name": "La Tomatina",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/La_Tomatina"
             }
         ],
         "2": [
@@ -15228,6 +15819,15 @@
             },
             {
                 "dynamic": "",
+                "country": "Asia, Europe, the Americas",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "First day of school",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/First_day_of_school"
+            },
+            {
+                "dynamic": "",
                 "country": "Uzbekistan",
                 "region": "",
                 "note": "",
@@ -15270,6 +15870,206 @@
                 "important": 0,
                 "name": "Wattle Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Wattle_Day"
+            }
+        ],
+        "": [
+            {
+                "dynamic": "first Sunday",
+                "country": "Australia, Fiji, New Zealand, Papua New Guinea",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Father's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Father%27s_Day"
+            },
+            {
+                "dynamic": "first Monday",
+                "country": "United States, Canada, Palau",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Labor Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Labor_Day"
+            },
+            {
+                "dynamic": "first Friday",
+                "country": "Singapore",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Teacher's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Teacher%27s_Day"
+            },
+            {
+                "dynamic": "first Sunday of %s + 4 day",
+                "country": "Switzerland",
+                "region": "Canton of Geneva",
+                "note": "",
+                "important": 0,
+                "name": "Je\u00fbne genevois",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Je%C3%BBne_genevois"
+            },
+            {
+                "dynamic": "first Monday of %s + 6 day",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Grandparents Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Grandparents_Day"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "",
+                "region": "",
+                "note": "Church of Scientology",
+                "important": 0,
+                "name": "Auditor's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Scientology_holidays"
+            },
+            {
+                "dynamic": "second Saturday",
+                "country": "Turkmenistan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Day of the Workers in the Oil, Gas, Power, and Geological Industry",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_Turkmenistan"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "Canada, Estonia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Grandparents Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_Estonia"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "Turkmenistan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Turkmen Bakhshi Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_Turkmenistan"
+            },
+            {
+                "dynamic": "third Sunday",
+                "country": "Ukraine",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Father's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Father%27s_Day"
+            },
+            {
+                "dynamic": "third Saturday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "German-American Steuben Parade",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/German-American_Steuben_Parade"
+            },
+            {
+                "dynamic": "third Friday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "POW\/MIA Recognition Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_POW\/MIA_Recognition_Day"
+            },
+            {
+                "dynamic": "third Tuesday",
+                "country": "Netherlands",
+                "region": "",
+                "note": "",
+                "important": 1,
+                "name": "Prinsjesdag",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Prinsjesdag"
+            },
+            {
+                "dynamic": "third Monday",
+                "country": "Japan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Respect for the Aged Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Respect_for_the_Aged_Day"
+            },
+            {
+                "dynamic": ":equinox_autumnal",
+                "country": "Northern Hemisphere",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Autumnal Equinox",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Autumnal_equinox"
+            },
+            {
+                "dynamic": ":equinox_autumnal",
+                "country": "Southern Hemisphere",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Vernal Equinox",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Vernal_equinox"
+            },
+            {
+                "dynamic": ":equinox_autumnal",
+                "country": "Japan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Autumnal Equinox Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Autumnal_Equinox_Day"
+            },
+            {
+                "dynamic": ":equinox_autumnal",
+                "country": "",
+                "region": "",
+                "note": "French Revolution",
+                "important": 0,
+                "name": "French Republican New Year",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/French_Republican_Calendar"
+            },
+            {
+                "dynamic": ":equinox_autumnal",
+                "country": "United Kingdom",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Harvest festival",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Harvest_festival"
+            },
+            {
+                "dynamic": ":equinox_autumnal",
+                "country": "Northern Hemisphere",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Mabon",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Mabon_(Wicca)"
+            },
+            {
+                "dynamic": ":equinox_autumnal",
+                "country": "Southern Hemisphere",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Ostara",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Ostara"
+            },
+            {
+                "dynamic": ":equinox_autumnal",
+                "country": "",
+                "region": "",
+                "note": "ancient Latvia",
+                "important": 0,
+                "name": "the first day of Mi\u0137e\u013ci",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Mi%C4%B7e%C4%BCi"
             }
         ],
         "2": [
@@ -15864,7 +16664,7 @@
                 "region": "",
                 "note": "",
                 "important": 0,
-                "name": "Enkutatash, elebrated on the first day of M\u00e4sk\u00e4r\u00e4m",
+                "name": "Enkutatash (first day of M\u00e4sk\u00e4r\u00e4m)",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Enkutatash"
             },
             {
@@ -17177,6 +17977,170 @@
                 "important": 0,
                 "name": "World Vegetarian Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/World_Vegetarian_Day"
+            }
+        ],
+        "": [
+            {
+                "dynamic": "first Monday",
+                "country": "Chile, Singapore",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Children's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Children%27s_Day"
+            },
+            {
+                "dynamic": "first Monday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "World Habitat Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/World_Habitat_Day"
+            },
+            {
+                "dynamic": "second Monday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 1,
+                "name": "Columbus Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Columbus_Day#United_States_observance"
+            },
+            {
+                "dynamic": "second Monday",
+                "country": "United States",
+                "region": "Hawaii",
+                "note": "",
+                "important": 0,
+                "name": "Discoverer's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Discoverer%27s_Day#Local_observances"
+            },
+            {
+                "dynamic": "second Monday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Indigenous Peoples' Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Indigenous_Peoples%27_Day"
+            },
+            {
+                "dynamic": "second Monday",
+                "country": "United States",
+                "region": "Chickasaw Nation",
+                "note": "",
+                "important": 0,
+                "name": "Piomingo Day",
+                "url": ""
+            },
+            {
+                "dynamic": "second Monday",
+                "country": "Malawi",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Mother's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_Malawi"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "United States and Canada",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "the first day of Fire Prevention Week",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Fire_Prevention_Week"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "Canada",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Thanksgiving",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Thanksgiving_(Canada)"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "Samoa, Tonga",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "White Sunday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/White_Sunday"
+            },
+            {
+                "dynamic": "third Monday",
+                "country": "Jamaica",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Heroes' Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Heroes%27_Day"
+            },
+            {
+                "dynamic": "third Monday",
+                "country": "Argentina",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Mother's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Mother%27s_Day"
+            },
+            {
+                "dynamic": "third Saturday",
+                "country": "United States",
+                "region": "Great Lakes Region",
+                "note": "",
+                "important": 0,
+                "name": "Sweetest Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Sweetest_Day"
+            },
+            {
+                "dynamic": "fourth Monday",
+                "country": "New Zealand",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Labour Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Labour_Day_(New_Zealand)"
+            },
+            {
+                "dynamic": "fourth Saturday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Make a Difference Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Make_a_Difference_Day"
+            },
+            {
+                "dynamic": "last Friday",
+                "country": "United States",
+                "region": "Nevada",
+                "note": "",
+                "important": 0,
+                "name": "Nevada Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Nevada_Day"
+            },
+            {
+                "dynamic": "last Monday",
+                "country": "Ireland",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "October Holiday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/October_Holiday"
+            },
+            {
+                "dynamic": "last Friday",
+                "country": "Australia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Teacher's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Teacher%27s_Day_(Australia)"
             }
         ],
         "2": [
@@ -18855,6 +19819,15 @@
                 "important": 0,
                 "name": "Thevar Jayanthi",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Thevar_Jayanthi"
+            },
+            {
+                "dynamic": "next Saturday",
+                "country": "Finland, Sweden",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "All Saints Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_Finland"
             }
         ],
         "31": [
@@ -19077,6 +20050,170 @@
                 "important": 0,
                 "name": "World Vegan Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/World_Vegan_Day"
+            }
+        ],
+        "": [
+            {
+                "dynamic": "first Friday",
+                "country": "Samoa",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Arbor Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Arbor_Day"
+            },
+            {
+                "dynamic": "first Saturday",
+                "country": "South Africa",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Children's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Children%27s_Day"
+            },
+            {
+                "dynamic": "first Saturday",
+                "country": "Turkmenistan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Health Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Health_Day"
+            },
+            {
+                "dynamic": "first Monday of %s + 1 day",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Election Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Election_Day_(United_States)"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "Estonia, Finland, Iceland, Norway, and Sweden",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Father's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Father%27s_Day"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "South Sudan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Grandparents Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Grandparents_Day_(South_Sudan)"
+            },
+            {
+                "dynamic": "second Monday",
+                "country": "Tuvalu",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "the Heir to the Throne's Birthday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Heir_to_the_Throne%27s_Birthday"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "El Salvador",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Day of the Pupusa",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Pupusa"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "United Kingdom",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Remembrance Sunday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Remembrance_Sunday"
+            },
+            {
+                "dynamic": "third Thursday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Beaujolais Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Beaujolais_Day"
+            },
+            {
+                "dynamic": "third Monday",
+                "country": "Mexico",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Day of the Revolution",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Fiestas_Patrias_(Mexico)#Aniversario_de_la_Revoluci.C3.B3n"
+            },
+            {
+                "dynamic": "third Thursday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Great American Smokeout",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Great_American_Smokeout"
+            },
+            {
+                "dynamic": "fourth Thursday of %s - 5 day",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Survivors of Suicide Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Survivors_of_Suicide_Day"
+            },
+            {
+                "dynamic": "fourth Thursday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 1,
+                "name": "Thanksgiving Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Thanksgiving_(United_States)"
+            },
+            {
+                "dynamic": "fourth Thursday of %s + 1 day",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 1,
+                "name": "Black Friday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Black_Friday_(shopping)"
+            },
+            {
+                "dynamic": "fourth Thursday of %s + 1 day",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Buy Nothing Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Buy_Nothing_Day"
+            },
+            {
+                "dynamic": "last Sunday",
+                "country": "Turkmenistan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Harvest Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Harvest_Day"
+            },
+            {
+                "dynamic": "last Sunday",
+                "country": "Russia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Mother's Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Mother%27s_Day"
             }
         ],
         "2": [
@@ -20752,6 +21889,107 @@
                 "url": "https:\/\/en.wikipedia.org\/wiki\/World_AIDS_Day"
             }
         ],
+        "": [
+            {
+                "dynamic": "first Friday",
+                "country": "Ghana",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Farmers' Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Farmers%27_Day_(Ghana)"
+            },
+            {
+                "dynamic": "first Sunday",
+                "country": "Turkmenistan",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Good Neighborliness Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Good_Neighborliness_Day"
+            },
+            {
+                "dynamic": "second Monday",
+                "country": "Malawi",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Tree Planting Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Tree_Planting_Day_(Malawi)"
+            },
+            {
+                "dynamic": ":winter_solstice",
+                "country": "Northern Hemisphere",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Winter solstice",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Winter_solstice"
+            },
+            {
+                "dynamic": ":winter_solstice",
+                "country": "Southern Hemisphere",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Summer solstice",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Summer_solstice"
+            },
+            {
+                "dynamic": ":winter_solstice",
+                "country": "Iran",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Yald\u0101",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Yald%C4%81"
+            },
+            {
+                "dynamic": ":winter_solstice",
+                "country": "",
+                "region": "",
+                "note": "Western Christianity",
+                "important": 0,
+                "name": "Blue Christmas",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Blue_Christmas_(holiday)"
+            },
+            {
+                "dynamic": ":winter_solstice",
+                "country": "Asia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Dongzhi Festival",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Dongzhi_Festival"
+            },
+            {
+                "dynamic": ":winter_solstice",
+                "country": "",
+                "region": "",
+                "note": "Theravada Buddhism",
+                "important": 0,
+                "name": "Sanghamitta Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Sangamitta"
+            },
+            {
+                "dynamic": ":winter_solstice",
+                "country": "Northern Hemisphere",
+                "region": "",
+                "note": "Neopagan Wheel of the Year",
+                "important": 0,
+                "name": "Yule",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Yule"
+            },
+            {
+                "dynamic": "",
+                "country": "ancient Latvia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Ziemassv\u0113tki",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Ziemassv%C4%93tki"
+            }
+        ],
         "2": [
             {
                 "dynamic": "",
@@ -22022,6 +23260,51 @@
                 "important": 0,
                 "name": "the first of the Twelve Days of Christmas",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Twelve_Days_of_Christmas"
+            },
+            {
+                "dynamic": "-42 day next Sunday",
+                "country": "Germany",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Volkstrauertag (National Day of Mourning)",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Volkstrauertag"
+            },
+            {
+                "dynamic": "-39 day",
+                "country": "Germany",
+                "region": "Saxony",
+                "note": "",
+                "important": 0,
+                "name": "Bu\u00df- und Bettag (Day of repentance and prayer)",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Bu%C3%9F-_und_Bettag#Bu.C3.9F-_und_Bettag_in_Germany"
+            },
+            {
+                "dynamic": "-28 day previous Sunday",
+                "country": "",
+                "region": "",
+                "note": "Roman Catholic Church",
+                "important": 0,
+                "name": "Feast of Christ the King",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Feast_of_Christ_the_King"
+            },
+            {
+                "dynamic": "-28 day next Sunday",
+                "country": "",
+                "region": "",
+                "note": "Western Christianity",
+                "important": 0,
+                "name": "Advent Sunday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Advent_Sunday"
+            },
+            {
+                "dynamic": "-14 day next Sunday",
+                "country": "Serbia",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Detinjci",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Serbian_Christmas_tradition"
             }
         ],
         "26": [
@@ -22311,7 +23594,7 @@
                 "region": "Scotland",
                 "note": "",
                 "important": 0,
-                "name": "The first day of Hogmanay or \"Auld Year's Night",
+                "name": "The first day of Hogmanay (\"Auld Year's Night\")",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Hogmanay"
             }
         ]

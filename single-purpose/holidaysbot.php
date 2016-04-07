@@ -1,5 +1,5 @@
 <?php
-//die(date('Y-m-d', strtotime('2016-03-01 previous day')));
+//die(date('Y-m-d', strtotime('2018-12-25 - 28 day next Sunday')));
 require_once('../twitteroauth.php');
 require_once('holidaysbot.inc.php');
 
@@ -14,10 +14,11 @@ require_once('holidaysbot.inc.php');
  * v take next GIS result when downloading first pick fails
  * v index the rest of the year's holidays lol
  * ? international/worldwide note, and remove from name
- * . variable holidays?
+ * v variable holidays?
  *   v getHolidays should return dynamic holidays' calculated date
- *   - watch out for holidays involving easter that span multiple years
- *   - lee-jackson day is 0 januari?
+ *   v lee-jackson day is 0 januari?
+ *   x watch out for holidays involving easter that span multiple years
+ *   x chinese calendar: http://stackoverflow.com/questions/23181668/convert-gregorian-to-chinese-lunar-calendar
  * - holidays that only occur on some years
  * - replace 'England' with 'England, United Kingdom'?
  * - consciously not included:
@@ -496,11 +497,11 @@ class HolidaysBot {
 
 		if (strpos($oHoliday->dynamic, ':easter_orthodox') !== FALSE) {
 
-			//holiday related to date of Orthodox Easter
+			//holiday related to date of Orthodox Easter (easter according to eastern christianity)
 			$iDynamicHoliday = strtotime(str_replace(':easter', date('Y-m-d', $this->easter_orthodox_date()), $oHoliday->dynamic));
 		} elseif (strpos($oHoliday->dynamic, ':easter') !== FALSE) {
 
-			//holiday related to date of Easter
+			//holiday related to date of Easter (first Sunday after full moon on or after March 21st
 			$iDynamicHoliday = strtotime(str_replace(':easter', date('Y-m-d', easter_date()), $oHoliday->dynamic));
 
 		} elseif (strpos($oHoliday->dynamic, ':equinox_vernal') !== FALSE) {
@@ -508,15 +509,36 @@ class HolidaysBot {
 			//holiday related to the vernal equinox (march 20/21)
 			$iDynamicHoliday = strtotime(str_replace(':equinox_vernal', date('Y-m-d', $this->equinox_vernal_date()), $oHoliday->dynamic));
 
+		} elseif (strpos($oHoliday->dynamic, ':equinox_autumnal') !== FALSE) {
+
+			//holiday related to the autumnal equinox (september 22/23)
+			$iDynamicHoliday = strtotime(str_replace(':equinox_autumnal', date('Y-m-d', $this->equinox_autumnal_date()), $oHoliday->dynamic));
+
+		} elseif (strpos($oHoliday->dynamic, ':summer_solstice') !== FALSE) {
+
+			//holiday related to the summer solstice (longest day, june 20/21/22)
+			$iDynamicHoliday = strtotime(str_replace(':summer_solstice', $this->summer_solstice_date(), $oHoliday->dynamic));
+
+		} elseif (strpos($oHoliday->dynamic, ':winter_solstice') !== FALSE) {
+
+			//holiday related to the winter solstice (longest day, june 20/21/22)
+			$iDynamicHoliday = strtotime(str_replace(':winter_solstice', $this->winter_solstice_date(), $oHoliday->dynamic));
+
 		} else {
 
 			//normal relative holiday
 			if (isset($oHoliday->day) && $oHoliday->day) {
 				//e.g. 2009-05-01 next sunday
+				//TODO: if there are dynamic dates with day that include '-/+ x day', then add if/else like below
 				$iDynamicHoliday = strtotime(sprintf('%s-%s-%s %s', date('Y'), $oHoliday->month, $oHoliday->day, $oHoliday->dynamic));
 			} else {
-				//e.g. first sunday of may 2009
-				$iDynamicHoliday = strtotime(sprintf('%s of %s %s', $oHoliday->dynamic, date('F', mktime(0, 0, 0, $oHoliday->month)), date('Y')));
+				if (strpos($oHoliday->dynamic, '%s') !== FALSE) {
+					//e.g. first sunday of may 2009 - 3 day (dynamic field will be first sprintf arg)
+					$iDynamicHoliday = strtotime(sprintf($oHoliday->dynamic, date('F', mktime(0, 0, 0, $oHoliday->month)) . ' ' . date('Y')));
+				} else {
+					//e.g. first sunday of may 2009
+					$iDynamicHoliday = strtotime(sprintf('%s of %s %s', $oHoliday->dynamic, date('F', mktime(0, 0, 0, $oHoliday->month)), date('Y')));
+				}
 			}
 		}
 
@@ -524,12 +546,14 @@ class HolidaysBot {
 	}
 
 	//get this year's vernal equinox date (timestamp)
-	private function equinox_vernal_date() {
+	private function equinox_vernal_date($year = FALSE) {
 
 		//http://www.phpro.org/examples/Get-Vernal-Equinox.html
 
+		$year = ($year ? $year : date('Y'));
+
 		$gmt = gmmktime(0, 0, 0, 1, 1, 2000);
-		$days_from_base = 79.3125 + (date('Y') - 2000) * 365.2425;
+		$days_from_base = 79.3125 + ($year - 2000) * 365.2425;
 		$seconds_from_base = $days_from_base * 86400;
 
 		$equinox = round($gmt + $seconds_from_base);
@@ -537,10 +561,85 @@ class HolidaysBot {
 		return $equinox;
 	}
 
+	//get this year's autumnal equinox date (timestamp)
+	private function equinox_autumnal_date($year = FALSE) {
+
+		$year = ($year ? $year : date('Y'));
+
+		//this is probably not the best way but I can't find any code on it :(
+		return $this->equinox_vernal_date($year) + 6 * 36 * 24 * 3600;
+	}
+
+	//get this year's summer solstice date (longest day of year, between 20-22 June)
+	private function summer_solstice_date() {
+
+		return $this->solstice_date('summer');
+	}
+
+	//get this year's summer solstice date (shortest day of year, between 21-23 December)
+	private function winter_solstice_date() {
+
+		return $this->solstice_date('winter');
+	}
+
+	private function solstice_date($type) {
+
+		//adapted from here, with range just the relevant days instead of the entire year
+		//http://stackoverflow.com/questions/23978449/calculating-summer-winter-solstice-in-php
+
+		switch ($type) {
+			case 'default':
+			case 'summer':
+				$start_date = sprintf('%s-%s-%s', date('Y'), 6, 19);
+				$end_date = sprintf('%s-%s-%s', date('Y'), 6, 23);
+				break;
+
+			case 'winter':
+				$start_date = sprintf('%s-%s-%s', date('Y'), 12, 20);
+				$end_date = sprintf('%s-%s-%s', date('Y'), 12, 24);
+				break;
+		}
+		$i = 0;
+
+		//loop through the days
+		while (strtotime($start_date) <= strtotime($end_date)) { 
+
+			$sunrise = date_sunrise(strtotime($start_date), SUNFUNCS_RET_DOUBLE);
+			$sunset = date_sunset(strtotime($start_date), SUNFUNCS_RET_DOUBLE);
+
+			//calculate time difference
+			$delta = $sunset - $sunrise;
+
+			//store the time difference
+			$delta_array[$i] = $delta;
+
+			//store the date
+			$dates_array[$i] = $start_date;
+
+			//next day
+			$start_date = date('Y-m-d', strtotime('+1 day', strtotime($start_date)));
+			$i++;
+		}
+
+		switch ($type) {
+			default:
+			case 'summer':
+				$key = array_search(max($delta_array), $delta_array);
+				break;
+
+			case 'winter':
+				$key = array_search(min($delta_array), $delta_array);
+				break;
+		}
+
+		return $dates_array[$key];
+	}
+
 	//get this year's orthodox easter date (timestamp)
 	private function easter_orthodox_date() {
 
 		//http://php.net/manual/en/function.easter-date.php#83794
+		//https://en.wikipedia.org/wiki/Computus#Meeus.27_Julian_algorithm
 
 		$year = date('Y');
 
