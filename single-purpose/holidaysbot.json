@@ -586,9 +586,9 @@
                 "dynamic": "",
                 "country": "",
                 "region": "",
-                "note": "Julian Calendar",
+                "note": "Eastern Orthodox Christmas (Julian Calendar)",
                 "important": 0,
-                "name": "Christmas",
+                "name": "Orthodox Christmas",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Christmas"
             },
             {
@@ -1564,6 +1564,15 @@
                 "url": "https:\/\/en.wikipedia.org\/wiki\/National_Voters%27_Day"
             },
             {
+                "dynamic": "",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Opposite Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Opposite_Day"
+            },
+            {
                 "dynamic": ":easter - 46 day second Sunday",
                 "country": "C\u00e1diz",
                 "region": "",
@@ -1997,6 +2006,15 @@
                 "dynamic": ":easter - 46 day previous Tuesday",
                 "country": "",
                 "region": "",
+                "note": "",
+                "important": 1,
+                "name": "Mardi Gras (Fat Tuesday)",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Mardi_Gras"
+            },
+            {
+                "dynamic": ":easter - 46 day previous Tuesday",
+                "country": "",
+                "region": "",
                 "note": "Christianity",
                 "important": 0,
                 "name": "Shrove Tuesday",
@@ -2057,6 +2075,15 @@
                 "important": 0,
                 "name": "National Wear Red Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/National_Wear_Red_Day"
+            },
+            {
+                "dynamic": "first Sunday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Super Bowl Sunday",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Super_Bowl"
             },
             {
                 "dynamic": "third Monday",
@@ -4510,7 +4537,7 @@
             },
             {
                 "dynamic": "",
-                "country": "Ireland, Montserrat",
+                "country": "United States, Ireland, Montserrat",
                 "region": "",
                 "note": "",
                 "important": 1,
@@ -5540,6 +5567,24 @@
                 "important": 0,
                 "name": "Turkmen Racing Horse Festival",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_Turkmenistan"
+            },
+            {
+                "dynamic": "third Monday",
+                "country": "United States",
+                "region": "Boston",
+                "note": "",
+                "important": 0,
+                "name": "Marathon Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Boston_Marathon"
+            },
+            {
+                "dynamic": "third Saturday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Record Store Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Record_Store_Day"
             }
         ],
         "2": [
@@ -5645,6 +5690,15 @@
                 "important": 0,
                 "name": "Sikmogil (Arbor Day)",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Arbor_Day"
+            },
+            {
+                "dynamic": "",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "First Contact Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Star_Trek:_First_Contact"
             }
         ],
         "6": [
@@ -7530,6 +7584,15 @@
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Beltane"
             },
             {
+                "dynamic": "first Friday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "No Pants Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/No_Pants_Day"
+            },
+            {
                 "dynamic": "second Sunday of %s - 2 day",
                 "country": "United States",
                 "region": "",
@@ -8432,6 +8495,15 @@
                 "important": 0,
                 "name": "Saint Andrea the First Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_Georgia"
+            },
+            {
+                "dynamic": "",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Hummus Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Hummus_Day"
             }
         ],
         "13": [
@@ -9428,7 +9500,7 @@
                 "region": "",
                 "note": "",
                 "important": 0,
-                "name": "Towel Day in honour of the work of the writer Douglas Adams",
+                "name": "Towel Day in honour of Douglas Adams",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Towel_Day"
             }
         ],
@@ -9954,6 +10026,24 @@
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Father%27s_Day"
             },
             {
+                "dynamic": "first Sunday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Cancer Survivors Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Cancer_Survivors_Day"
+            },
+            {
+                "dynamic": "first Sunday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Gorilla Suit Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Gorilla_suit#National_Gorilla_Suit_Day"
+            },
+            {
                 "dynamic": "first Monday",
                 "country": "Ireland",
                 "region": "",
@@ -10006,6 +10096,15 @@
                 "important": 0,
                 "name": "Western Australia Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Western_Australia_Day"
+            },
+            {
+                "dynamic": "second Sunday",
+                "country": "United States",
+                "region": "Philadelphia, Pennsylvania",
+                "note": "",
+                "important": 0,
+                "name": "Odunde Festical (African New Year)",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Odunde_Festival"
             },
             {
                 "dynamic": "second Monday",
@@ -16000,6 +16099,15 @@
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Respect_for_the_Aged_Day"
             },
             {
+                "dynamic": "third Saturday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 1,
+                "name": "the first day of Oktoberfest",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Oktoberfest"
+            },
+            {
                 "dynamic": ":equinox_autumnal",
                 "country": "Northern Hemisphere",
                 "region": "",
@@ -20160,6 +20268,15 @@
                 "important": 0,
                 "name": "Great American Smokeout",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Great_American_Smokeout"
+            },
+            {
+                "dynamic": "third Wednesday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Geographic Information Systems (GIS) Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/GIS_Day"
             },
             {
                 "dynamic": "fourth Thursday of %s - 5 day",
