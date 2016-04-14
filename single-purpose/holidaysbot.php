@@ -1,5 +1,4 @@
 <?php
-//die(date('Y-m-d', strtotime('2018-12-25 - 28 day next Sunday')));
 require_once('../twitteroauth.php');
 require_once('holidaysbot.inc.php');
 
@@ -14,6 +13,7 @@ require_once('holidaysbot.inc.php');
  * v take next GIS result when downloading first pick fails
  * v index the rest of the year's holidays lol
  * ? international/worldwide note, and remove from name
+ * - implement 'parrot' function to repeat something said to bot by someone it follows
  * v variable holidays?
  *   v getHolidays should return dynamic holidays' calculated date
  *   v lee-jackson day is 0 januari?

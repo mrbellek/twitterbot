@@ -2077,6 +2077,15 @@
                 "url": "https:\/\/en.wikipedia.org\/wiki\/National_Wear_Red_Day"
             },
             {
+                "dynamic": "first Saturday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Ice Cream for Breakfast Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Ice_Cream_for_Breakfast_Day"
+            },
+            {
                 "dynamic": "first Sunday",
                 "country": "United States",
                 "region": "",
@@ -4577,6 +4586,15 @@
         "19": [
             {
                 "dynamic": "",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Clients' Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Client%27s_Day"
+            },
+            {
+                "dynamic": "",
                 "country": "Finland",
                 "region": "",
                 "note": "",
@@ -5301,6 +5319,15 @@
         "30": [
             {
                 "dynamic": "",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International CAPS LOCK DAY",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Caps_lock#International_Caps_Lock_Day"
+            },
+            {
+                "dynamic": "",
                 "country": "Palestine, Israel",
                 "region": "",
                 "note": "",
@@ -5907,6 +5934,15 @@
                 "important": 0,
                 "name": "Day of the Builder",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Public_holidays_in_Azerbaijan"
+            },
+            {
+                "dynamic": "",
+                "country": "United Kingdom",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Homeopathy Awareness Week",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Good_Thinking_Society"
             }
         ],
         "11": [
@@ -6289,6 +6325,15 @@
             }
         ],
         "16": [
+            {
+                "dynamic": "",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Foursquare Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Foursquare_Day"
+            },
             {
                 "dynamic": "",
                 "country": "",
@@ -7546,6 +7591,24 @@
                 "important": 0,
                 "name": "Mother's Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Mother%27s_Day"
+            },
+            {
+                "dynamic": "first Sunday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "World Laughter Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/World_Laughter_Day"
+            },
+            {
+                "dynamic": "first Sunday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Postcard Week",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Postcard_Week"
             },
             {
                 "dynamic": "first Thursday",
@@ -10539,6 +10602,15 @@
             },
             {
                 "dynamic": "",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Donut Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Donut_Day"
+            },
+            {
+                "dynamic": "",
                 "country": "Equatorial Guinea",
                 "region": "",
                 "note": "",
@@ -10920,6 +10992,15 @@
             }
         ],
         "12": [
+            {
+                "dynamic": "",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Anne Frank Day",
+                "url": ""
+            },
             {
                 "dynamic": "",
                 "country": "Paraguay",
@@ -12088,6 +12169,15 @@
             },
             {
                 "dynamic": "",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International CAPS LOCK DAY",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Caps_lock#International_Caps_Lock_Day"
+            },
+            {
+                "dynamic": "",
                 "country": "Poland",
                 "region": "",
                 "note": "",
@@ -12439,6 +12529,15 @@
                 "url": "https:\/\/en.wikipedia.org\/wiki\/St_Pauls_Carnival"
             },
             {
+                "dynamic": "first Saturday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Free Hugs Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Free_Hugs_Day"
+            },
+            {
                 "dynamic": "first Sunday",
                 "country": "Singapore",
                 "region": "",
@@ -12518,6 +12617,15 @@
                 "important": 0,
                 "name": "Navy Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Navy_Day"
+            },
+            {
+                "dynamic": "last Friday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 1,
+                "name": "System Administrator Appreciation Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/System_Administrator_Appreciation_Day"
             }
         ],
         "2": [
@@ -15614,6 +15722,15 @@
             },
             {
                 "dynamic": "",
+                "country": "United States",
+                "region": "Yellowstone National Park",
+                "note": "",
+                "important": 0,
+                "name": "Savage Christmas",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Christmas_in_August_(Yellowstone)"
+            },
+            {
+                "dynamic": "",
                 "country": "Brazil",
                 "region": "",
                 "note": "",
@@ -16349,6 +16466,15 @@
             }
         ],
         "5": [
+            {
+                "dynamic": "",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Bacon Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Bacon_Day"
+            },
             {
                 "dynamic": "",
                 "country": "",
@@ -18052,6 +18178,15 @@
             },
             {
                 "dynamic": "",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "first day of National Pizza Month",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Pizza_Month"
+            },
+            {
+                "dynamic": "",
                 "country": "Indonesia",
                 "region": "",
                 "note": "",
@@ -18105,6 +18240,15 @@
                 "important": 0,
                 "name": "World Habitat Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/World_Habitat_Day"
+            },
+            {
+                "dynamic": "first Friday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "World Smile Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/World_Smile_Day"
             },
             {
                 "dynamic": "second Monday",
@@ -19504,6 +19648,15 @@
                 "region": "",
                 "note": "",
                 "important": 0,
+                "name": "International CAPS LOCK DAY",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Caps_lock#International_Caps_Lock_Day"
+            },
+            {
+                "dynamic": "",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
                 "name": "International Stuttering Awareness Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/International_Stuttering_Awareness_Day"
             },
@@ -20198,6 +20351,15 @@
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Election_Day_(United_States)"
             },
             {
+                "dynamic": "first Friday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Love Your Lawyer Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Nader_Anise"
+            },
+            {
                 "dynamic": "second Sunday",
                 "country": "Estonia, Finland, Iceland, Norway, and Sweden",
                 "region": "",
@@ -20313,6 +20475,24 @@
                 "important": 0,
                 "name": "Buy Nothing Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Buy_Nothing_Day"
+            },
+            {
+                "dynamic": "fourth Thursday of %s + 1 day",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Day of Listening",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Day_of_Listening"
+            },
+            {
+                "dynamic": "fifth Friday",
+                "country": "",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "International Sweater Vestival",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/International_Sweater_Vestival"
             },
             {
                 "dynamic": "last Sunday",
@@ -23422,6 +23602,15 @@
                 "important": 0,
                 "name": "Detinjci",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Serbian_Christmas_tradition"
+            },
+            {
+                "dynamic": "last Thursday",
+                "country": "United States",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Regifting Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Regifting_Day"
             }
         ],
         "26": [
