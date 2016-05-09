@@ -161,6 +161,10 @@ class TweetBot {
 				'ranges' => array(
 					array(
 						'start' => 0x1F300,
+						'end' => 0x1F3CE,
+					),
+					array(
+						'start' => 0x1F3D0,
 						'end' => 0x1F579,
 					),
 					array(
