@@ -240,7 +240,7 @@ class PictureBot {
 		if ($this->sMediaId) {
 			$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE, 'media_ids' => $this->sMediaId));
 			if (isset($oRet->errors)) {
-				$this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
+				$this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message), array('tweet' => $sTweet, 'file' => $aFile, 'media' => $this->sMediaId));
 				$this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
 				return FALSE;
 			} else {
@@ -293,7 +293,7 @@ class PictureBot {
 		)) {
 			$oRet = $this->oTwitter->upload('media/upload', array('media' => $sImageBinary));
 			if (isset($oRet->errors)) {
-				$this->logger(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message));
+				$this->logger(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message), array('file' => $sImage, 'length' => strlen($sImageBinary));
 				$this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
 				return FALSE;
 			} else {
@@ -321,7 +321,7 @@ class PictureBot {
 		return FALSE;
 	}
 
-	private function logger($iLevel, $sMessage) {
+	private function logger($iLevel, $sMessage, $aExtra = array()) {
 
         if ($iLevel > $this->iLogLevel) {
             return FALSE;
@@ -353,7 +353,7 @@ class PictureBot {
 		}
 
 		$aBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-		TwitterLogger::write($this->sUsername, $sLevel, $sMessage, pathinfo($aBacktrace[0]['file'], PATHINFO_BASENAME), $aBacktrace[0]['line']);
+		TwitterLogger::write($this->sUsername, $sLevel, $sMessage, pathinfo($aBacktrace[0]['file'], PATHINFO_BASENAME), $aBacktrace[0]['line'], $aExtra);
 
 		$iRet = file_put_contents(MYPATH . '/' . $this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
 

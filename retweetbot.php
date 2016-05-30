@@ -229,15 +229,16 @@ class RetweetBot
 		//retrieve data for last search to prevent duplicates
 		$aLastSearch = json_decode(@file_get_contents(MYPATH . '/' . sprintf($this->sLastSearchFile, $iIndex)), TRUE);
 
-		$oSearch = $this->oTwitter->get('search/tweets', array(
+		$aArgs = array(
 			'q'				=> $sSearchString,
 			'result_type'	=> 'mixed',
 			'count'			=> $this->iSearchMax,
 			'since_id'		=> ($aLastSearch && !empty($aLastSearch['max_id']) ? $aLastSearch['max_id'] : 1),
-		));
+		);
+		$oSearch = $this->oTwitter->get('search/tweets', $aArgs);
 
 		if (empty($oSearch->search_metadata)) {
-			$this->logger(2, sprintf('Twitter API call failed: GET /search/tweets (%s)', $oSearch->errors[0]->message));
+			$this->logger(2, sprintf('Twitter API call failed: GET /search/tweets (%s)', $oSearch->errors[0]->message), $aArgs);
 			$this->halt(sprintf('- Unable to get search results, halting. (%s)', $oSearch->errors[0]->message));
 			return FALSE;
 		}
@@ -288,7 +289,7 @@ class RetweetBot
 			$oRet = $this->oTwitter->post('statuses/retweet/' . $oTweet->id_str, array('trim_user' => TRUE));
 
 			if (!empty($oRet->errors)) {
-				$this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s)', $oRet->errors[0]->message));
+				$this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s)', $oRet->errors[0]->message), array('tweet' => $oTweet->id_str));
 				$this->halt(sprintf('- Retweet failed, halting. (%s)', $oRet->errors[0]->message));
 				return FALSE;
 			}
@@ -557,7 +558,7 @@ class RetweetBot
 		return FALSE;
 	}
 
-	private function logger($iLevel, $sMessage) {
+	private function logger($iLevel, $sMessage, $aExtra = array()) {
 
         if ($iLevel > $this->iLogLevel) {
             return FALSE;
@@ -589,7 +590,7 @@ class RetweetBot
 		}
 
 		$aBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-		TwitterLogger::write($this->sUsername, $sLevel, $sMessage, pathinfo($aBacktrace[0]['file'], PATHINFO_BASENAME), $aBacktrace[0]['line']);
+		TwitterLogger::write($this->sUsername, $sLevel, $sMessage, pathinfo($aBacktrace[0]['file'], PATHINFO_BASENAME), $aBacktrace[0]['line'], $aExtra);
 
 		$iRet = file_put_contents(MYPATH . '/' . $this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
 

@@ -21,7 +21,7 @@ class TwitterLogger {
 		}
 	}
 
-	public static function write($sUsername, $sLevel = 'warning', $sError, $sFile, $iLine) {
+	public static function write($sUsername, $sLevel = 'warning', $sError, $sFile, $iLine, $aSource = array()) {
 
 		if (!self::$oPDO) {
 			self::connect();
@@ -30,9 +30,9 @@ class TwitterLogger {
 		if (self::$oPDO) {
 			$oStm = self::$oPDO->prepare('
 				INSERT INTO twitterlog
-				(botname, error, level, line, file)
+				(botname, error, level, line, file, source)
 				VALUES
-				(:name, :error, :level, :line, :file)'
+				(:name, :error, :level, :line, :file, :source)'
 			);
 
 			return $oStm->execute(
@@ -42,6 +42,7 @@ class TwitterLogger {
 					'level'	=> $sLevel,
 					'line'	=> $iLine,
 					'file'	=> $sFile,
+					'source' => ($aSource ? serialize($aSource) : NULL),
 				)
 			);
 		}
@@ -52,6 +53,31 @@ class TwitterLogger {
 	public static function view($iPage = 1) {
 
 		if (!self::$oPDO) {
+			/*return array(
+				array(
+					'id' => 2,
+					'botname' => 'rbimbofetish',
+					'error' => 'Twitter API call failed: statuses/update (Status is over 140 characters.)',
+					'level' => 'ERROR',
+					'line' => 172,
+					'file' => 'rssbot.php',
+					'timestamp' => '2016-05-30 14:00:26',
+					'source' => serialize(array(
+						'object' => serialize('adsfjkdfhjksdlhfkjdhfkdjfhaksldjhfaskdjfhasldkjfhasdkjflsfkajsdhfkasdhfkasdhfaksdhfaksdfhjasdlfhksdfj'),
+						'tweet' => 'something incredibly long and very tall so that its more than 140 chars http://reddit.com/r/bimbofetish/32awgrh/hotchickwithbigtits',
+					)),
+				),
+				array(
+					'id' => 2,
+					'botname' => 'username',
+					'error' => 'no error',
+					'level' => 'warning',
+					'line' => 24,
+					'file' => 'twitterbot.php',
+					'timestamp' => '2016-05-30 13:00:26',
+					'source' => NULL,
+				),
+			);*/
 			self::connect();
 		}
 

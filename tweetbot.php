@@ -236,7 +236,7 @@ class TweetBot {
                     $oRet = $this->oTwitter->post('statuses/retweet/' . $m[1], array('trim_user' => TRUE));
 
                     if (!empty($oRet->errors)) {
-                        $this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s)', $oRet->errors[0]->message));
+                        $this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s)', $oRet->errors[0]->message), array('tweet' => $m[1]));
                         $this->halt(sprintf('- Retweet failed, halting. (*%s)', $oRet->errors[0]->message));
                         return FALSE;
                     } else {
@@ -250,7 +250,7 @@ class TweetBot {
             //tweet
             $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
             if (isset($oRet->errors)) {
-                $this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message));
+                $this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message), array('tweet' => $sTweet));
                 $this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
                 return FALSE;
             } else {
@@ -471,7 +471,7 @@ class TweetBot {
 		return FALSE;
 	}
 
-	private function logger($iLevel, $sMessage) {
+	private function logger($iLevel, $sMessage, $aExtra = array()) {
 
         if ($iLevel > $this->iLogLevel) {
             return FALSE;
@@ -503,7 +503,7 @@ class TweetBot {
 		}
 
 		$aBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-		TwitterLogger::write($this->sUsername, $sLevel, $sMessage, pathinfo($aBacktrace[0]['file'], PATHINFO_BASENAME), $aBacktrace[0]['line']);
+		TwitterLogger::write($this->sUsername, $sLevel, $sMessage, pathinfo($aBacktrace[0]['file'], PATHINFO_BASENAME), $aBacktrace[0]['line'], $aExtra);
 
 		$iRet = file_put_contents(MYPATH . '/' . $this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
 
