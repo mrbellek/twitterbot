@@ -1,9 +1,11 @@
 <?php
 require_once('twitteroauth.php');
+require_once('logger.php');
 require_once('gameswithgold.inc.php');
 
 /*
  * TODO:
+ * ? [ERROR] Unknown platform for game: Playstation 3 (id 150)
  * V fetch record from database, tweet it
  * V gameswithgold table: game name, platform (xbone/360), game link on xbox.com, free date start, free date start
  * V tweet when game goes from paid to free
@@ -304,6 +306,9 @@ class GamesWithGold {
             $sLevel = 'TRACE';
             break;
         }
+
+		$aBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+		TwitterLogger::write($this->sUsername, $sLevel, $sMessage, pathinfo($aBacktrace[0]['file'], PATHINFO_BASENAME), $aBacktrace[0]['line']);
 
         $iRet = file_put_contents(MYPATH . '/' . $this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
 

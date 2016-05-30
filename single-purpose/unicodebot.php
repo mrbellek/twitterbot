@@ -1,6 +1,8 @@
 <?php
-require_once('unicodebot.inc.php');
 require_once('../twitteroauth.php');
+require_once('../logger.php');
+require_once('unicodebot.inc.php');
+
 define('DS', DIRECTORY_SEPARATOR);
 
 /*
@@ -14,7 +16,6 @@ define('DS', DIRECTORY_SEPARATOR);
 $oTweetBot = new TweetBot(array(
 	'sUsername' => 'UnicodeTweet',
 	'sJsonFile' => 'unicode.json',
-	'sJsonBlocksFile' => 'unicode-blocks.json',
 	'sTweetFormat' => ':description: &#:dec; (U+:hex) http://unicode-table.com/en/:hex/',
 	'aTweetVars' => array(
 		array('sVar' => ':description', 'sField' => 'description', 'bTruncate' => TRUE),
@@ -32,7 +33,6 @@ class TweetBot {
     private $iLogLevel = 3;     //increase for debugging
 
 	private $sJsonFile;			//json source file
-	private $sJsonBlocksFile;	//json source file for blocks<>font link
 	private $sTweetFormat;		//tweet format settings
 
 	public function __construct($aArgs) {
@@ -56,7 +56,6 @@ class TweetBot {
 
 		//stuff to determine what to get from json file
 		$this->sJsonFile = (!empty($aArgs['sJsonFile']) ? $aArgs['sJsonFile'] : array());
-		$this->sJsonBlocksFile = (!empty($aArgs['sJsonBlocksFile']) ? $aArgs['sJsonBlocksFile'] : array());
 
 		//stuff to determine what we're tweeting
 		$this->aTweetSettings = array(
@@ -72,8 +71,6 @@ class TweetBot {
 	}
 
 	public function run() {
-		$this->printTextImage(array('hex' => '1F64A'));
-		die();
 
 		//verify current twitter user is correct
 		if ($this->getIdentity()) {
@@ -81,10 +78,8 @@ class TweetBot {
 			//fetch row from json
 			if ($aUnicode = $this->getRow()) {
 
-				$sImageFile = $this->printTextImage($aUnicode);
-
 				//format and post message
-				if ($this->postMessage($aUnicode, $sImageFile)) {
+				if ($this->postMessage($aUnicode)) {
 
 					$this->halt('Done.');
 				}
@@ -93,7 +88,6 @@ class TweetBot {
 	}
 
 	private function getIdentity() {
-		return TRUE; //DEBUG
 
 		echo "Fetching identity..\n";
 
@@ -281,7 +275,6 @@ class TweetBot {
 		if (!$sTweet) {
 			return FALSE;
 		}
-		die(var_dumP($sTweet));
 
 		//tweet
 		$oRet = $this->oTwitter->post('statuses/update', array('status' => mb_convert_encoding($sTweet, 'UTF-8', 'HTML-ENTITIES'), 'trim_users' => TRUE));
@@ -353,75 +346,6 @@ class TweetBot {
 		return $sTweet;
 	}
 
-	private function printTextImage($aUnicode) {
-
-		$sText = mb_convert_encoding(sprintf('&#%s;', hexdec($aUnicode['hex'])), 'UTF-8', 'HTML-ENTITIES');
-		//$sText = sprintf('&#%s;', hexdec($aUnicode['hex']));
-		$sFontFile = $this->getFontForCode($aUnicode['hex']);
-		if (!$sFontFile) {
-			return FALSE;
-		}
-		$sFontFile = MYPATH . DS . 'unicodefonts' . DS . $sFontFile;
-		$iFontSize = 80; 
-		$iTextAngle = 0; 
-		$iPadding = 30;
-
-		$aBox = imagettfbbox($iFontSize, $iTextAngle, $sFontFile, $sText);
-		$iMinX = min(array($aBox[0], $aBox[2], $aBox[4], $aBox[6])); 
-		$iMaxX = max(array($aBox[0], $aBox[2], $aBox[4], $aBox[6])); 
-		$iMinY = min(array($aBox[1], $aBox[3], $aBox[5], $aBox[7])); 
-		$iMaxY = max(array($aBox[1], $aBox[3], $aBox[5], $aBox[7])); 
-
-		$iWidth = $iMaxX - $iMinX;
-		$iHeight = $iMaxY - $iMinY;
-		$iLeft = abs($iMinX) - 1;
-		$iTop = abs($iMinY) - 1;
-
-		$iImageWidth = $iWidth + $iPadding; 
-		$iImageHeight = $iHeight + $iPadding; 
-
-		$hImage = imagecreate($iImageWidth, $iImageHeight); 
-		if ($hImage) {
-
-			$cGrey = imagecolorallocate($hImage, 200, 200, 200);
-			$cBlack = imagecolorallocate($hImage, 0, 0, 0); 
-
-			imagefilledrectangle($hImage, 0, 0, $iImageWidth - 1, $iImageHeight - 1, $cGrey); 
-			$bRet = imagettftext($hImage, $iFontSize, $iTextAngle, $iLeft + ($iImageWidth / 2) - ($iWidth / 2), $iTop + ($iImageHeight / 2) - ($iHeight / 2), $cBlack, $sFontFile, $sText); 
-
-			if ($bRet) {
-				$sFilePath = MYPATH . DS . $aUnicode['hex'] . '.png';
-				if (imagepng($hImage, $sFilePath)) {
-
-					return $sFilePath;
-				}
-			}
-
-			imagedestroy($hImage); 
-		}
-
-		return FALSE;
-	}
-
-	private function getFontForCode($sHex) {
-
-		$iCode = hexdec($sHex);
-		$aBlocks = json_decode(file_get_contents(MYPATH . DS . $this->sJsonBlocksFile), TRUE);
-
-		foreach ($aBlocks as $aBlock) {
-			list($sHexStart, $sHexEnd) = explode(':', $aBlock['diap']);
-			if ($iCode >= hexdec($sHexStart) && $iCode <= hexdec($sHexEnd)) {
-				if (!empty($aBlock['ttf'])) {
-					return $aBlock['ttf'];
-				} else {
-					break;
-				}
-			}
-		}
-
-		return FALSE;//'NotoSans-Regular.ttf';
-	}
-
 	private function halt($sMessage = '') {
 		echo $sMessage . "\n\nDone!\n\n";
 		return FALSE;
@@ -457,6 +381,9 @@ class TweetBot {
 				$sLevel = 'TRACE';
 				break;
 		}
+
+		$aBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+		TwitterLogger::write($this->sUsername, $sLevel, $sMessage, pathinfo($aBacktrace[0]['file'], PATHINFO_BASENAME), $aBacktrace[0]['line']);
 
 		$iRet = file_put_contents(MYPATH . '/' . $this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
 

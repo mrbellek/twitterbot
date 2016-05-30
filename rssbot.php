@@ -1,9 +1,14 @@
 <?php
 require_once('twitteroauth.php');
+require_once('logger.php');
 
 /*
  * TODO:
+ * - [ERROR] Twitter API call failed: statuses/update (Status is over 140 characters.)
  * - commands through mentions, replies through mentions/DMs like retweetbot
+ * . attach videos/gifs to tweets if possible
+ * - pick up og:image meta tag content for tumblr (and maybe others) and attach image
+ * - pick up og:video on imgur.com ? if present it's animated gif
  * v change aMediaIds array so naked image urls, image pages, instagram photos aren't included in tweets, but gallery urls and instagram accounts are
  */
 
@@ -61,6 +66,9 @@ class RssBot {
     }
 
     public function run() {
+
+		$this->uploadVideoFromGfycat('http://gfycat.com/FrailVerifiableBighornsheep#?speed=0.5');
+		die('stop');
 
         //verify current twitter user is correct
         if ($this->getIdentity()) {
@@ -404,6 +412,11 @@ class RssBot {
 						if ($bAttachImage) {
 							$this->uploadImageFromInstagram($sText);
 						}
+					/*} elseif (preg_match('/gfycat\.com\//i', $sText)) {
+						$sResult = 'gif';
+						if ($bAttachImage) {
+							$this->uploadVideoFromGfycat($sText);
+						}*/
 
                     } elseif (preg_match('/\.gifv|\.webm|youtube\.com\/|youtu\.be\/|vine\.co\/|vimeo\.com\/|liveleak\.com\//i', $sText)) {
                         $sResult = 'video';
@@ -528,6 +541,37 @@ class RssBot {
 		return FALSE;
 	}
 
+	private function uploadVideoFromGfycat($sUrl) {
+
+		//construct json info url
+		$sJsonUrl = str_replace('gfycat.com/', 'gfycat.com/cajax/get/', $sUrl);
+		if ($sJsonUrl == $sUrl) {
+			return FALSE;
+		}
+
+		$oGfycatInfo = @json_decode(file_get_contents($sJsonUrl));
+		if ($oGfycatInfo && !empty($oGfycatInfo->gfyItem->webpUrl)) { 
+			return $this->uploadVideoToTwitter($oGfycatInfo->gfyItem->webpUrl);
+		}
+
+		return FALSE;
+	}
+
+	private function uploadVideoToTwitter($sVideo, $sName = FALSE) {
+
+		if (!$sName) {
+			$sName = $sVideo;
+		}
+
+		$sVideoBinary = file_get_contents($sVideo);
+		if (strlen($sVideoBinary) < 5 * pow(1024, 2)) {
+
+			$oRet = $this->oTwitter->upload('media/upload', array('media' => $sVideoBinary));
+			var_dump(strlen($sVideoBinary), $oRet);
+			die();
+		}
+	}
+
 	private function uploadImageToTwitter($sImage, $sName = FALSE) {
 
 		if (!$sName) {
@@ -537,8 +581,8 @@ class RssBot {
 		//upload image and save media id to attach to tweet
 		$sImageBinary = base64_encode(file_get_contents($sImage));
 		if ($sImageBinary && (
-			(preg_match('/\.gif/i', $sImage) && strlen($sImageBinary) < 3 * 1024^2) ||      //max size is 3MB for gif
-			(preg_match('/\.png|\.jpe?g/i', $sImage) && strlen($sImageBinary) < 5 * 1024^2) //max size is 5MB for png or jpeg
+			(preg_match('/\.gif/i', $sImage) && strlen($sImageBinary) < 3 * pow(1024, 2)) ||      //max size is 3MB for gif
+			(preg_match('/\.png|\.jpe?g/i', $sImage) && strlen($sImageBinary) < 5 * pow(1024, 2)) //max size is 5MB for png or jpeg
 		)) {
 			$oRet = $this->oTwitter->upload('media/upload', array('media' => $sImageBinary));
 			if (isset($oRet->errors)) {
@@ -593,6 +637,9 @@ class RssBot {
             $sLevel = 'TRACE';
             break;
         }
+
+		$aBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+		TwitterLogger::write($this->sUsername, $sLevel, $sMessage, pathinfo($aBacktrace[0]['file'], PATHINFO_BASENAME), $aBacktrace[0]['line']);
 
         $iRet = file_put_contents(MYPATH . '/' . $this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
 

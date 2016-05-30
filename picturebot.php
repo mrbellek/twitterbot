@@ -1,5 +1,6 @@
 <?php
 require_once('twitteroauth.php');
+require_once('logger.php');
 
 //runs every 15 minutes, mirroring & attaching images might take a while
 set_time_limit(15 * 60);
@@ -24,16 +25,16 @@ class PictureBot {
 		$this->oTwitter = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
 		$this->oTwitter->host = "https://api.twitter.com/1.1/";
 
-        //make output visible in browser
-        if (!empty($_SERVER['HTTP_HOST'])) {
-            echo '<pre>';
-        }
+		//make output visible in browser
+		if (!empty($_SERVER['HTTP_HOST'])) {
+			echo '<pre>';
+		}
 
 		//load args
 		$this->parseArgs($aArgs);
 
-			define('DS', DIRECTORY_SEPARATOR);
-		}
+		define('DS', DIRECTORY_SEPARATOR);
+	}
 
 	private function parseArgs($aArgs) {
 
@@ -350,6 +351,9 @@ class PictureBot {
 				$sLevel = 'TRACE';
 				break;
 		}
+
+		$aBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+		TwitterLogger::write($this->sUsername, $sLevel, $sMessage, pathinfo($aBacktrace[0]['file'], PATHINFO_BASENAME), $aBacktrace[0]['line']);
 
 		$iRet = file_put_contents(MYPATH . '/' . $this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
 

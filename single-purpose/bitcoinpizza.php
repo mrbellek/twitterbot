@@ -1,5 +1,6 @@
 <?php
 require_once('twitteroauth.php');
+require_once('logger.php');
 require_once('bitcoinpizza.inc.php');
 
 $o = new BitcoinPizzaBot(array(
@@ -242,6 +243,9 @@ class BitcoinPizzaBot {
             $sLevel = 'TRACE';
             break;
         }
+
+		$aBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+		TwitterLogger::write($this->sUsername, $sLevel, $sMessage, pathinfo($aBacktrace[0]['file'], PATHINFO_BASENAME), $aBacktrace[0]['line']);
 
         $iRet = file_put_contents(MYPATH . '/' . $this->sLogFile, sprintf($sLogLine, $sTimestamp, $sLevel, $sMessage), FILE_APPEND);
 
