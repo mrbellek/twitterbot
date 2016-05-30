@@ -67,9 +67,6 @@ class RssBot {
 
     public function run() {
 
-		$this->uploadVideoFromGfycat('http://gfycat.com/FrailVerifiableBighornsheep#?speed=0.5');
-		die('stop');
-
         //verify current twitter user is correct
         if ($this->getIdentity()) {
 

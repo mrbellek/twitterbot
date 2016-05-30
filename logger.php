@@ -1,6 +1,13 @@
 <?php
 require_once('logger.inc.php');
 
+/*
+ * TODO:
+ * - pagination for view/search
+ * - remember search when paging
+ * - source (foldout when clicked?)
+ */
+
 class TwitterLogger {
 
 	private static $oPDO;
@@ -16,7 +23,6 @@ class TwitterLogger {
 
 	public static function write($sUsername, $sLevel = 'warning', $sError, $sFile, $iLine) {
 
-		die(var_dump(func_get_args()));
 		if (!self::$oPDO) {
 			self::connect();
 		}
@@ -42,6 +48,49 @@ class TwitterLogger {
 
 		return FALSE;
 	}
-}
 
-//TwitterLogger::write('username', 'warning', 'no error', __FILE__, 24);
+	public static function view($iPage = 1) {
+
+		if (!self::$oPDO) {
+			self::connect();
+		}
+
+		if (self::$oPDO) {
+			$oStm = self::$oPDO->prepare('
+				SELECT *
+				FROM twitterlog
+				ORDER BY timestamp DESC'
+			);
+
+			if ($oStm->execute()) {
+				return $oStm->fetchAll(PDO::FETCH_ASSOC);
+			}
+		}
+
+		return array();
+	}
+
+
+	public static function search($sSearch, $iPage = 1) {
+		if (!self::$oPDO) {
+			self::connect();
+		}
+
+		if (self::$oPDO) {
+			$oStm = self::$oPDO->prepare('
+				SELECT *
+				FROm twitterlog
+				WHERE botname LIKE :search
+				OR error LIKE :search
+				OR level LIKE :search'
+			);
+
+			if ($oStm->execute(array('search' => '%' . $sSearch . '%'))) {
+				return $oStm->fetchAll(PDO::FETCH_ASSOC);
+			}
+		}
+
+		return array();
+	}
+
+}
