@@ -7750,7 +7750,7 @@
                 "country": "United States",
                 "region": "",
                 "note": "",
-                "important": 0,
+                "important": 1,
                 "name": "Memorial Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Memorial_Day"
             },
@@ -8354,6 +8354,15 @@
                 "important": 0,
                 "name": "Liberation Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Liberation_Day_(Jersey)"
+            },
+            {
+                "dynamic": "",
+                "country": "Alderney",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "National Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/National_Day"
             },
             {
                 "dynamic": "",
@@ -9930,7 +9939,7 @@
                 "region": "",
                 "note": "",
                 "important": 0,
-                "name": "Children's Day",
+                "name": "International Children's Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Children%27s_Day"
             },
             {
@@ -22968,7 +22977,7 @@
                 "region": "",
                 "note": "",
                 "important": 0,
-                "name": "Homecoming Day (National Day)",
+                "name": "Homecoming Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Homecoming_Day_(Alderney)"
             },
             {
