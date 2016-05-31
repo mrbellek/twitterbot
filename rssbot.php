@@ -218,7 +218,7 @@ class RssBot {
 
         //should get this by API (GET /help/configuration ->short_url_length) but it rarely changes
         $iMaxTweetLength = 140;
-        $iShortUrlLength = 22;   //NB: 1 char more for https links
+        $iShortUrlLength = 23;
         $iMediaUrlLength = 23;
 
         $sTweet = $this->aTweetSettings['sFormat'];

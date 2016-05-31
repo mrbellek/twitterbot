@@ -43,9 +43,9 @@ $o = new HolidaysBot(array(
 	),
 ));
 
-//$o->run();
-$o->importCsv();
-$o->test();
+$o->run();
+//$o->importCsv();
+//$o->test();
 
 class HolidaysBot {
 
@@ -292,7 +292,6 @@ class HolidaysBot {
 			return FALSE;
 		}
 
-		die('notposting!');
 		$sMediaId = $this->attachPicture($oHoliday);
 		
 		//tweet
