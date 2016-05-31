@@ -30,7 +30,7 @@ $o = new GamesWithGold(array(
 	'sTruncateFieldXbox'	=> 'game',
 
     'sTweetFormatStartPSN'  => '[:platform] Starting today, :game is free for members with #Playstation Plus - :link',
-    'sTweetFormatStopXPSN'  => '[:platform] Today is the last day :game is free for members with #Playstation Plus - :link',
+    'sTweetFormatStopPSN'	=> '[:platform] Today is the last day :game is free for members with #Playstation Plus - :link',
     'sDefaultLinkPSN'       => 'http://www.playstation.com/en-us/explore/playstation-plus/',
 	'sTruncateFieldPSN'		=> 'game',
 ));
@@ -135,9 +135,9 @@ class GamesWithGold {
 
                     //determine platform and format stop tweet
                     if (stripos($aRecord['platform'], 'xbox') !== FALSE) {
-                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStopXbox);
+                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStopXbox, 'xbox');
                     } elseif (stripos($aRecord['platform'], 'playstation') !== FALSE) {
-                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStopPSN);
+                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStopPSN, 'ps');
                     }
 
                     //post tweet
