@@ -287,11 +287,11 @@ class PictureBot {
 
 		//upload image and save media id to attach to tweet
 		$sImageBinary = base64_encode(file_get_contents($sImage));
-		if ($sImageBinary && strlen($sImageBinary) < 5 * pow(1024, 2) {) //max size is 3MB
+		if ($sImageBinary && strlen($sImageBinary) < 5 * pow(1024, 2)) { //max size is 3MB
 
 			$oRet = $this->oTwitter->upload('media/upload', array('media' => $sImageBinary));
 			if (isset($oRet->errors)) {
-				$this->logger(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message), array('file' => $sImage, 'length' => strlen($sImageBinary));
+				$this->logger(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message), array('file' => $sImage, 'length' => strlen($sImageBinary)));
 				$this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
 				return FALSE;
 			} else {
