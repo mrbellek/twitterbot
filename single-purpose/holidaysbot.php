@@ -430,10 +430,8 @@ class HolidaysBot {
 			printf("- Attaching %s..\n", $sImageUrl);
 
 			$sImageBinary = base64_encode($sImageBinary);
-			if ($sImageBinary && (
-				(preg_match('/\.gif/i', $sImageUrl) && strlen($sImageBinary) < 3 * 1024 ^ 2) ||		//max size is 3MB for gif
-				(preg_match('/\.png|\.jpe?g/i', $sImageUrl) && strlen($sImageBinary) < 5 * 1024 ^ 2) //max size is 5MB for png/jpg
-			)) {
+			if ($sImageBinary && strlen($sImageBinary) < 5 * pow(1024, 2)) { //max size is 3MB
+
 				$oRet = $this->oTwitter->upload('media/upload', array('media' => $sImageBinary));
 				if (isset($oRet->errors)) {
 					$this->logger(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message), array('holiday' => serialize($oHoliday), 'image' => $sImageUrl, 'length' => strlen($sImageBinary)));

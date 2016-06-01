@@ -577,10 +577,8 @@ class RssBot {
 
 		//upload image and save media id to attach to tweet
 		$sImageBinary = base64_encode(file_get_contents($sImage));
-		if ($sImageBinary && (
-			(preg_match('/\.gif/i', $sImage) && strlen($sImageBinary) < 3 * pow(1024, 2)) ||      //max size is 3MB for gif
-			(preg_match('/\.png|\.jpe?g/i', $sImage) && strlen($sImageBinary) < 5 * pow(1024, 2)) //max size is 5MB for png or jpeg
-		)) {
+		if ($sImageBinary && strlen($sImageBinary) < 3 * pow(1024, 2)) { //max size is 3MB
+
 			$oRet = $this->oTwitter->upload('media/upload', array('media' => $sImageBinary));
 			if (isset($oRet->errors)) {
 				$this->logger(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message), array('image' => $sImage, 'size' => strlen($sImageBinary)));
