@@ -272,6 +272,12 @@ class RetweetBot
 
 		foreach ($this->aTweets as $oTweet) {
 
+			//don't parse stuff we already retweeted
+			if ($oTweet->retweeted) {
+				printf('Skipping because already retweeted: %s<br>', $oTweet->text);
+				continue;
+			}
+
 			//replace shortened links
 			$oTweet = $this->expandUrls($oTweet);
 
