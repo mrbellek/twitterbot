@@ -4,8 +4,7 @@ require_once('logger.php');
 
 /*
  * TODO:
- * - [ERROR] Twitter API call failed: statuses/update (Status is over 140 characters.)
- * - commands through mentions, replies through mentions/DMs like retweetbot
+ * - BUG: tweets with domain names in them are too long since the shortened url is longer than the domain name
  * . attach videos/gifs to tweets if possible
  * - pick up og:image meta tag content for tumblr (and maybe others) and attach image
  * - pick up og:video on imgur.com ? if present it's animated gif
@@ -270,9 +269,13 @@ class RssBot {
             }
         }
 
-        //determine maximum length left over for truncated field (links are shortened to t.co format of max 22 chars)
-        $sTempTweet = preg_replace('/http:\/\/\S+/', str_repeat('x', $iShortUrlLength), $sTweet);
+        //determine maximum length left over for truncated field (links are shortened to t.co format of 23 chars, always https, plus a space)
+        $sTempTweet = preg_replace('/http:\/\/\S+/', str_repeat('x', $iShortUrlLength + 1), $sTweet);
         $sTempTweet = preg_replace('/https:\/\/\S+/', str_repeat('x', $iShortUrlLength + 1), $sTempTweet);
+
+		//June 2016: domain names without http(s) are now also shortened, taking up more space
+		$sTempTweet = preg_replace('/\S+\.(?:com|org|net|edu|info|biz|tv|co\.uk|de|nl)/', str_repeat('x', $iShortUrlLength + 1), $sTempTweet);
+
         $iTruncateLimit = $iMaxTweetLength - strlen($sTempTweet);
 
         //replace truncated field
