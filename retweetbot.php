@@ -295,7 +295,7 @@ class RetweetBot
 			$oRet = $this->oTwitter->post('statuses/retweet/' . $oTweet->id_str, array('trim_user' => TRUE));
 
 			if (!empty($oRet->errors)) {
-				$this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s)', $oRet->errors[0]->message), array('tweet' => $oTweet->id_str));
+				$this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s)', $oRet->errors[0]->message), array('tweet' => $oTweet));
 				$this->halt(sprintf('- Retweet failed, halting. (%s)', $oRet->errors[0]->message));
 				return FALSE;
 			}
