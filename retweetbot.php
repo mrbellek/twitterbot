@@ -274,6 +274,7 @@ class RetweetBot
 
 			//don't parse stuff we already retweeted
 			if ($oTweet->retweeted) {
+				//NOTE: this currently isn't supported in 1.1 API lol
 				printf('Skipping because already retweeted: %s<br>', $oTweet->text);
 				continue;
 			}

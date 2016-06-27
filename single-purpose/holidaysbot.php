@@ -364,7 +364,7 @@ class HolidaysBot {
 		//use google custom search engine (CSE) to look for images about the holiday name + country + region + note
 		$sBaseCse = 'https://www.googleapis.com/customsearch/v1';
 		$aParams = array(
-			'q' => implode(' ', array_filter(array($oHoliday->name, $oHoliday->country, $oHoliday->region, $oHoliday->note))),
+			'q' => implode(' ', array_filter(array($oHoliday->name, $oHoliday->country, $oHoliday->region, $oHoliday->note))) . ' -logo',
 			'num' => 5,
 			'start' => 1,
 			//'imgSize' => 'large',

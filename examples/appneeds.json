@@ -1,8 +1,10 @@
 {
 	"filters": [
-		"@appneeds"
+		"@appneeds",
+		"nearby people"
 	],
 	"userfilters": [
+		"ebooks"
 	],
 	"dice": {
 		"media": 1.0,
