@@ -1,6 +1,6 @@
 <?php
-require_once('../twitteroauth.php');
-require_once('../logger.php');
+require_once('twitteroauth.php');
+require_once('logger.php');
 require_once('holidaysbot.inc.php');
 
 /**
