@@ -1,6 +1,6 @@
 <?php
-require_once('twitteroauth.php');
-require_once('logger.php');
+require_once('../twitteroauth.php');
+require_once('../logger.php');
 require_once('holidaysbot.inc.php');
 
 /**
@@ -658,7 +658,7 @@ class HolidaysBot {
 
 	public function importCsv() {
 
-		$sFile = 'C:/Users/merijn.MBICASH/Downloads/holidaysbot.txt';
+		$sFile = MYPATH . '/holidaysbot.txt';
 		$sContents = file_get_contents($sFile);
 		$sContents = explode("\r\n", mb_convert_encoding($sContents, 'UTF-8', 'UTF-16'));
 
@@ -691,7 +691,7 @@ class HolidaysBot {
 			}
 		}
 
-		file_put_contents('C:/Users/merijn.MBICASH/Documents/twitterbot.localhost/single-purpose/holidaysbot.json', json_encode($aHolidays, JSON_PRETTY_PRINT));
+		file_put_contents(MYPATH . '/holidaysbot.json', json_encode($aHolidays, JSON_PRETTY_PRINT));
 		var_dumP(json_last_error_msg());
 		echo "done.\n";
 	}

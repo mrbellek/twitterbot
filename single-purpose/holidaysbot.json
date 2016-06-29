@@ -10197,6 +10197,15 @@
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Armed_Forces_Day_(United_Kingdom)"
             },
             {
+                "dynamic": "last Saturday",
+                "country": "Netherlands",
+                "region": "",
+                "note": "",
+                "important": 0,
+                "name": "Veterans' Day",
+                "url": "https:\/\/en.wikipedia.org\/wiki\/Veterans%27_Day_(Netherlands)"
+            },
+            {
                 "dynamic": "last Sunday",
                 "country": "Kenya",
                 "region": "",
@@ -12231,15 +12240,6 @@
                 "important": 0,
                 "name": "Independence Day",
                 "url": "https:\/\/en.wikipedia.org\/wiki\/Independence_Day_(Seychelles)"
-            },
-            {
-                "dynamic": "",
-                "country": "Netherlands",
-                "region": "",
-                "note": "",
-                "important": 0,
-                "name": "Veterans' Day",
-                "url": "https:\/\/en.wikipedia.org\/wiki\/Veterans%27_Day_(Netherlands)"
             }
         ],
         "30": [
