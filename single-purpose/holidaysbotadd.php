@@ -2,19 +2,52 @@
 /*
  * TODO:
  * - show dynamic holidays in 'today's/tomorrow's holidays' overviews
- * - pagination
- * - don't hardcode filename, replace with __FILE__
+ * v pagination
+ * v don't hardcode filename, replace with __FILE__
  * v check all holidays for unicode fuckups (search for ?, &)
  */
 require_once('holidaysbot.inc.php');
+$sThisFile = pathinfo(__FILE__, PATHINFO_BASENAME);
 
 $sError = '';
 $sSuccess = '';
+$aHolidays = array();
+
+$iPage = (!empty($_GET['page']) ? (int)$_GET['page'] : 1);
+$iPerPage = 100;
+$iOffset = ($iPage - 1) * $iPerPage;
 
 try {
 	$oPDO = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS);
+	$oPDO->setAttribute(PDO::MYSQL_ATTR_INIT_COMMAND, 'SET NAMES \'utf8\'');
+	$oPDO->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 } catch (Exception $e) {
 	$sError = 'Database connection failed.';
+}
+
+function query($sQuery, $aParams = array(), $bSingle = FALSE) {
+	global $oPDO;
+	$sth = $oPDO->prepare($sQuery);
+	foreach ($aParams as $sKey => $mValue) {
+		$sth->bindValue($sKey, $mValue, (is_numeric($mValue) ? PDO::PARAM_INT : PDO::PARAM_STR));
+	}
+	if ($sth->execute()) {
+		$sQuery = preg_replace('/^\s+/', '', $sQuery);
+		if (strpos(strtolower($sQuery), 'select') === 0) {
+			//SELECT
+			return ($bSingle ? $sth->fetch(PDO::FETCH_ASSOC) : $sth->fetchAll(PDO::FETCH_ASSOC));
+		} elseif (strpos(strtolower($sQuery), 'insert') === 0) {
+			//INSERT
+			$iRowId = $oPDO->lastInsertId();
+			return ($iRowId ? $iRowId : TRUE);
+		} else {
+			//DELETE or UPDATE
+			return TRUE;
+		}
+	} else {
+		var_dump($sth->errorInfo());
+		return FALSE;
+	}
 }
 
 $aParams = array();
@@ -30,14 +63,12 @@ if ($_POST && !$sError) {
 
 		if (!empty($_POST['action']) && strtolower($_POST['action']) == 'delete') {
 			//delete record
-			$sth = $oPDO->prepare('
+			if (query('
 				DELETE FROM holidays
 				WHERE id = :id
-				LIMIT 1'
-			);
-			if ($sth->execute(array(
-				'id' => (int)$_POST['id'],
-			))) {
+				LIMIT 1',
+				array('id' => (int)$_POST['id'])
+			)) {
 				$sSuccess = 'Holiday deleted.';
 			} else {
 				$sError = 'Holiday deleting failed.';
@@ -49,7 +80,7 @@ if ($_POST && !$sError) {
 
 			if (!empty($_POST['id'])) {
 				//edit holiday
-				$sth = $oPDO->prepare('
+				if (query('
 					UPDATE holidays
 					SET name = :name,
 						month = :month,
@@ -61,20 +92,20 @@ if ($_POST && !$sError) {
 						important = :important,
 						url = :url
 					WHERE id = :id
-					LIMIT 1'
-				);
-				if ($sth->execute(array(
-					'id'		=> $_POST['id'],
-					'name'		=> $_POST['name'],
-					'month'		=> $_POST['month'],
-					'day'		=> $_POST['day'],
-					'region'	=> $_POST['region'],
-					'country'	=> $_POST['country'],
-					'note'		=> $_POST['note'],
-					'dynamic'	=> $_POST['dynamic'],
-					'important'	=> (isset($_POST['important']) ? 1 : 0),
-					'url'		=> $_POST['url'],
-				))) {
+					LIMIT 1',
+					array(
+						'id'		=> $_POST['id'],
+						'name'		=> $_POST['name'],
+						'month'		=> $_POST['month'],
+						'day'		=> $_POST['day'],
+						'region'	=> $_POST['region'],
+						'country'	=> $_POST['country'],
+						'note'		=> $_POST['note'],
+						'dynamic'	=> $_POST['dynamic'],
+						'important'	=> (isset($_POST['important']) ? 1 : 0),
+						'url'		=> $_POST['url'],
+					)
+				)) {
 					$sSuccess = 'Holiday edited.';
 				} else {
 					$sError = 'Holiday edit failed.';
@@ -82,21 +113,21 @@ if ($_POST && !$sError) {
 				}
 			} else {
 				//add holiday
-				$sth = $oPDO->prepare('
+				if (query('
 					INSERT INTO holidays (name, month, day, region, country, note, dynamic, important, url)
-					VALUES (:name, :month, :day, :region, :country, :note, :dynamic, :important, :url)'
-				);
-				if ($sth->execute(array(
-					'name'		=> $_POST['name'],
-					'month'		=> $_POST['month'],
-					'day'		=> $_POST['day'],
-					'region'	=> $_POST['region'],
-					'country'	=> $_POST['country'],
-					'note'		=> $_POST['note'],
-					'dynamic'	=> $_POST['dynamic'],
-					'important'	=> (isset($_POST['important']) ? 1 : 0),
-					'url'		=> $_POST['url'],
-				))) {
+					VALUES (:name, :month, :day, :region, :country, :note, :dynamic, :important, :url)',
+					array(
+						'name'		=> $_POST['name'],
+						'month'		=> $_POST['month'],
+						'day'		=> $_POST['day'],
+						'region'	=> $_POST['region'],
+						'country'	=> $_POST['country'],
+						'note'		=> $_POST['note'],
+						'dynamic'	=> $_POST['dynamic'],
+						'important'	=> (isset($_POST['important']) ? 1 : 0),
+						'url'		=> $_POST['url'],
+					)
+				)) {
 					$sSuccess = 'Holiday added.';
 				} else {
 					$sError = 'Holiday add failed.';
@@ -110,64 +141,80 @@ if ($_POST && !$sError) {
 } elseif (!empty($_GET['id']) && is_numeric($_GET['id']) && !$sError) {
 
 	//display single holiday
-	$sth = $oPDO->prepare('SELECT * FROM holidays WHERE id = :id LIMIT 1');
-	$sth->execute(array(
-		'id' => (int)$_GET['id']
-	));
-	$aData = $sth->fetch(PDO::FETCH_ASSOC);
-	unset($sth);
+	$aData = query('
+		SELECT SQL_CALC_FOUND_ROWS *
+		FROM holidays
+		WHERE id = :id
+		LIMIT 1',
+		array('id' => (int)$_GET['id']),
+		TRUE
+	);
 
 } elseif (!empty($_GET['search']) && !$sError) {
 	//display holidays matching search queries
-	$sth = $oPDO->prepare('
-		SELECT *
+	$aHolidays = query('
+		SELECT SQL_CALC_FOUND_ROWS *
 		FROM holidays
 		WHERE name LIKE :search
 		OR region LIKE :search
 		OR country LIKE :search
 		OR note LIKE :search
-		OR dynamic LIKE :search'
+		OR dynamic LIKE :search
+		LIMIT :offset, :perpage',
+		array(
+			'search' => '%' . $_GET['search'] . '%',
+			'offset' => $iOffset,
+			'perpage' => $iPerPage,
+		)
 	);
-	$aParams = array(
-		'search' => '%' . $_GET['search'] . '%',
-	);
+
 	$sSearch = $_GET['search'];
 	
 } elseif (isset($_GET['today']) && !$sError) {
 	//display today's holidays
-	$sth = $oPDO->prepare('
-		SELECT * FROM holidays
+	$aHolidays = query('
+		SELECT SQL_CALC_FOUND_ROWS * FROM holidays
 		WHERE month = :month
-		AND day = :day'
-	);
-	$aParams = array(
-		'month' => date('m'),
-		'day' => date('d'),
+		AND day = :day
+		LIMIT :offset, :perpage',
+		array(
+			'month' => date('m'),
+			'day' => date('d'),
+			'offset' => $iOffset,
+			'perpage' => $iPerPage,
+		)
 	);
 } elseif (isset($_GET['tomorrow']) && !$sError) {
 	//display tomorrow's holidays
-	$sth = $oPDO->prepare('
-		SELECT * FROM holidays
+	$aHolidays = query('
+		SELECT SQL_CALC_FOUND_ROWS * FROM holidays
 		WHERE month = :month
-		AND day = :day'
-	);
-	$aParams = array(
-		'month' => date('m', time() + 24 * 3600),
-		'day' => date('d', time() + 24 * 3600),
-	);
-}
-
-if (!isset($sth)) {
-
-	//no form submit or arg: list raw holidays
-	$sth = $oPDO->prepare('
-		SELECT * FROM holidays'
+		AND day = :day
+		LIMIT :offset, :perpage',
+		array(
+			'month' => date('m', time() + 24 * 3600),
+			'day' => date('d', time() + 24 * 3600),
+			'offset' => $iOffset,
+			'perpage' => $iPerPage,
+		)
 	);
 }
 
-if ($sth->execute($aParams)) {
-	$aHolidays = $sth->fetchAll(PDO::FETCH_ASSOC);
+if (!$aHolidays) {
+	$aHolidays = query('
+		SELECT SQL_CALC_FOUND_ROWS *
+		FROM holidays
+		LIMIT :offset, :perpage',
+		array(
+			'offset' => $iOffset,
+			'perpage' => $iPerPage,
+		)
+	);
 }
+
+$aCount = query('SELECT FOUND_ROWS()', array(), TRUE);
+$iCount = $aCount['FOUND_ROWS()'];
+
 ?><!DOCTYPE html>
 <html>
 	<head>
@@ -192,7 +239,7 @@ if ($sth->execute($aParams)) {
 			<h1 class="col-md->offset-2"><a href="https://twitter.com/HolidaysBot" target="_blank">@HolidaysBot</a> - <?= (empty($_GET['id']) ? 'add' : 'edit') ?> holiday</h1>
             <?php if (!empty($sSuccess)) { ?><div role="alert" class="alert alert-success"><?= $sSuccess ?></div><?php } ?>
             <?php if (!empty($sError)) { ?><div role="alert" class="alert alert-danger"><?= $sError ?></div><?php } ?>
-            <form method="post" action="holidaysbotadd.php" class="form-horizontal" role="form">
+			<form method="post" action="<?= $sThisFile ?>" class="form-horizontal" role="form">
 
                 <?php if (!empty($_GET['id'])) { ?>
                     <input type="hidden" name="id" value="<?= (int)$_GET['id'] ?>" />
@@ -290,14 +337,14 @@ if ($sth->execute($aParams)) {
 					<div class="col-sm-10">
 						<input type="submit" name="action" value="Save" class="btn btn-primary" />
 						<?php if (!empty($_GET['id'])) { ?>
-							<a href="holidaysbotadd.php" class="btn btn-default">Cancel</a>
+							<a href="<?= $sThisFile ?>" class="btn btn-default">Cancel</a>
 							<input type="submit" name="action" value="Delete" class="btn btn-danger confirm" />
 						<?php } ?>
 					</div>
 				</div>
 			</form>
 
-            <form method="get" action="holidaysbotadd.php" class="form-horizontal" role="form">
+            <form method="get" action="<?= $sThisFile ?>" class="form-horizontal" role="form">
 
 				<div class="form-group">
 					<label for="search" class="col-sm-2 control-label">Search</label>
@@ -311,10 +358,10 @@ if ($sth->execute($aParams)) {
 					<div class="col-sm-10">
 						<input type="submit" name="action" value="Search" class="btn btn-primary" />
 						<?php if (@$sSearch || isset($_GET['today']) || isset($_GET['tomorrow'])) { ?>
-							<a href="holidaysbotadd.php" class="btn btn-danger">Reset</a>
+							<a href="<?= $sThisFile ?>" class="btn btn-danger">Reset</a>
 						<?php } ?>
-						<a href="holidaysbotadd.php?today" class="btn btn-default">Today's holidays</a>
-						<a href="holidaysbotadd.php?tomorrow" class="btn btn-default">Tomorrow's holidays</a>
+						<a href="<?= $sThisFile ?>?today" class="btn btn-default">Today's holidays</a>
+						<a href="<?= $sThisFile ?>?tomorrow" class="btn btn-default">Tomorrow's holidays</a>
 					</div>
 				</div>
 			</form>
@@ -351,6 +398,18 @@ if ($sth->execute($aParams)) {
 					</tr>
 				<?php } ?>
 			</table>
+
+			<?php if ($iCount > $iPerPage) { ?>
+			<nav style="text-align: center;">
+				<ul class="pagination">
+				<?php for ($i = 1; $i <= ceil($iCount / $iPerPage); $i++) { ?>
+					<li <?= ($i == $iPage ? 'class="active"' : '') ?>>
+						<a href="<?= $sThisFile ?>?page=<?= $i ?><?= (@$sSearch ? "&search=" . $sSearch : "") ?>"><?= $i ?></a>
+					</li>
+				<?php } ?>
+				</ul>
+			</nav>
+			<?php } ?>
 		</div>
 	</body>
 </html>
