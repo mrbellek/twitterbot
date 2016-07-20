@@ -29,7 +29,7 @@ function query($sQuery, $aParams = array(), $bSingle = FALSE) {
 	global $oPDO;
 	$sth = $oPDO->prepare($sQuery);
 	foreach ($aParams as $sKey => $mValue) {
-		$sth->bindValue($sKey, $mValue, (is_numeric($mValue) ? PDO::PARAM_INT : PDO::PARAM_STR));
+		$sth->bindValue($sKey, $mValue, (is_numeric($mValue) && !is_float($mValue) ? PDO::PARAM_INT : PDO::PARAM_STR));
 	}
 	if ($sth->execute()) {
 		$sQuery = preg_replace('/^\s+/', '', $sQuery);
