@@ -160,6 +160,7 @@ if ($_POST && !$sError) {
 		OR country LIKE :search
 		OR note LIKE :search
 		OR dynamic LIKE :search
+		ORDER BY month, day, name
 		LIMIT :offset, :perpage',
 		array(
 			'search' => '%' . $_GET['search'] . '%',
@@ -176,6 +177,7 @@ if ($_POST && !$sError) {
 		SELECT SQL_CALC_FOUND_ROWS * FROM holidays
 		WHERE month = :month
 		AND day = :day
+		ORDER BY name
 		LIMIT :offset, :perpage',
 		array(
 			'month' => date('m'),
@@ -190,6 +192,7 @@ if ($_POST && !$sError) {
 		SELECT SQL_CALC_FOUND_ROWS * FROM holidays
 		WHERE month = :month
 		AND day = :day
+		ORDER BY name
 		LIMIT :offset, :perpage',
 		array(
 			'month' => date('m', time() + 24 * 3600),
@@ -200,10 +203,11 @@ if ($_POST && !$sError) {
 	);
 }
 
-if (!$aHolidays) {
+if (!$aHolidays && empty($sSearch)) {
 	$aHolidays = query('
 		SELECT SQL_CALC_FOUND_ROWS *
 		FROM holidays
+		ORDER BY month, day, name
 		LIMIT :offset, :perpage',
 		array(
 			'offset' => $iOffset,
@@ -267,7 +271,7 @@ $iCount = $aCount['FOUND_ROWS()'];
 					<label for="" class="col-sm-2 control-label">Day</label>
 					<div class="col-sm-10">
 						<select id="day" name="day" class="form-control">
-						<?php for ($i = 1; $i <= 31; $i++) { ?>
+						<?php for ($i = 0; $i <= 31; $i++) { ?>
 							<option value="<?= $i ?>" <?= ($i == @$aData['day'] ? "selected" : "") ?>><?= $i ?></option>
 						<?php } ?>
 						</select>
