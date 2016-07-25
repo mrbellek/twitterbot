@@ -6,6 +6,7 @@ require_once('holidaysbot.inc.php');
 /**
  * TODO:
  * v convert to database
+ *   v double-check that weird characters are posted correctly to twitter
  * v search google image search for holiday + country and attach first image?
  * v fix '?' characters in json file
  * v tweet random holiday 4x daily, keep track of which we have tweeted about today
@@ -390,16 +391,16 @@ class HolidaysBot {
 		
 		//tweet
 		if (!empty($sMediaId)) {
-			$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE, 'media_ids' => $sMediaId));
+			$oRet = $this->oTwitter->post('statuses/update', array('status' => mb_convert_encoding($sTweet, 'UTF-8', 'HTML-ENTITIES'), 'trim_users' => TRUE, 'media_ids' => $sMediaId));
 		} else {
-			$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => TRUE));
+			$oRet = $this->oTwitter->post('statuses/update', array('status' => mb_convert_encoding($sTweet, 'UTF-8', 'HTML-ENTITIES'), 'trim_users' => TRUE));
 		}
 		if (isset($oRet->errors)) {
 			$this->logger(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message), array('tweet' => $sTweet, 'media' => @$sMediaId));
 			$this->halt('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
 			return FALSE;
 		} else {
-			printf("- %s\n", htmlentities($sTweet));
+			printf("- %s\n", $sTweet);
 		}
 
 		return TRUE;
