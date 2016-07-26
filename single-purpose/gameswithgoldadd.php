@@ -179,6 +179,17 @@ if ($sth->execute()) {
     <head>
         <title>@XboxPSfreegames - add game</title>
         <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+		<style type="text/css">
+			@media screen and (max-width: 767px) {
+				body { font-size: 3.5em; }
+			}
+			@media screen and (min-width: 768px) {
+				body { font-size: 2em; }
+			}
+			@media screen and (min-width: 992px) {
+				body { font-size: 1.5em; }
+			}
+		</style>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 
         <script type="text/javascript">
@@ -209,7 +220,7 @@ if ($sth->execute()) {
     </head>
     <body>
         <div class="container">
-            <h1 class="col-md-offset-2"><a href="https://twitter.com/XboxPSfreegames" target="_blank">@XboxPSfreegames</a> - <?= (empty($_GET['id']) ? 'add' : 'edit') ?> game</h1>
+            <h1 class="col-md-offset-2"><a href="https://twitter.com/XboxPSfreegames" target="_blank">@XboxPSfreegames</a> <span class="hidden-sm hidden-xs">- <?= (empty($_GET['id']) ? 'add' : 'edit') ?> game</span></h1>
             <?php if (!empty($sSuccess)) { ?><div role="alert" class="alert alert-success"><?= $sSuccess ?></div><?php } ?>
             <?php if (!empty($sError)) { ?><div role="alert" class="alert alert-danger"><?= $sError ?></div><?php } ?>
             <form method="post" action="gameswithgoldadd.php" class="form-horizontal" role="form">
@@ -217,16 +228,15 @@ if ($sth->execute()) {
                 <?php if (!empty($_GET['id'])) { ?>
                     <input type="hidden" name="id" value="<?= (int)$_GET['id'] ?>" />
                 <?php } ?>
-                <div class="form-group">
-                    <label for="game" class="col-sm-2 control-label">Game</label>
-                    <div class="col-sm-10">
+                <div class="row form-group">
+                    <label for="game" class="col-sm-1 col-md-2 control-label">Game</label>
+                    <div class="col-sm-12 col-md-10">
                         <input type="text" id="game" name="game" class="form-control" value="<?= @$aData['game'] ?>" required />
                     </div>
                 </div>
-                <div class="form-group">
-
-                    <label for="platform" class="col-sm-2 control-label">Platform</label>
-                    <div class="col-sm-10">
+                <div class="row form-group">
+                    <label for="platform" class="col-md-2 control-label">Platform</label>
+                    <div class="col-md-10">
                         <select name="platform" id="platform" class="form-control">
                         <?php foreach (array_keys($aPlatforms) as $sPlatform) { ?>
                             <option value="<?= $sPlatform ?>" <?= (@$aData['platform'] == $sPlatform ? 'selected' : '') ?>><?= $sPlatform ?></option>
@@ -234,71 +244,71 @@ if ($sth->execute()) {
                         </select>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="row form-group">
 
-                    <label for="startdate" class="col-sm-2 control-label">Start date</label>
-                    <div class="col-sm-10">
+                    <label for="startdate" class="col-md-2 control-label">Start date</label>
+                    <div class="col-md-10">
                         <input type="date" name="startdate" id="startdate" class="form-control" value="<?= (!empty($aData['startdate']) ? $aData['startdate'] : date('Y-m-d')) ?>" required/>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="row form-group">
 
-                    <label for="enddate" class="col-sm-2 control-label">End date</label>
-                    <div class="col-sm-10">
+                    <label for="enddate" class="col-md-2 control-label">End date</label>
+                    <div class="col-md-10">
                         <input type="date" name="enddate" id="enddate" class="form-control" value="<?= (!empty($aData['enddate']) ? $aData['enddate'] : date('Y-m-d', strtotime('+2 week'))) ?>" required />
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="row form-group">
 
-                    <label for="link" class="col-sm-2 control-label">Link</label>
-                    <div class="col-sm-10">
+                    <label for="link" class="col-md-2 control-label">Link</label>
+                    <div class="col-md-10">
                         <input type="text" name="link" id="link" class="form-control" value="<?= (!empty($aData['link']) ? $aData['link'] : '') ?>" />
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="row form-group hidden-sm hidden-xs">
 
-                    <label class="col-sm-2 control-label">Majornelson</label>
-                    <div class="col-sm-10">
+                    <label class="col-md-2 control-label">Majornelson</label>
+                    <div class="col-md-10">
                         <p class="form-control-static">
                             <a href="http://majornelson.com/category/games-with-gold/" target="_blank">http://majornelson.com/category/games-with-gold/</a>
                         </p>
                     </div>
 
-                    <label class="col-sm-2 control-label">Wikipedia Xbox</label>
-                    <div class="col-sm-10">
+                    <label class="col-md-2 control-label">Wikipedia Xbox</label>
+                    <div class="col-md-10">
                         <p class="form-control-static">
                             <a href="http://en.wikipedia.org/wiki/List_of_Games_with_Gold_games" target="_blank">http://en.wikipedia.org/wiki/List_of_Games_with_Gold_games</a>
                         </p>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="row form-group hidden-sm hidden-xs">
 
-                    <label class="col-sm-2 control-label">Playstation Plus blog</label>
-                    <div class="col-sm-10">
+                    <label class="col-md-2 control-label">Playstation Plus blog</label>
+                    <div class="col-md-10">
                         <p class="form-control-static">
                             <a href="http://blog.us.playstation.com/tag/playstation-plus/" target="_blank">http://blog.us.playstation.com/tag/playstation-plus/</a>
                         </p>
                     </div>
 
-                    <label class="col-sm-2 control-label">Wikipedia PS</label>
-                    <div class="col-sm-10">
+                    <label class="col-md-2 control-label">Wikipedia PS</label>
+                    <div class="col-md-10">
                         <p class="form-control-static">
                             <a href="http://en.wikipedia.org/wiki/List_of_Instant_Game_Collection_games_(North_America)" target="_blank">http://en.wikipedia.org/wiki/List_of_Instant_Game_Collection_games_(North_America)</a><br/>
                             <a href="http://en.wikipedia.org/wiki/List_of_Instant_Game_Collection_games_(PAL_region)" target="_blank">http://en.wikipedia.org/wiki/List_of_Instant_Game_Collection_games_(PAL_region)</a>
                         </p>
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="row form-group">
 
-                    <label for="password" class="col-sm-2 control-label">Password</label>
-                    <div class="col-sm-10">
+                    <label for="password" class="col-md-2 control-label">Password</label>
+                    <div class="col-md-10">
                         <input type="password" name="password" id="password" class="form-control" required />
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="row form-group">
 
-                    <label for="link" class="col-sm-2 control-label">&nbsp;</label>
-                    <div class="col-sm-10">
+                    <label for="link" class="col-md-2 control-label">&nbsp;</label>
+                    <div class="col-md-10">
                         <input type="submit" name="action" value="Save" class="btn btn-primary" />
                         <?php if (!empty($_GET['id'])) { ?>
                             <a href="gameswithgoldadd.php" class="btn btn-default">Cancel</a>
