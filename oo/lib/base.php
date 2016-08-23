@@ -12,4 +12,11 @@ class Base
 
         $this->logger = new Logger;
     }
+
+    public function set($sName, $mValue)
+    {
+        $this->$sName = $mValue;
+
+        return $this;
+    }
 }

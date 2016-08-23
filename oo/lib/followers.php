@@ -3,13 +3,9 @@ namespace Twitterbot\Lib;
 
 class Followers
 {
-    public $sUsername;
-
-    private $aFollowers = array();
-
     public function getAll()
     {
-        $oRet = $this->oTwitter->get('followers/ids', array('screen_name' => $this->sUsername, 'stringify_ids' => TRUE));
+        $oRet = $this->oTwitter->get('followers/ids', array('screen_name' => $this->oConfig->get('sUsername'), 'stringify_ids' => true));
         if (!empty($oRet->errors[0]->message)) {
             $this->logger->write(2, sprintf('Twitter API call failed: GET followers/ids (%s)', $aMentions->errors[0]->message));
             $this->logger->output(sprintf('- Failed getting followers, halting. (%s)', $aMentions->errors[0]->message));

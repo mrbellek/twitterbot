@@ -1,6 +1,7 @@
 <?php
 define('DOCROOT', __DIR__ . '\\');
 define('NAMESPACE_PREFIX', 'Twitterbot\\');
+define('DS', DIRECTORY_SEPARATOR);
 
 spl_autoload_register(function($sClass)
 {
@@ -9,8 +10,8 @@ spl_autoload_register(function($sClass)
     if (is_file($sClassFile)) {
         require_once($sClassFile);
     } elseif(preg_match('/^OAuth.+/', $sClass)) {
-        require_once(MYPATH . 'twitteroauth.php');
-        require_once(MYPATH . 'OAuth.php');
+        require_once(DOCROOT . 'twitteroauth.php');
+        require_once(DOCROOT . 'OAuth.php');
     } else {
         $aBacktrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         die(sprintf('Could not find class %s called from %s:%d', $sClass, $aBacktrace[1]['file'], $aBacktrace[1]['line']));

@@ -1,34 +1,18 @@
 <?php
 namespace Twitterbot\Lib;
+use Twitterbot\Lib\Following;
+use Twitterbot\Lib\Tweet;
 
 class Reply extends Base
 {
-    public $sUsername;
-    public $bOnlyReplyToFriends = true;
-
-    public function __construct()
+    public function getMentions()
     {
-        parent::__construct();
-
-        $this->sLastReplyFile = MYPATH . sprintf('/%s.json', $sUsername);
-    }
-
-    public function getNew()
-    {
-		$aLastSearch = @json_decode($this->sLastSearchFile, TRUE);
-        if (!$aLastSearch || empty($aLastSearch['timestamp'])) {
-            $aLastSearch = array(
-                'timestamp' => 'never',
-                'max_id' => 1,
-            );
-        }
-
-        $this->logger->output('Checking mentions since %s for commands..', $aLastSearch['timestamp']);
+        $this->logger->output('Checking mentions since %s for commands..', $this->oConfig->get('last_mentions_timestamp', 'never'));
 
         //fetch new mentions since last run
         $aMentions = $this->oTwitter->get('statuses/mentions_timeline', array(
             'count'         => 10,
-			'since_id'		=> $aLastSearch['max_id'],
+			'since_id'		=> $this->oConfig->get('last_mentions_check', 1),
         ));
 
         if (is_object($aMentions) && !empty($aMentions->errors[0]->message)) {
@@ -38,22 +22,21 @@ class Reply extends Base
 
         //if we have mentions, get friends for auth (we will only respond to commands from people we follow)
         if (count($aMentions) > 0) {
-            $oRet = $this->oTwitter->get('friends/ids', array('screen_name' => $this->sUsername, 'stringify_ids' => TRUE));
-            if (!empty($oRet->errors[0]->message)) {
-                $this->logger->write(2, sprintf('Twitter API call failed: GET friends/ids (%s)', $aMentions->errors[0]->message));
-                $this->logger->output(sprintf('- Failed getting friends, halting. (%s)', $aMentions->errors[0]->message));
-            }
-            $aFollowing = $oRet->ids;
+            $aFollowing = (new Following)
+                ->set('oConfig', $this->oConfig)
+                ->getAll();
 
         } else {
             $this->logger->output('- no new mentions.');
-            return array();
+
+            return true;
         }
 
-        if ($this->bOnlyReplyToFriends) {
+        //only reply to friends (people we are following)
+        if ($this->oConfig->get('only_reply_friends', true)) {
             foreach ($aMentions as $i => $oMention) {
 
-                //only reply to friends (people we are following)
+                //remove all mentions from non-friends
                 if (!in_array($oMention->user->id_str, $aFollowing)) {
                     unset($aMentions[$i]);
                 }
@@ -63,6 +46,41 @@ class Reply extends Base
             printf('- %d new mentions', count($aMentions));
         }
 
-        return $aMentions;
+        $this->aMentions = $aMentions;
+
+        return true;
+    }
+
+    public function replyToMentions()
+    {
+        if (!isset($this->aMentions)) {
+            $this->getMentions();
+        }
+
+        foreach ($this->aMentions as $oMention) {
+
+            $sId = $oMention->id_str;
+            $sCommand = str_replace(sprintf('@%s ', strtolower($this->oConfig->get('sUsername'))), '', strtolower($oMention->text));
+            $this->logger->output('Parsing command \'%s\' from @%s..', $sCommand, $oMention->user->screen_name);
+
+            switch ($sCommand) {
+                case 'help':
+                    (new Tweet)
+                        ->set('oConfig', $this->oConfig)
+                        ->replyTo($oMention, sprintf('Commands: help lastrun ratelimit. %s', ($this->oConfig->get('only_reply_friends', true) ? 'Only replies to friends.' : '')));
+                    break;
+                case 'lastrun':
+                    $oSearch = $this->oConfig->get('search_strings');
+                    if (isset($oSearch->{0}->timestamp)) {
+                        (new Tweet)
+                            ->set('oConfig', $this->oConfig)
+                            ->replyTo($oMention, sprintf('Last script run was: %s', $oSearch->{0}->timestamp));
+                    }
+                    break;
+                case 'ratelimit':
+                    //TODO
+                    break;
+            }
+        }
     }
 }

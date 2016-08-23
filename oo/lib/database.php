@@ -1,7 +1,7 @@
 <?php
 namespace Twitterbot\Lib;
 
-class Database
+class Database extends Base
 {
     public function connect()
     {

@@ -3,13 +3,6 @@ namespace Twitterbot\Lib;
 
 class Search extends Base
 {
-    public function set($sName, $sValue)
-    {
-        $this->$sName = $sValue;
-
-        return $this;
-    }
-
     public function search($oQuery)
     {
 		if (empty($oQuery)) {

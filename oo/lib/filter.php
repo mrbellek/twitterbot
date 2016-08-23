@@ -27,13 +27,6 @@ class Filter extends Base
         'base'      => 0.7,
     );
 
-    public function set($sName, $mValue)
-    {
-        $this->$sName = $mValue;
-
-        return $this;
-    }
-
     public function setFilters()
     {
         if ($aFilters = $this->oConfig->get('filters')) {
