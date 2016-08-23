@@ -1,0 +1,5 @@
+{
+    "search_max": 5,
+    "min_rate_limit": 5,
+    "reply_to_cmds": false
+}
