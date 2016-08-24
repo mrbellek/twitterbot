@@ -1,7 +1,7 @@
 <?php
 namespace Twitterbot\Lib;
 
-class Tweet
+class Tweet extends Base
 {
     public function post($aTweets = array())
     {
@@ -13,17 +13,26 @@ class Tweet
 		}
 
         $aTweets = (is_array($aTweets) ? $aTweets : array($aTweets));
+        if (!empty($this->aMediaIds)) {
+            $this->aMediaIds = (is_array($this->aMediaIds) ? $this->aMediaIds : array($this->aMediaIds));
+        }
 
         foreach ($aTweets as $sTweet) {
-            $this->logger->output('Tweeting: %s', $sTweet);
-            $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true));
+            if ($this->aMediaIds) {
+                $sMediaId = array_shift($this->aMediaIds);
+                $this->logger->output('Tweeting: %s (with attachment)', $sTweet);
+                $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true, 'media_ids' => $sMediaId));
+            } else {
+                $this->logger->output('Tweeting: %s', $sTweet);
+                $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true));
+            }
             if (isset($oRet->errors)) {
                 $this->logger->write(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message), array('tweet' => $sTweet));
                 $this->logger->output('- Error: %s (code %s)', $oRet->errors[0]->message, $oRet->errors[0]->code);
 
                 return false;
             } else {
-                printf("- %s\n", utf8_decode($sTweet));
+                $this->logger->output("- %s", utf8_decode($sTweet));
             }
         }
 

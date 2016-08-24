@@ -73,16 +73,18 @@ class File extends Base
         //rebuild index, if needed
         $this->rebuildIndex();
 
+        //get random file (lowest postcount) or random unposted file
         if ($this->oConfig->get('post_only_once', false) == true) {
             $sFilename = $this->getRandomUnposted();
         } else {
             $sFilename = $this->getRandom();
         }
 
+        //get file info
         $sFilePath = DOCROOT . $this->oConfig->get('folder') . DS . utf8_decode($sFilename);
         $aImageInfo = getimagesize($sFilePath);
 
-        $this->logger->output('- File: %s', $sFilePath);
+        //construct array
 		$aFile = array(
 			'filepath'  => $sFilePath,
 			'dirname'   => pathinfo($sFilename, PATHINFO_DIRNAME),
@@ -95,6 +97,11 @@ class File extends Base
 			'created'   => date('Y-m-d', filectime($sFilePath)),
 			'modified'  => date('Y-m-d', filemtime($sFilePath)),
 		);
+
+        //increase postcount for this file by 1 and write filelist to disk
+        $this->increment($aFile);
+
+        $this->logger->output('- File: %s', $sFilePath);
 
 		return $aFile;
     }

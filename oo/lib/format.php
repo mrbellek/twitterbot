@@ -1,10 +1,18 @@
 <?php
 namespace Twitterbot\Lib;
 
-class Format
+class Format extends Base
 {
-    public function format($oRecord)
+    //TODO: complex formatting like for rssbot
+    public function format($aRecord)
     {
-        //TODO: format message according to format in settings, and return it
+        //format message according to format in settings, and return it
+        $sTweet = $this->oConfig->get('format');
+
+        foreach ($aRecord as $sName => $sValue) {
+            $sTweet = str_replace(':' . $sName, $sValue, $sTweet);
+        }
+
+        return $sTweet;
     }
 }
