@@ -1,0 +1,16 @@
+{
+    "db_settings": {
+        "table": "bibleverses",
+        "idcol": "id",
+        "countercol": "postcount",
+        "timestampcol": "lasttimestamp"
+    },
+    "format": ":tweet",
+    "tweet_vars": {
+        "0": {
+            "var": ":tweet",
+            "recordfield": "tweet",
+            "truncate": true
+        }
+    }
+}

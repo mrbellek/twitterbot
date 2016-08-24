@@ -18,7 +18,7 @@ class Tweet extends Base
         }
 
         foreach ($aTweets as $sTweet) {
-            if ($this->aMediaIds) {
+            if (!empty($this->aMediaIds)) {
                 $sMediaId = array_shift($this->aMediaIds);
                 $this->logger->output('Tweeting: %s (with attachment)', $sTweet);
                 $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true, 'media_ids' => $sMediaId));
