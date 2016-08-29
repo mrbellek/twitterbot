@@ -1,0 +1,25 @@
+{
+    "search_strings": {
+        "0": {
+            "search": "\"i want an app\" -filter:links -RT"
+        },
+        "1": {
+            "search": "\"i need an app\" -filter:links -RT"
+        }
+    },
+    "filters": {
+        "tweet": [
+            "@appneeds",
+            "nearby people"
+        ],
+        "username": [
+            "ebooks"
+        ]
+    },
+    "dice_values": {
+        "media": 1,
+        "urls": 0.8,
+        "mentions": 0.5,
+        "base": 0.7
+    }
+}

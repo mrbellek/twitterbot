@@ -1,6 +1,6 @@
 <?php
 require_once('autoload.php');
-require_once('founddildo.inc.php');
+require_once('appneeds.inc.php');
 
 use Twitterbot\Lib\Logger;
 use Twitterbot\Lib\Config;
@@ -11,18 +11,20 @@ use Twitterbot\Lib\Block;
 use Twitterbot\Lib\Filter;
 use Twitterbot\Lib\Retweet;
 
-class FoundDildo
+(new AppNeeds)->run();
+
+class AppNeeds
 {
     public function __construct()
     {
-        $this->sUsername = 'FoundDildo';
+        $this->sUsername = 'AppNeeds';
         $this->logger = new Logger;
     }
 
     public function run()
     {
         //load config from username.json file
-        $oConfig = new Config;
+        $oConfig = new Config();
         if ($oConfig->load($this->sUsername)) {
 
             //check rate limit before anything else
@@ -31,12 +33,12 @@ class FoundDildo
                 //check correct username
                 if ((new Auth)->isUserAuthed($this->sUsername)) {
 
-                    //search using query strings
+                    //search for new tweets
                     $aTweets = (new Search)
                         ->set('oConfig', $oConfig)
                         ->search($oConfig->get('search_strings'));
 
-                    //filter out blocked users
+                    //filter out tweets from blocked accounts
                     $aTweets = (new Block)->filterBlocked($aTweets);
 
                     //filter out unwanted tweets/users
@@ -47,14 +49,12 @@ class FoundDildo
 
                     if ($aTweets) {
                         //retweet remaining tweets
-                        if ((new Retweet)->post($aTweets)) {
-                            $this->logger->output('done!');
-                        }
+                        (new Retweet)->post($aTweets);
                     }
+
+                    $this->logger->output('done!');
                 }
             }
         }
     }
 }
-
-(new FoundDildo)->run();

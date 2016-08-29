@@ -3,6 +3,8 @@ namespasce Twitterbot\Lib;
 
 class Following extends Base
 {
+    private $aFollowing = false;
+
     public function getAll()
     {
         $oRet = $this->oTwitter->get('friends/ids', array('screen_name' => $this->oConfig->get('sUsername'), 'stringify_ids' => true));
@@ -20,7 +22,7 @@ class Following extends Base
 
     public function isFollowing($oUser)
     {
-        if (!$this->aFollowing) {
+        if (!is_array($this->aFollowing)) {
             $this->getAll();
         }
 

@@ -3,7 +3,7 @@ namespace Twitterbot\Lib;
 
 class Block extends Base
 {
-    private $aBlockedUsers = array();
+    private $aBlockedUsers = false;
 
     public function getAll()
     {
@@ -26,7 +26,7 @@ class Block extends Base
 
     public function isUserBlocked($oUser)
     {
-        if (!$this->aBlockedUsers) {
+        if (!is_array($this->aBlockedUsers)) {
             $this->getAll();
         }
 

@@ -185,8 +185,10 @@ class NotesScraper {
             //check for 'next' link
             $aNextLinkNode = $oXpath->query('//a[@class="pn"]');
             $sUrl = false;
+            $sResults = false;
             foreach ($aNextLinkNode as $oNode) {
                 $sUrl = $sBaseUrl . $oNode->getAttribute('href');
+                $sResults = $this->getAddress($sUrl, false);
                 break;
             }
             echo '.';

@@ -3,6 +3,8 @@ namespace Twitterbot\Lib;
 
 class Followers
 {
+    private $aFollowers = false;
+
     public function getAll()
     {
         $oRet = $this->oTwitter->get('followers/ids', array('screen_name' => $this->oConfig->get('sUsername'), 'stringify_ids' => true));
@@ -20,7 +22,7 @@ class Followers
 
     public function isFollower()
     {
-        if (!$this->aFollowers) {
+        if (!is_array($this->aFollowers)) {
             $this->getAll();
         }
 
