@@ -10,6 +10,9 @@ use Twitterbot\Lib\Database;
 use Twitterbot\Lib\Format;
 use Twitterbot\Lib\Tweet;
 
+(new NotesFromBtc)->run();
+//(new NotesScraper)->run();
+
 class NotesFromBtc {
 
     public function __construct()
@@ -50,8 +53,6 @@ class NotesFromBtc {
     }
 }
 
-//(new NotesFromBtc)->run();
-
 class NotesScraper {
 
     public function __construct() 
@@ -70,7 +71,21 @@ class NotesScraper {
         }
 
         $this->hCurl = curl_init();
+		curl_setopt($this->hCurl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($this->hCurl, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($this->hCurl, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($this->hCurl, CURLOPT_AUTOREFERER, true);
+		curl_setopt($this->hCurl, CURLOPT_HTTPHEADER, array('Accept-Language: en-US;q=0.6,en;q=0.4'));
+		curl_setopt($this->hCurl, CURLOPT_CONNECTTIMEOUT, 5);
+		curl_setopt($this->hCurl, CURLOPT_TIMEOUT, 5);
+		curl_setopt($this->hCurl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36');
+
         $this->logger = new Logger;
+
+        $this->aAddresses = array();
+        $this->lDataDownloaded = 0;
+        $this->lNotesFound = 0;
+        $this->lNotesFiltered = 0;
     }
 
     public function run()
@@ -93,7 +108,7 @@ class NotesScraper {
             foreach (array_slice($this->aFilterCounts, 0, 10) as $sFilter => $iCount) {
                 $this->logger->output('- %d: %s', $iCount, $sFilter);
             }
-            $aLastFilters = $this->oSettings->top;
+            $aLastFilters = (array) $this->oSettings->top;
 			$aTopFilters = array_merge($aLastFilters, $this->aFilterCounts);
 			arsort($aTopFilters);
             $aTopFilters = array_slice($aTopFilters, 0, 10, true);
@@ -106,8 +121,6 @@ class NotesScraper {
 
     private function searchGoogle()
     {
-        //TODO: use DOMDOcument and Xpath here instead of strpos and regex because fuck that
-
         $this->logger->output('searching google for recent transactions with public notes');
 
         //basic search query
@@ -140,28 +153,26 @@ class NotesScraper {
         }
 
         //prepare the whole url
-        $sUrl = 'https://google.com/search?q=' . urlencode($sQuery) . '&safe=off&tbs=qdr:m';
+        $sBaseUrl = 'https://google.com';
+        $sUrl = $sBaseUrl . '/search?q=' . urlencode($sQuery) . '&safe=off&tbs=qdr:m';
 
         //fetch the first page
-        if (!is_file('last.html')) {
-            $sResults = $this->getAddress($sUrl, false);
-            file_put_contents('last.html', $sResults);
-        } else {
-            $sResults = file_get_contents('last.html');
-        }
-
+        $sResults = $this->getAddress($sUrl, false);
 		if (strlen($sResults) == 0) {
             $this->logger->output('- google returned 0 bytes for %s', $sUrl);
 
             return false;
 		}
 
-        $iOffset = 10;
         $aAddresses = array();
         libxml_use_internal_errors(true);
 
+        $oDom = new DOMDocument;
+        $oDom->loadHTML($sResults);
+        $oXpath = new DOMXPath($oDom);
+
         //keep going until the 'next page' link is no longer present
-        //while (strpos($sResults, $sNextLink) !== FALSE || strpos($sResults, $sNextLink2) !== FALSE) {
+        while ($sUrl) {
 
             $oDom = new DOMDocument;
             $oDom->loadHTML($sResults);
@@ -171,31 +182,30 @@ class NotesScraper {
                 $aAddresses[] = $oNode->getAttribute('href');
             }
 
-            $aNode = $oXpath->query('//a[@class="pn"]');
-            die(var_dump($aNode));
-
-
-            //this isn't perfect (urls get truncated) but it'll do
-            if (preg_match_all('/(https:\/\/blockchain.info\/address\/[a-zA-Z0-9]+)/', $sResults, $aMatches)) {
-
-                $aAddresses = array_merge($aAddresses, $aMatches[1]);
+            //check for 'next' link
+            $aNextLinkNode = $oXpath->query('//a[@class="pn"]');
+            $sUrl = false;
+            foreach ($aNextLinkNode as $oNode) {
+                $sUrl = $sBaseUrl . $oNode->getAttribute('href');
+                break;
             }
-
-			$sResults = $this->getAddress($sUrl . '&start=' . $iOffset, FALSE);
-            $iOffset += 10;
             echo '.';
-        //}
+        }
 		echo '/last';
 
         //merge into global array of addresses
         $this->aAddresses = array_values(array_unique(array_merge($this->aAddresses, $aAddresses)));
         echo "\r\n";
+
+        return (count($this->aAddresses) > 0);
     }
 
     private function parseAddresses()
     {
         //sort by newest first
         $sArgs = '?sort=0';
+
+        $oDom = new DOMDocument;
 
         //loop through addresses
         foreach ($this->aAddresses as $iKey => $sAddress) {
@@ -209,51 +219,38 @@ class NotesScraper {
 				}
 			}
 
-            //get first page
+            //get pages, as long as next link is present AND it is not disabled (max 100 pages)
             $this->logger->output('fetching address %d/%d..', $iKey + 1, count($this->aAddresses));
             try {
-				$sHTML = $this->getAddress($sAddress . $sArgs);
-                $this->lDataDownloaded += strlen($sHTML);
-                if (empty($sHTML)) {
-                    //got disconnected, just move on
-                    echo '/dc';
+                $sUrl = $sAddress . $sArgs;
+                $iPage = 1;
+                while ($sUrl && $iPage <= 100) {
 
-                } else {
-                    echo 'checking pages for public notes: ';
-                    $bRet = $this->parseNotes($sHTML);
-                    if (!$bRet) {
-                        //note found that is older than treshold, skip to next address
-                        echo "/age\r\n\r\n";
+                    $sHTML = $this->getAddress($sUrl);
+                    $this->lDataDownloaded += strlen($sHTML);
+                    if (empty($sHTML)) {
+                        //disconnected
+                        echo '/dc';
                         continue;
                     }
 
-                    $iOffset = 50;
-                    //get next pages, as long as next link is present AND it is not disabled (max 100 pages)
-                    while (preg_match('/<li class="next ?">/', $sHTML) && !preg_match('/<li class="next disabled/', $sHTML) && $iOffset <= 5000) {
+                    $oDom->loadHTML($sHTML);
+                    $oXpath = new DOMXPath($oDom);
 
-                        $sHTML = $this->getAddress($sAddress . '?offset=' . $iOffset . '&filter=0');
-                        $this->lDataDownloaded += strlen($sHTML);
-                        if (empty($sHTML)) {
-                            //disconnected
-                            echo '/dc';
-                        } else {
-                            $bRet = $this->parseNotes($sHTML);
-                            if (!$bRet) {
-                                //note found that is older than treshold, break out of loop and go to next address
-                                echo '/age';
-                                break;
-                            }
-                        }
+                    $bRet = $this->parseNotes($oXpath);
+                    if (!$bRet) {
+                        //note found that is older than treshold, break out of loop and go to next address
+                        echo '/age';
+                        break;
+                    }
 
-                        $iOffset += 50;
+                    //fetch next page url
+                    $aNextLinkNode = $oXpath->query('//li[@class="next "]/a');
+                    $sUrl = false;
+                    foreach ($aNextLinkNode as $oNode) {
+                        $sUrl = $sAddress . $oNode->getAttribute('href');
                     }
-                    if ($bRet) {
-                        if ($iOffset > 5000) {
-                            echo '/max'; //too many pages
-                        } else {
-                            echo '/end'; //no more pages
-                        }
-                    }
+                    $iPage++;
                 }
 
             } catch (Exception $e) {
@@ -267,14 +264,6 @@ class NotesScraper {
     private function getAddress($sUrl, $bUseApiCode = true)
     {
 		curl_setopt($this->hCurl, CURLOPT_URL, $sUrl . ($bUseApiCode ? '&api_code=' . API_CODE : ''));
-		curl_setopt($this->hCurl, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($this->hCurl, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($this->hCurl, CURLOPT_FOLLOWLOCATION, true);
-		curl_setopt($this->hCurl, CURLOPT_AUTOREFERER, true);
-		curl_setopt($this->hCurl, CURLOPT_HTTPHEADER, array('Accept-Language: en-US;q=0.6,en;q=0.4'));
-		curl_setopt($this->hCurl, CURLOPT_CONNECTTIMEOUT, 5);
-		curl_setopt($this->hCurl, CURLOPT_TIMEOUT, 5);
-		curl_setopt($this->hCurl, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.130 Safari/537.36');
 
 		$sResponse = curl_exec($this->hCurl);
 		$sHttpCode = curl_getinfo($this->hCurl, CURLINFO_HTTP_CODE);
@@ -286,9 +275,77 @@ class NotesScraper {
 		return $sResponse;
     }
 
-    private function parseNotes($sHTML)
+    private function parseNotes($oXpath)
     {
-        //TODO: use simplexml and xpath here and not regex because goddamn
+        //look for nodes with public notes in them
+        $aNodes = $oXpath->query('//div[@class="alert note"]');
+        $this->lNotesFound += $aNodes->length;
+        echo ($aNodes->length ? $aNodes->length : '.') . ' ';
+
+        foreach ($aNodes as $oNode) {
+
+            //get the note
+            $sNote = trim(str_replace('Public Note:', '', $oNode->nodeValue));
+
+            //get the timestamp on the transaction
+            $aDateNode = $oXpath->query('//span[@class="pull-right"]', $oNode->parentNode);
+            $sTimestamp = false;
+            foreach ($aDateNode as $oSubnode) {
+                $sTimestamp = $oSubnode->nodeValue;
+                break;
+            }
+            if (!$sTimestamp || strtotime($sTimestamp) + $this->iNoteAgeThreshold < time()) {
+                //note is too old, stop
+                return false;
+            }
+
+            //get the transaction id
+            $aTxNode = $oXpath->query('//a[@class="hash-link"]', $oNode->parentNode);
+            $sTransactionId = false;
+            foreach ($aTxNode as $oSubnode) {
+                $sTransactionId = $oSubnode->getAttribute('href');
+                break;
+            }
+
+            //apply filters
+            $bFiltered = false;
+            foreach ($this->oSettings->filters as $sFilter) {
+                //check if filter is keyword match or regex
+                if (preg_match('/^\/.+\/i?$/', $sFilter)) {
+                    //regex match
+                    if (preg_match($sFilter, $sNote)) {
+                        $bFiltered = true;
+                        $this->lNotesFiltered++;
+                        $this->aFilterCounts[$sFilter]++;
+                    }
+                } else {
+                    //keyword match
+                    if (stripos($sNote, $sFilter) !== false) {
+                        $bFiltered = true;
+                        $this->lNotesFiltered++;
+                        $this->aFilterCounts[$sFilter]++;
+                    }
+                }
+            }
+
+            //prevent mentioning users
+            if (strpos($sNote, '@') !== false) {
+                $sNote = str_replace('@', '@\\', $sNote);
+            }
+
+            //write to file
+            if (!$bFiltered) {
+                //save some space, tweets are short
+                $sNote = preg_replace('/[a-f0-9]{64}/i', '[transaction]', $sNote);
+                $sNote = preg_replace('/1[a-z0-9]{25,33}/i', '[address]', $sNote);
+
+                //append line to csv and sql
+                file_put_contents($this->sOutputFile . '.csv', '"' . str_replace('"', '\"', $sNote) . '","' . $sTransactionId . '"' . PHP_EOL, FILE_APPEND);
+                file_put_contents($this->sOutputFile . '.sql', '("' . str_replace('"', '\"', $sNote) . '","' . $sTransactionId . '"),' . PHP_EOL, FILE_APPEND);
+            }
+        }
+
+        return true;
     }
 
     private function resetFiles()
@@ -313,5 +370,3 @@ class NotesScraper {
         curl_close($this->hCurl);
     }
 }
-
-(new NotesScraper)->run();
