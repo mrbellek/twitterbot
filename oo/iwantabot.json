@@ -1,0 +1,50 @@
+{
+    "search_strings": {
+        "0": {
+            "search": "\"want a twitter bot\""
+        },
+        "1": {
+            "search": "\"need a twitter bot\""
+        },
+        "2": {
+            "search": "\"want a * bot\""
+        },
+        "3": {
+            "search": "\"need a * bot\""
+        },
+        "4": {
+            "search": "\"make a * bot\""
+        },
+        "5": {
+	        "search": "\"made a * bot\""
+        }
+    },
+	"filters": {
+        "tweet": [
+            "@iwantabot",
+            "#bot",
+            "twitch",
+            "toothbrush",
+            "@youtube", "youtube",
+            "hug bot", "hugbotph",
+            "gamergate", "block bot",
+            "retweeted", "rted",
+            "yahoo pipes", "yahoo! pipes",
+            "better bot",
+            "spreadsheet",
+            "10sphere"
+        ],
+        "username": [
+            "bot", "b0t",
+            "ebook",
+            "worst_user",
+            "youtube"
+        ]
+    },
+	"dice_values": {
+		"media": 1.0,
+		"urls": 1.0,
+		"mentions": 1.0,
+		"base": 1.0
+	}
+}

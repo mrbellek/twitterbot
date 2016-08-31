@@ -42,7 +42,7 @@ class Search extends Base
                 $this->logger->output('- No results since last search at %s.', $oSearch->timestamp);
             } else {
                 //make sure we parse oldest tweets first
-                $aTweets = array_reverse($oSearch->statuses);
+                $aTweets = array_merge($aTweets, array_reverse($oSearch->statuses));
             }
         }
 

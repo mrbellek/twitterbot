@@ -1,0 +1,22 @@
+{
+    "search_strings": {
+        "0": {
+            "search": "\"donald trump is\" -RT -retweet -retweeted -filter:links"
+        }
+    },
+	"filters": {
+        "tweet": [
+            "@donaldtrump_is",
+            "@youtube",
+            "kim k",
+            "playing golf"
+        ],
+        "username" []
+    },
+	"dice_values": {
+		"media": 1.0,
+		"urls": 0.8,
+		"mentions": 0.5,
+		"base": 0.7
+	}
+}

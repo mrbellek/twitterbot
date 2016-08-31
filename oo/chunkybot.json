@@ -1,0 +1,22 @@
+{
+    "search_strings": {
+        "0": {
+            "search": "\"chunky monkey\" ice -RT -retweet -retweeted -vegan"
+        }
+    },
+	"filters": {
+        "tweet": [
+            "@chunkybot",
+            "cloudyapples",
+            "pizza-cake",
+            "ice cream man"
+        ],
+        "username": []
+    },
+	"dice_values": {
+		"media": 1.0,
+		"urls": 0.8,
+		"mentions": 0.5,
+		"base": 0.7
+	}
+}
