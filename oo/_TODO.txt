@@ -1,0 +1,28 @@
+examples:
+x 10millioncombos
+v appneeds
+v mbibleverses
+v chunkybot
+v donaldtrump_is
+v founddildo
+v iwantabot
+v mypictures
+v notesfrombtc
+v notesscraper
+- rbimbofetish
+- rbuttcoin
+- rgonewild
+- rnsfw
+- stallman_txt
+x stoptextingall
+
+single-purpose:
+x benjaminfrgates
+- bitcoinpizza
+- dstbot
+- exactotweet
+- gameswithgold
+- holidaysbot
+x ialwayswin
+x tvgraphs
+- unicodebot
