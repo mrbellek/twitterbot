@@ -39,10 +39,10 @@ class rButtcoin
                                 ->set('oConfig', $oConfig)
                                 ->format($oRssItem);
 
-                            if ($sAttachFile = $oFormat->getAttachFile()) {
-                                $aMediaIds = (new Media)->upload($sAttachFile);
+                            if ($aAttachment = $oFormat->getAttachment()) {
+                                $aMediaIds = (new Media)->uploadFromUrl($aAttachment['url'], $aAttachment['type']);
                             }
-                            die(var_dump($sTweet, $aMediaIds));
+                            die(var_dump($sTweet, $aAttachment, $aMediaIds));
 
                             if ($sTweet) {
                                 (new Tweet)

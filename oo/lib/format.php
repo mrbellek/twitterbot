@@ -164,6 +164,10 @@ class Format extends Base
             return false;
         }
 
+
+        $this->sAttachFile = false;
+        $bAttachFile = false;
+
         switch($oValue->value) {
             case 'special:redditmediatype':
                 //determine linked resource type (reddit link, external, image, gallery, etc)
@@ -177,22 +181,23 @@ class Format extends Base
                 } elseif (preg_match('/\.png|\.gif$|\.jpe?g/i', $sSubject)) {
                     //naked image
                     $sResult = 'image';
-                    $this->sAttachment = $sSubject;
-                } elseif (preg_match('imgur\.com\/.[^\/]/i', $sSubject) || preg_match('/imgur\.com\/gallery\//i', $sSubject)) {
+                    $bAttachFile = true;
+                } elseif (preg_match('/imgur\.com\/.[^\/]/i', $sSubject) || preg_match('/imgur\.com\/gallery\//i', $sSubject)) {
                     //single image on imgur.com page
                     $sResult = 'image';
-                    $this->sAttachFile = $sSubject;
+                    $bAttachFile = true;
                 } elseif (preg_match('/imgur\.com\/a\//i', $sSubject)) {
                     //multiple images on imgur.com page
                     $sResult = 'gallery';
-                    $this->sAttachFile = $sSubject;
+                    $bAttachFile = true;
                 } elseif (preg_match('/instagram\.com\/.[^\/]/i', $sSubject) || preg_match('/instagram\.com\/p\//i', $sSubject)) {
                     //instagram account link or instagram photo
                     $sResult = 'instagram';
-                    $this->sAttachFile = $sSubject;
+                    $bAttachFile = true;
                 //} elseif (preg_match('/gfycat\.com\//i', $sSubject)) {
+                //    //TODO: disabled for now because API won't play nice
                 //    $sResult = 'gif';
-                //    $this->sAttachFile = $sSubject;
+                //    $bAttachFile = true;
                 } elseif (preg_match('/\.gifv|\.webm|youtube\.com\/|youtu\.be\/|vine\.co\/|vimeo\.com\/|liveleak\.com\//i', $sSubject)) {
                     $sResult = 'video';
                 } else {
@@ -202,12 +207,18 @@ class Format extends Base
                 break;
         }
 
+        if ($bAttachFile) {
+            $this->aAttachment = array(
+                'type' => $sResult,
+                'url' => $sSubject,
+            );
+        }
+
         return $sResult;
     }
 
-    public function getAttachFile()
+    public function getAttachment()
     {
-        return 'http://merijn.nu/images/wizard2.gif';
-        return (!empty($this->sAttachFile) ? $this->sAttachFile : false);
+        return (!empty($this->aAttachment) ? $this->aAttachment : false);
     }
 }

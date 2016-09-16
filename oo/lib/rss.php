@@ -6,6 +6,8 @@ class Rss extends Base
     public function getFeed()
     {
         $oFeed = $this->oConfig->get('feed');
+
+        //DEBUG
         if (!is_file('feed.json')) {
 
             $hCurl = curl_init();
@@ -22,7 +24,7 @@ class Rss extends Base
             $sRssFeedRaw = curl_exec($hCurl);
             curl_close($hCurl);
 
-            file_put_contents('feed.json', $sRssFeedRaw);
+            file_put_contents('feed.json', json_encode(json_decode($sRssFeedRaw), JSON_PRETTY_PRINT));
         } else {
             $sRssFeedRaw = file_get_contents('feed.json');
         }

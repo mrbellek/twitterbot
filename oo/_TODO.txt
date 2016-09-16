@@ -10,7 +10,7 @@ v mypictures
 v notesfrombtc
 v notesscraper
 - rbimbofetish
-- rbuttcoin
+. rbuttcoin
 - rgonewild
 - rnsfw
 - stallman_txt
