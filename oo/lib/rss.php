@@ -5,8 +5,8 @@ class Rss extends Base
 {
     public function getFeed()
     {
+        $oFeed = $this->oConfig->get('feed');
         if (!is_file('feed.json')) {
-            $oFeed = $this->oConfig->get('feed');
 
             $hCurl = curl_init();
             curl_setopt_array($hCurl, array(
@@ -36,6 +36,15 @@ class Rss extends Base
                 $oRssFeed = json_decode($sRssFeedRaw);
         }
 
-        return $oRssFeed;
+        if (!empty($oFeed->rootnode)) {
+            $oNode = $oRssFeed;
+            foreach (explode('>', $oFeed->rootnode) as $sNode) {
+                $oNode = $oNode->$sNode;
+            }
+        } else {
+            $oNode = $oRssFeed;
+        }
+
+        return $oNode;
     }
 }

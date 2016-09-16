@@ -7,6 +7,7 @@ use Twitterbot\Lib\Auth;
 use Twitterbot\Lib\Ratelimit;
 use Twitterbot\Lib\Rss;
 use Twitterbot\Lib\Format;
+use Twitterbot\Lib\Media;
 use Twitterbot\Lib\Tweet;
 
 class rButtcoin
@@ -30,17 +31,23 @@ class rButtcoin
                         ->set('oConfig', $oConfig)
                         ->getFeed();
 
-                    die(var_dump(count($aRssFeed)));
                     if ($aRssFeed) {
-                        foreach ($aRssFeed as $aRssItem) {
+                        foreach ($aRssFeed as $oRssItem) {
 
-                            $sTweet = (new Format)
+                            $oFormat = new Format;
+                            $sTweet = $oFormat
                                 ->set('oConfig', $oConfig)
-                                ->format($aRssItem);
+                                ->format($oRssItem);
+
+                            if ($sAttachFile = $oFormat->getAttachFile()) {
+                                $aMediaIds = (new Media)->upload($sAttachFile);
+                            }
+                            die(var_dump($sTweet, $aMediaIds));
 
                             if ($sTweet) {
                                 (new Tweet)
                                     ->set('oConfig', $oConfig)
+                                    ->setMedia($aMediaIds)
                                     ->post($sTweet);
                             }
                         }

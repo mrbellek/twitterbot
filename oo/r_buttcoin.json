@@ -1,24 +1,26 @@
 {
+    "source": "rss",
     "feed": {
         "url": "http://www.reddit.com/r/Buttcoin/.json?sort=new",
-        "format": "json"
+        "format": "json",
+        "rootnode": "data>children"
     },
     "format": ":title (by :author) [:type] :link",
     "timestamp_field": "created",
     "tweet_vars": {
         "0": {
             "var": ":title",
-            "value": "title",
+            "value": "data>title",
             "truncate": true
         },
         "1": {
             "var": ":author",
-            "value": "author",
+            "value": "data>author",
             "default": "[deleted]"
         },
         "2": {
             "var": ":link",
-            "value": "permalink",
+            "value": "data>permalink",
             "prefix": "http://www.reddit.com"
         },
         "3": {
@@ -28,7 +30,7 @@
         },
         "4": {
             "var": ":source",
-            "value": "url",
+            "value": "data>url",
             "attach_image": true
         }
     }

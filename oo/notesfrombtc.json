@@ -1,4 +1,5 @@
 {
+    "source": "database",
     "db_settings": {
         "table": "notes",
         "idcol": "id",
