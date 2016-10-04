@@ -43,5 +43,7 @@ class Tweet extends Base
     public function setMedia($aMediaIds)
     {
         $this->aMediaIds = $aMediaIds;
+
+        return $this;
     }
 }
