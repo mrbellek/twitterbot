@@ -47,6 +47,7 @@ class rButtcoin
                             $sMediaId = (new Media)->uploadFromUrl($aAttachment['url'], $aAttachment['type']);
                         }
 
+                        die(var_dump($sTweet, $sMediaId));
                         if ($sTweet) {
                             (new Tweet)
                                 ->set('oConfig', $oConfig)

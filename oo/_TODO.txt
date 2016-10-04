@@ -26,3 +26,8 @@ x benjaminfrgates
 x ialwayswin
 x tvgraphs
 - unicodebot
+
+
+general:
+- dependency injection instead of set('oConfig', $oConfig)
+. keep track of last item processed in last run

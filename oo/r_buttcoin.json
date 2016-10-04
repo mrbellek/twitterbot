@@ -3,7 +3,8 @@
     "feed": {
         "url": "http://www.reddit.com/r/Buttcoin/.json?sort=new",
         "format": "json",
-        "rootnode": "data>children"
+        "rootnode": "data>children",
+        "timestamp_field": "data>created"
     },
     "format": ":title (by :author) [:type] :link",
     "timestamp_field": "created",

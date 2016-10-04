@@ -38,13 +38,58 @@ class Rss extends Base
                 $oRssFeed = json_decode($sRssFeedRaw);
         }
 
+        //trim object to relevant root node, if set
         if (!empty($oFeed->rootnode)) {
-            $oNode = $oRssFeed;
-            foreach (explode('>', $oFeed->rootnode) as $sNode) {
-                $oNode = $oNode->$sNode;
-            }
+            $oNodes = $this->getRssNodeField($oRssFeed, $oFeed->rootnode)));
         } else {
-            $oNode = $oRssFeed;
+            $oNodes = $oRssFeed;
+        }
+
+        //truncate list of nodes to those with at least the max timestamp from last time
+        $sLastMaxTimestamp = $this->oConfig->get('last_max_timestamp', 0);
+        if ($sLastMaxTimestamp) {
+            foreach ($oNodes as $key => $oNode) {
+
+                //get value of timestamp field
+                $sTimestamp = $this->getRssNodeField($oNode, $oFeed->timestamp_field);
+
+                //remove node from list if timestamp is older than newest timestamp from last run
+                if (is_numeric($sTimestamp) && $sTimestamp > 0 && $sTimestamp < $sLastMaxTimestamp) {
+                    unset($oNodes[$key]);
+                }
+            }
+        }
+
+        //get highest timestamp in list of nodes and save it
+        $sNewestTimestamp = 0;
+        if (!empty($oFeed->timestamp_field)) {
+            foreach ($oNodes as $oItem) {
+
+                //get value of timestamp field
+                $sTimestamp = $this->getRssNodeField($oItem, $oFeed->timestamp_field);
+
+                //save highest value of timestamp
+                $sNewestTimestamp = (is_numeric($sTimestamp) && $sTimestamp > $sNewestTimestamp ? $sTimestamp : $sNewestTimestamp);
+            }
+
+            //save in settings
+            if ($sNewestTimestamp > 0) {
+                $this->oConfig->set('last_max_timestamp', $sNewestTimestamp);
+            }
+        }
+
+        return $oNodes;
+    }
+
+    //gets a subnode of node value from tree based on given 'node>subnode>etc' syntax arg
+    private function getRssNodeField($oNode, $sField)
+    {
+        foreach (explode('>', $sField) as $sName) {
+            if (isset($oNode->$sName)) {
+                $oNode = $oNode->$sName;
+            } else {
+                throw new Exception(sprintf('Rss->getRssNodeField: node does not have %s field (full field: %s', $sName, $sField));
+            }
         }
 
         return $oNode;
