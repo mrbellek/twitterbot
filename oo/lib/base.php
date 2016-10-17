@@ -3,6 +3,9 @@ namespace Twitterbot\Lib;
 use Twitterbot\Lib\Logger;
 use \TwitterOAuth;
 
+/**
+ * Base lib class - creates twitter API object and logger, basic setter
+ */
 class Base
 {
     public function __construct()

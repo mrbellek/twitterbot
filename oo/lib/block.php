@@ -1,10 +1,18 @@
 <?php
 namespace Twitterbot\Lib;
 
+/**
+ * Block class - retrieve blocked users, check if user is blocked
+ */
 class Block extends Base
 {
     private $aBlockedUsers = false;
 
+    /**
+     * Get all blocked users
+     *
+     * @return bool
+     */
     public function getAll()
     {
 		$this->logger->output('Getting blocked users..');
@@ -24,6 +32,13 @@ class Block extends Base
 		return true;
     }
 
+    /**
+     * Check if a user is blocked
+     *
+     * @param object $oUser
+     *
+     * @return bool
+     */
     public function isUserBlocked($oUser)
     {
         if (!is_array($this->aBlockedUsers)) {
@@ -40,6 +55,13 @@ class Block extends Base
 		return false;
     }
 
+    /**
+     * Given a list of tweets, return those by users that are not blocked
+     *
+     * @param array $aTweets
+     *
+     * @return array
+     */
     public function filterBlocked($aTweets)
     {
         foreach ($aTweets as $key => $oTweet) {

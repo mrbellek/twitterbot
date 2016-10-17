@@ -10,6 +10,12 @@ use Twitterbot\Lib\Block;
 use Twitterbot\Lib\Filter;
 use Twitterbot\Lib\Retweet;
 
+/**
+ * Retweetbot class - generic framework to find and retweet posts based on given search terms
+ *
+ * @param config:min_rate_limit
+ * @param config:search_strings
+ */
 class RetweetBot
 {
     public function __construct()

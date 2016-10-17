@@ -1,8 +1,19 @@
 <?php
 namespace Twitterbot\Lib;
 
+/**
+ * Rss class - retrieves xml/json feed and returns only new items since last fetch
+ *
+ * @param config:feed feed settings (url, root node, format, timestamp field name)
+ * @param config:last_max_timestamp newest timestamp from last run
+ */
 class Rss extends Base
 {
+    /**
+     * Get xml/json feed, return new items since last run
+     *
+     * @return object
+     */
     public function getFeed()
     {
         $oFeed = $this->oConfig->get('feed');
@@ -81,7 +92,14 @@ class Rss extends Base
         return $oNodes;
     }
 
-    //gets a subnode of node value from tree based on given 'node>subnode>etc' syntax arg
+    /**
+     * Gets a subnode of node value from tree based on given 'node>subnode>etc' syntax arg
+     *
+     * @param object $oNode
+     * @param string $sField
+     *
+     * @return object
+     */
     private function getRssNodeField($oNode, $sField)
     {
         foreach (explode('>', $sField) as $sName) {

@@ -1,6 +1,13 @@
 <?php
 namespace Twitterbot\Lib;
 
+/**
+ * Auth class - verify current twitter user is the correct user
+ *
+ * @param string $sUsername
+ *
+ * @return bool
+ */
 class Auth extends Base
 {
     public function isUserAuthed($sUsername)

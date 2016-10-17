@@ -2,6 +2,9 @@
 namespace Twitterbot\Lib;
 use Twitterbot\Lib\Logger;
 
+/**
+ * Config class - store and retrieve persistent settings
+ */
 class Config
 {
     public function __construct()
@@ -9,6 +12,13 @@ class Config
         $this->logger = new Logger;
     }
 
+    /**
+     * Load settings for given twitter username from .json file
+     *
+     * @param string $sUsername
+     *
+     * @return bool
+     */
     public function load($sUsername)
     {
         $this->sUsername = $sUsername;
@@ -34,6 +44,14 @@ class Config
         return !is_null($this->oSettings);
     }
 
+    /**
+     * Get value of config setting
+     *
+     * @param string $sName
+     * @param mixed $mDefault
+     *
+     * @return mixed
+     */
     public function get($sName, $mDefault = false)
     {
         if (isset($this->oSettings->$sName)) {
@@ -50,6 +68,15 @@ class Config
         }
     }
 
+    /**
+     * Set config setting (recursive, can be multiple levels deep)
+     * @TODO: PHP7 syntax for function arguments
+     *
+     * @param string(s) keys
+     * @param string value
+     *
+     * @return void 
+     */
     public function set()
     {
         //get all func arguments
@@ -78,6 +105,11 @@ class Config
         //$this->writeConfig();
     }
 
+    /**
+     * Handle json error
+     *
+     * @return void
+     */
     private function jsonError()
     {
         $iJsonError = json_last_error();
@@ -87,6 +119,11 @@ class Config
         $this->logger->output('Error reading JSON file for %s: %s (%s)', $this->sUsername, $iJsonError, $sJsonError);
     }
 
+    /**
+     * Write current config to disk
+     *
+     * @return void
+     */
     public function writeConfig()
     {
         file_put_contents(DOCROOT . strtolower($this->sUsername) . '.json', json_encode($this->oSettings, JSON_PRETTY_PRINT));
