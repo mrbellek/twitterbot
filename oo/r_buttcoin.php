@@ -28,29 +28,26 @@ class rButtcoin
         $oConfig = new Config;
         if ($oConfig->load($this->sUsername)) {
 
-            if ((new Auth)->isUserAuthed($this->sUsername)) {
+            if ((new Auth($oConfig))->isUserAuthed($this->sUsername)) {
 
-                $aRssFeed = (new Rss)
-                    ->set('oConfig', $oConfig)
+                $aRssFeed = (new Rss($oConfig))
                     ->getFeed();
 
                 if ($aRssFeed) {
                     foreach ($aRssFeed as $oRssItem) {
 
-                        $oFormat = new Format;
+                        $oFormat = new Format($oConfig);
                         $sTweet = $oFormat
-                            ->set('oConfig', $oConfig)
                             ->format($oRssItem);
 
                         $sMediaId = array();
                         if ($aAttachment = $oFormat->getAttachment()) {
-                            $sMediaId = (new Media)->uploadFromUrl($aAttachment['url'], $aAttachment['type']);
+                            $sMediaId = (new Media($oConfig))->uploadFromUrl($aAttachment['url'], $aAttachment['type']);
                         }
 
                         die(var_dump($sTweet, $sMediaId));
                         if ($sTweet) {
-                            (new Tweet)
-                                ->set('oConfig', $oConfig)
+                            (new Tweet($oConfig))
                                 ->setMedia($sMediaId)
                                 ->post($sTweet);
                         }

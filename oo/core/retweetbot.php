@@ -29,28 +29,26 @@ class RetweetBot
         if ($oConfig->load($this->sUsername)) {
 
             //check rate limit before anything else
-            if ((new Ratelimit)->check($oConfig->get('min_rate_limit'))) {
+            if ((new Ratelimit($oConfig))->check()) {
 
                 //check correct username
-                if ((new Auth)->isUserAuthed($this->sUsername)) {
+                if ((new Auth($oConfig))->isUserAuthed($this->sUsername)) {
 
                     //search for new tweets
-                    $aTweets = (new Search)
-                        ->set('oConfig', $oConfig)
-                        ->search($oConfig->get('search_strings'));
+                    $aTweets = (new Search($oConfig))
+                        ->search();
 
                     //filter out tweets from blocked accounts
-                    $aTweets = (new Block)->filterBlocked($aTweets);
+                    $aTweets = (new Block($oConfig))->filterBlocked($aTweets);
 
                     //filter out unwanted tweets/users
-                    $aTweets = (new Filter)
-                        ->set('oConfig', $oConfig)
+                    $aTweets = (new Filter($oConfig))
                         ->setFilters()
                         ->filter($aTweets);
 
                     if ($aTweets) {
                         //retweet remaining tweets
-                        (new Retweet)->post($aTweets);
+                        (new Retweet($oConfig))->post($aTweets);
                     }
 
                     $this->logger->output('done!');

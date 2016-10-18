@@ -3,8 +3,9 @@ namespace Twitterbot\Lib;
 
 class Search extends Base
 {
-    public function search($oQuery)
+    public function search()
     {
+        $oQuery = $this->oConfig->get('search_strings');
 		if (empty($oQuery)) {
 			$this->logger->write(2, 'No search strings set');
 			$this->logger->output('No search strings!');

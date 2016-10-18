@@ -26,22 +26,19 @@ class NotesFromBtc {
         $oConfig = new Config;
         if ($oConfig->load($this->sUsername)) {
 
-            if ((new Ratelimit)->check($oConfig->get('min_rate_limit'))) {
+            if ((new Ratelimit($oConfig))->check()) {
 
-                if ((new Auth)->isUserAuthed($this->sUsername)) {
+                if ((new Auth($oConfig))->isUserAuthed($this->sUsername)) {
 
-                    $aRecord = (new Database)
-                        ->set('oConfig', $oConfig)
+                    $aRecord = (new Database($oConfig))
                         ->getRecord();
 
                     if ($aRecord) {
-                        $sTweet = (new Format)
-                            ->set('oConfig', $oConfig)
+                        $sTweet = (new Format($oConfig))
                             ->format($aRecord);
 
                         if ($sTweet) {
-                            (new Tweet)
-                                ->set('oConfig', $oConfig)
+                            (new Tweet($oConfig))
                                 ->post($sTweet);
 
                             $this->logger->output('done!');

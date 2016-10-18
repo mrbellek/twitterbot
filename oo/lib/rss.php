@@ -40,7 +40,7 @@ class Rss extends Base
 
         //trim object to relevant root node, if set
         if (!empty($oFeed->rootnode)) {
-            $oNodes = $this->getRssNodeField($oRssFeed, $oFeed->rootnode)));
+            $oNodes = $this->getRssNodeField($oRssFeed, $oFeed->rootnode);
         } else {
             $oNodes = $oRssFeed;
         }
@@ -81,7 +81,11 @@ class Rss extends Base
         return $oNodes;
     }
 
-    //gets a subnode of node value from tree based on given 'node>subnode>etc' syntax arg
+    /**
+     * @description gets a subnode of node value from tree
+     * @param $oNode object - node tree
+     * @param $sField string - subnode/field to fetch ('a>b>c' syntax)
+     */
     private function getRssNodeField($oNode, $sField)
     {
         foreach (explode('>', $sField) as $sName) {

@@ -22,8 +22,7 @@ class Reply extends Base
 
         //if we have mentions, get friends for auth (we will only respond to commands from people we follow)
         if (count($aMentions) > 0) {
-            $aFollowing = (new Following)
-                ->set('oConfig', $this->oConfig)
+            $aFollowing = (new Following($this->oConfig))
                 ->getAll();
 
         } else {
@@ -65,15 +64,13 @@ class Reply extends Base
 
             switch ($sCommand) {
                 case 'help':
-                    (new Tweet)
-                        ->set('oConfig', $this->oConfig)
+                    (new Tweet($this->oConfig))
                         ->replyTo($oMention, sprintf('Commands: help lastrun ratelimit. %s', ($this->oConfig->get('only_reply_friends', true) ? 'Only replies to friends.' : '')));
                     break;
                 case 'lastrun':
                     $oSearch = $this->oConfig->get('search_strings');
                     if (isset($oSearch->{0}->timestamp)) {
-                        (new Tweet)
-                            ->set('oConfig', $this->oConfig)
+                        (new Tweet($this->oConfig))
                             ->replyTo($oMention, sprintf('Last script run was: %s', $oSearch->{0}->timestamp));
                     }
                     break;
