@@ -1,8 +1,24 @@
 <?php
 namespace Twitterbot\Lib;
 
+/**
+ * Format class - formats objects into a tweet according to settings
+ *
+ * @param config:source database/rss where record came from, needed for handling format settings
+ * @param config:max_tweet_length
+ * @param config:short_url_length
+ * @param config:tweet_vars variables present in tweet and their values
+ * @param config:format unformatted tweet string
+ */
 class Format extends Base
 {
+    /**
+     * Format record object as a database or rss item (wrapper)
+     *
+     * @param object $oRecord
+     *
+     * @return string
+     */
     public function format($oRecord)
     {
         switch ($this->oConfig->get('source')) {
@@ -17,6 +33,13 @@ class Format extends Base
         }
     }
 
+    /**
+     * Format record object as an rss item according to tweet settings
+     *
+     * @param object $oRecord
+     *
+     * @return string
+     */
     public function rss_format($oRecord)
     {
         $iMaxTweetLength = $this->oConfig->get('max_tweet_lengh', 140);
@@ -68,6 +91,13 @@ class Format extends Base
         return $sTweet;
     }
 
+    /**
+     * Format record object as a database record, according to tweet settings
+     *
+     * @param array $aRecord
+     *
+     * @return string
+     */
     public function db_format($aRecord)
     {
         $iMaxTweetLength = $this->oConfig->get('max_tweet_lengh', 140);
@@ -119,6 +149,14 @@ class Format extends Base
         return $sTweet;
     }
 
+    /**
+     * Get value of variable from rss object according to tweet setting object
+     *
+     * @param object $oRecord
+     * @param object $oValue
+     *
+     * @return mixed 
+     */
     private function getRssValue($oRecord, $oValue)
     {
         if (strpos($oValue->value, 'special:') === 0) {
@@ -150,6 +188,15 @@ class Format extends Base
         return $mReturn;
     }
 
+    /**
+     * Get site-specific value of variable from record object according to tweet setting object
+     * For reddit:mediatype, this will return the type of media, and upload the media to twitter if possible to attach to tweet
+     *
+     * @param object $oRecord
+     * @param object $oValue
+     *
+     * @return string
+     */
     private function getRssSpecialValue($oRecord, $oValue)
     {
         foreach ($this->oConfig->get('tweet_vars') as $oVar) {
@@ -217,6 +264,11 @@ class Format extends Base
         return $sResult;
     }
 
+    /**
+     * Get file to attach to tweet, if any
+     *
+     * @return array
+     */
     public function getAttachment()
     {
         return (!empty($this->aAttachment) ? $this->aAttachment : false);

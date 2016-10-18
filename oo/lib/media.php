@@ -11,8 +11,18 @@ namespace Twitterbot\Lib;
 use \DOMDocument;
 use \DOMXPath;
 
+/**
+ * Media class - upload media to twitter, if possible
+ */
 class Media extends Base
 {
+    /**
+     * Upload file path to twitter to attach to tweet if possible, return media id
+     *
+     * @param string $sFilePath
+     *
+     * @return string|false
+     */
     public function upload($sFilePath)
     {
         $this->logger->output(sprintf('Reading file %s..', $sFilePath));
@@ -42,6 +52,14 @@ class Media extends Base
         }
     }
 
+    /**
+     * Wrapper to upload media to twitter according to URL and type, return media type
+     *
+     * @param string $sUrl
+     * @param string $sType
+     *
+     * @return string|false
+     */
     public function uploadFromUrl($sUrl, $sType)
     {
         switch ($sType) {
@@ -58,6 +76,13 @@ class Media extends Base
         }
     }
 
+    /**
+     * Upload media to twitter from imgur gallery page, return media id if possible
+     *
+     * @param string $sUrl
+     *
+     * @return string|false
+     */
     private function uploadFromGallery($sUrl)
     {
         //imgur implements meta tags that indicate to twitter which urls to use for inline preview
@@ -94,6 +119,13 @@ class Media extends Base
         return array_filter($aMediaIds);
     }
 
+    /**
+     * Upload media to twitter from imgur page, return media id if possible
+     *
+     * @param string $sUrl
+     *
+     * @return string|false
+     */
     private function uploadFromPage($sUrl)
     {
         //imgur implements meta tags that indicate to twitter which urls to use for inline preview
@@ -131,6 +163,13 @@ class Media extends Base
         return false;
     }
 
+    /**
+     * Upload media to twitter from instagram, return media id if possible
+     *
+     * @param string $sUrl
+     *
+     * @return string|false
+     */
     private function uploadFromInstagram($sUrl)
     {
         //instagram implements og:image meta tag listing exact url of image
@@ -165,7 +204,14 @@ class Media extends Base
         return false;
     }
 
-    //TODO: get this to work
+    /**
+     * Upload media to twitter from gfycat, return media id if possible
+     * @TODO: get this to work
+     *
+     * @param string $sUrl
+     *
+     * @return string|false
+     */
     private function uploadVideoFromGfycat($sUrl) {
 
         //construct json info url
@@ -182,6 +228,15 @@ class Media extends Base
         return false;
     }
 
+    /**
+     * Upload video to twitter from URL, return media id if possible
+     * @TODO: get this to work
+     *
+     * @param string $sVideo
+     * @param string $sName
+     *
+     * @return string|false
+     */
     private function uploadVideoToTwitter($sVideo, $sName = false) {
 
         if (!$sName) {
