@@ -14,9 +14,10 @@ class Ratelimit extends Base
      *
      * @return bool
      */
-    public function check($iMinRateLimit)
-    {
+    public function check()    {
         return TRUE; //DEBUG
+
+        $iMinRateLimit = $this->oConfig->get('min_rate_limit');
 
 		$this->logger->output('Fetching rate limit status..');
 		$oStatus = $this->oTwitter->get('application/rate_limit_status', array('resources' => 'search,blocks'));

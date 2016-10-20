@@ -16,9 +16,10 @@ class Search extends Base
      *
      * @return array|false
      */
-    public function search($aQuery)
+    public function search()
     {
-		if (empty($aQuery)) {
+        $oQuery = $this->oConfig->get('search_strings');
+		if (empty($oQuery)) {
 			$this->logger->write(2, 'No search strings set');
 			$this->logger->output('No search strings!');
             

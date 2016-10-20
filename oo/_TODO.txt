@@ -29,5 +29,5 @@ x tvgraphs
 
 
 general:
-- dependency injection instead of set('oConfig', $oConfig)
+v dependency injection instead of set('oConfig', $oConfig)
 . keep track of last item processed in last run

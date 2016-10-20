@@ -51,7 +51,7 @@ class Rss extends Base
 
         //trim object to relevant root node, if set
         if (!empty($oFeed->rootnode)) {
-            $oNodes = $this->getRssNodeField($oRssFeed, $oFeed->rootnode)));
+            $oNodes = $this->getRssNodeField($oRssFeed, $oFeed->rootnode);
         } else {
             $oNodes = $oRssFeed;
         }
