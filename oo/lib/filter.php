@@ -2,10 +2,14 @@
 namespace Twitterbot\Lib;
 use Twitterbot\Lib\Blocks;
 
+/**
+ * Filter class, use several settings and rules to filter unwanted tweets
+ *
+ * @param config:filters
+ * @param config:dice_values
+ */
 class Filter extends Base
 {
-    public $sUsername;
-
     private $aSearchFilters = array();
     private $aUsernameFilters = array();
     private $aDiceValues = array();
@@ -27,11 +31,16 @@ class Filter extends Base
         'base'      => 0.7,
     );
 
+    /**
+     * Get filters from config and split out
+     *
+     * @return $this
+     */
     public function setFilters()
     {
         if ($aFilters = $this->oConfig->get('filters')) {
             $this->aSearchFilters   = array_merge($this->aDefaultFilters, (!empty($aFilters->tweet) ? $aFilters->tweet : array()));
-            $this->aUsernameFilters = array_merge(array('@' . $this->sUsername), (!empty($aFilters->username) ? $aFilters->username : array()));
+            $this->aUsernameFilters = array_merge(array('@' . $this->oConfig->get('sUsername')), (!empty($aFilters->username) ? $aFilters->username : array()));
         }
         if ($aDiceValues = $this->oConfig->get('dice_values')) {
             $this->aDiceValues      = array_merge($this->aDefaultDiceValues, (array) $aDiceValues);
@@ -40,6 +49,13 @@ class Filter extends Base
         return $this;
     }
 
+    /**
+     * Apply filters to tweets, return remaining tweets
+     *
+     * @param array $aTweets
+     *
+     * @return array
+     */
     public function filter($aTweets)
     {
         foreach ($aTweets as $i => $oTweet) {
@@ -58,6 +74,13 @@ class Filter extends Base
         return $aTweets;
     }
 
+    /**
+     * Apply textual filters to tweet
+     *
+     * @param object $oTweet
+     *
+     * @return bool
+     */
     private function applyFilters($oTweet)
     {
 		foreach ($this->aSearchFilters as $sFilter) {
@@ -71,6 +94,13 @@ class Filter extends Base
 		return true;
     }
 
+    /**
+     * Apply username filters to tweet
+     *
+     * @param object $oTweet
+     *
+     * @return bool
+     */
     private function applyUsernameFilters($oTweet)
     {
 		foreach ($this->aUsernameFilters as $sUsername) {
@@ -87,6 +117,13 @@ class Filter extends Base
 		return true;
     }
 
+    /**
+     * Apply probability values to tweet (more interesting tweets have more chance of passing
+     *
+     * @param object $oTweet
+     *
+     * @return bool
+     */
     private function rollDie($oTweet)
     {
 		//regular tweets are better than mentions - medium probability
@@ -118,6 +155,13 @@ class Filter extends Base
 		return true;
     }
 
+    /**
+     * Replace shortened t.co urls in tweet with expanded urls
+     *
+     * @param object $oTweet
+     *
+     * @return object
+     */
     private function expandUrls($oTweet)
     {
 		//check for links/photos

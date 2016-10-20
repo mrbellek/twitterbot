@@ -1,11 +1,18 @@
 <?php
 namespace Twitterbot\Lib;
 
-//utility class to generate Markov chains from body of text in given file
-//function returns array with chains
-
+/**
+ * Markov class to generate Markov chains from body of text in given file
+ */
 class Markov extends Base
 {
+    /**
+     * Generate Markov chains from input file with body of text
+     *
+     * @param string $sInputFile
+     *
+     * @return array
+     */
     public function generateChains($sInputFile)
     {
         $this->logger->output('Generating Markov chains');
@@ -36,6 +43,13 @@ class Markov extends Base
         return $aMarkovChains;
     }
 
+    /**
+     * Load Markov chains from json file into memory
+     *
+     * @param string $sInputFile
+     *
+     * @return void
+     */
     public function loadChains($sInputFile)
     {
         $this->logger->output('Loading Markov chains from file %s', $sInputFile);
@@ -59,6 +73,11 @@ class Markov extends Base
         return true;
     }
 
+    /**
+     * Generate tweet from currently loaded Markov chains
+     *
+     * @return string
+     */
     public function generateTweet()
     {
         if (!$this->aMarkovChains) {

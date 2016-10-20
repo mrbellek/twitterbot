@@ -2,8 +2,16 @@
 namespace Twitterbot\Lib;
 use \PDO;
 
+/**
+ * Database class, connect to database and run queries
+ */
 class Database extends Base
 {
+    /**
+     * Connect to database (PDO)
+     *
+     * @return bool
+     */
     public function connect()
     {
         //connect to database
@@ -19,6 +27,14 @@ class Database extends Base
         return true;
     }
 
+    /**
+     * Wrapper for fetching record and updating postcount
+     *
+     * @param config:db_settings
+     * @param config:post_only_once
+     *
+     * @return array|false
+     */
     public function getRecord()
     {
         if (empty($this->oPDO)) {
@@ -89,6 +105,11 @@ class Database extends Base
         }
     }
 
+    /**
+     * Get random record from database with lowest postcount
+     *
+     * @return array|false
+     */
     private function getRandomRecord()
     {
         $this->logger->output('- Fetching random record with lowest postcount..');
@@ -117,6 +138,11 @@ class Database extends Base
         return $sth->fetch(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Get random unposted record from database
+     *
+     * @return array|false
+     */
     private function getRandomUnpostedRecord()
     {
         $this->logger->output('- Fetching random unposted record..');

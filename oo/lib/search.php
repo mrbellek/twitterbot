@@ -1,11 +1,24 @@
 <?php
 namespace Twitterbot\Lib;
 
+/**
+ * Search class, search Twitter for given terms
+ *
+ * @param config:search_max
+ * @param config:search_strings
+ */
 class Search extends Base
 {
-    public function search($oQuery)
+    /**
+     * Search Twitter with given search terms, return tweets
+     *
+     * @param array $aQuery
+     *
+     * @return array|false
+     */
+    public function search($aQuery)
     {
-		if (empty($oQuery)) {
+		if (empty($aQuery)) {
 			$this->logger->write(2, 'No search strings set');
 			$this->logger->output('No search strings!');
             
@@ -14,7 +27,7 @@ class Search extends Base
 
 		$aTweets = array();
 
-        foreach ($oQuery as $i => $oSearch) {
+        foreach ($aQuery as $i => $oSearch) {
             $sSearchString = $oSearch->search;
 
             $this->logger->output('Searching for max %d tweets with: %s..', $this->oConfig->get('search_max'), $sSearchString);

@@ -1,10 +1,20 @@
 <?php
 namespace Twitterbot\Lib;
 
+/**
+ * Followers class, fetch followers and check if given user follows us
+ *
+ * @param config:sUsername
+ */
 class Followers
 {
     private $aFollowers = false;
 
+    /**
+     * Get all followers
+     *
+     * @return bool
+     */
     public function getAll()
     {
         $oRet = $this->oTwitter->get('followers/ids', array('screen_name' => $this->oConfig->get('sUsername'), 'stringify_ids' => true));
@@ -20,7 +30,14 @@ class Followers
         return true;
     }
 
-    public function isFollower()
+    /**
+     * Check if user follows us
+     *
+     * @param object $oUser
+     *
+     * @return bool
+     */
+    public function isFollower($oUser)
     {
         if (!is_array($this->aFollowers)) {
             $this->getAll();

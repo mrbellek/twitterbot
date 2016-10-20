@@ -1,8 +1,18 @@
 <?php
 namespace Twitterbot\Lib;
 
+/**
+ * Retweet tweets
+ */
 class Retweet extends Base
 {
+    /**
+     * Retweet given tweets
+     *
+     * @param array $aTweets
+     *
+     * @return bool
+     */
     public function post($aTweets = array())
     {
         if (!$aTweets) {

@@ -1,21 +1,38 @@
 <?php
 namespace Twitterbot\Lib;
 
+/**
+ * Logger class, write messages to database or to screen
+ */
 class Logger
 {
     private $bInBrowser;
+
+    /**
+     * Determine if we're in browser or CLI at start
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->bInBrowser = !empty($_SERVER['DOCUMENT_ROOT']) ? true : false;
+    }
 
     public function write()
     {
         //write to database
     }
 
+    /**
+     * Output message to screen
+     *
+     * @param ..string
+     *
+     * @return void
+     */
     public function output()
     {
         $aArgs = func_get_args();
-        if (!isset($this->bInBrowser)) {
-            $this->bInBrowser = !empty($_SERVER['DOCUMENT_ROOT']) ? true : false;
-        }
 
         if ($this->bInBrowser) {
             $aArgs[0] .= '<br>' . PHP_EOL;

@@ -1,8 +1,16 @@
 <?php
 namespace Twitterbot\Lib;
 
+/**
+ * Favorite class, mark tweets as favorite
+ */
 class Favorite extends Base
 {
+    /**
+     * Add tweets to favorites
+     *
+     * @return bool
+     */
     public function add($aTweets = array())
     {
         if (!$aTweets) {

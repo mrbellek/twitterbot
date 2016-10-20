@@ -1,8 +1,18 @@
 <?php
 namespace Twitterbot\Lib;
 
+/**
+ * Tweet class, post tweet from whatever source, optionally adding media
+ */
 class Tweet extends Base
 {
+    /**
+     * Post tweets to Twitter, add media if present (set by setMedia())
+     *
+     * @param array $aTweets
+     *
+     * @return bool
+     */
     public function post($aTweets = array())
     {
         if (!$aTweets) {
@@ -40,6 +50,13 @@ class Tweet extends Base
         return true;
     }
 
+    /**
+     * Set media ids to be posted with next tweet
+     *
+     * @param array $aMediaIds
+     *
+     * @return $this
+     */
     public function setMedia($aMediaIds)
     {
         $this->aMediaIds = $aMediaIds;
