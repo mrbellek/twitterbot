@@ -1,0 +1,17 @@
+{
+    "source": "database",
+    "db_settings": {
+        "table": "stallman_txt",
+        "idcol": "id",
+        "countercol": "postcount",
+        "timestampcol": "lasttimestamp"
+    },
+    "format": ":tweet",
+    "tweet_vars": {
+        "0": {
+            "var": ":tweet",
+            "recordfield": "tweet",
+            "truncate": true
+        }
+    }
+}

@@ -9,11 +9,11 @@ v iwantabot
 v mypictures
 v notesfrombtc
 v notesscraper
-- rbimbofetish
+. rbimbofetish
 . rbuttcoin
-- rgonewild
-- rnsfw
-- stallman_txt
+. rgonewild
+. rnsfw
+. stallman_txt
 x stoptextingall
 
 single-purpose:
