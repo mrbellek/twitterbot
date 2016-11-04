@@ -28,6 +28,7 @@ class Format extends Base
                 return $this->db_format($oRecord);
 
             case 'rss':
+            case 'json':
 
                 return $this->rss_format($oRecord);
         }
