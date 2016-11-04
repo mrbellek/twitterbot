@@ -1,10 +1,20 @@
 <?php
+//TODO: use Config class, not parameter
 namespace Twitterbot\Lib;
 
+/**
+ * Check ratelimit of our Twitter API account
+ */
 class Ratelimit extends Base
 {
-    public function check()
-    {
+    /**
+     * Check rate limit, return false if too close
+     *
+     * @param int $iMinRateLimit
+     *
+     * @return bool
+     */
+    public function check()    {
         return TRUE; //DEBUG
 
         $iMinRateLimit = $this->oConfig->get('min_rate_limit');

@@ -3,8 +3,18 @@ namespace Twitterbot\Lib;
 use Twitterbot\Lib\Following;
 use Twitterbot\Lib\Tweet;
 
+/**
+ * Check mentions and reply to them
+ *
+ * @param config:only_reply_friends
+ */
 class Reply extends Base
 {
+    /**
+     * Get new mentions (from followers) since last check
+     *
+     * return bool
+     */
     public function getMentions()
     {
         $this->logger->output('Checking mentions since %s for commands..', $this->oConfig->get('last_mentions_timestamp', 'never'));
@@ -20,7 +30,7 @@ class Reply extends Base
             $this->logger->output(sprintf('- Failed getting mentions, halting. (%s)', $aMentions->errors[0]->message));
         }
 
-        //if we have mentions, get friends for auth (we will only respond to commands from people we follow)
+        //if we have mentions, get friends for auth (we will only respond to commands from people that follow us)
         if (count($aMentions) > 0) {
             $aFollowing = (new Following($this->oConfig))
                 ->getAll();
@@ -50,6 +60,12 @@ class Reply extends Base
         return true;
     }
 
+    /**
+     * Reply to preset commands
+     * TODO: finish this
+     *
+     * @return void
+     */
     public function replyToMentions()
     {
         if (!isset($this->aMentions)) {

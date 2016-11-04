@@ -1,8 +1,20 @@
 <?php
 namespace Twitterbot\Lib;
 
+/**
+ * File class, create and maintain file listing of files in a folder
+ *
+ * @param config:folder
+ * @param config:max_index_age
+ * @param config:post_only_once
+ */
 class File extends Base
 {
+    /**
+     * Rebuild the index of files (and folders) in the root folder, if needed
+     *
+     * @return bool
+     */
     public function rebuildIndex()
     {
         //do not recreate index if filelist exists and is younger than the max age
@@ -11,7 +23,7 @@ class File extends Base
             $this->logger->output('- Using cached filelist');
             $this->aFileList = $this->oConfig->get('filelist');
 
-            return;
+            return true;
         }
 
         $sFolder = DOCROOT . $this->oConfig->get('folder');
@@ -44,8 +56,17 @@ class File extends Base
 
             return true;
         }
+
+        return false;
     }
 
+    /**
+     * Recursively scan folder contents
+     *
+     * @param string $sFolder
+     *
+     * @return array
+     */
     private function recursiveScan($sFolder)
     {
 		$aFiles = scandir($sFolder);
@@ -66,6 +87,11 @@ class File extends Base
 		return $aFiles;
     }
 
+    /**
+     * Get random file from the index, with all info
+     *
+     * @return array|false
+     */
     public function get()
     {
         $this->logger->output('Getting file..');
@@ -78,6 +104,10 @@ class File extends Base
             $sFilename = $this->getRandomUnposted();
         } else {
             $sFilename = $this->getRandom();
+        }
+
+        if (!$sFilename) {
+            return false;
         }
 
         //get file info
@@ -106,11 +136,17 @@ class File extends Base
 		return $aFile;
     }
 
+    /**
+     * Get random file with lowest postcount from index
+     *
+     * @return string
+     */
     private function getRandom()
     {
         $this->logger->output('- Getting random file');
 
         //get lowest postcount in index
+        //HACK: make a global var here so we can use it below in the array_filter anonymous function
         global $iLowestCount;
         $iLowestCount = false;
         foreach ($this->aFileList as $sFilename => $iCount) {
@@ -131,7 +167,12 @@ class File extends Base
         return $sFilename;
     }
 
-    private  function getRandomUnposted()
+    /**
+     * Get random unposted file
+     *
+     * @return string
+     */
+    private function getRandomUnposted()
     {
         $this->logger->output('- Getting unposted random file');
 
@@ -144,6 +185,13 @@ class File extends Base
         return $sFilename;
     }
 
+    /**
+     * Increase postcount of given file, write index to disk
+     *
+     * @param array $aFile
+     *
+     * @return void
+     */
     public function increment($aFile)
     {
         $this->aFileList[$aFile['filename']]++;
@@ -151,6 +199,11 @@ class File extends Base
         $this->writeFileList();
     }
 
+    /**
+     * Write file index to disk, save timestamp
+     *
+     * @return void
+     */
     private function writeFileList()
     {
         $this->oConfig->set('filelist', $this->aFileList);
