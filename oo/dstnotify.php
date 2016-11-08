@@ -2,12 +2,20 @@
 require_once('autoload.php');
 require_once('dstnotify.inc.php');
 
+/**
+ * TODO:
+ * v check for DST changes now, tomorrow, next week
+ * - reply to mentions with questions
+ */
+
 use Twitterbot\Lib\Logger;
 use Twitterbot\Lib\Config;
 use Twitterbot\Lib\Auth;
 use Twitterbot\Lib\Ratelimit;
 use Twitterbot\Lib\Format;
 use Twitterbot\Lib\Tweet;
+
+use Twitterbot\Lib\Reply;
 
 class DSTNotify 
 {
@@ -40,7 +48,6 @@ class DSTNotify
     public function __construct()
     {
         $this->sUsername = 'DSTNotify';
-
         $this->logger = new Logger;
     }
 
@@ -53,9 +60,7 @@ class DSTNotify
 
                 if ((new Auth($this->oConfig))->isUserAuthed($this->sUsername)) {
 
-                    //TODO: use Format lib here instead of own function
                     $aTweets = $this->checkDST();
-                    die(var_dumP($aTweets));
 
                     if ($aTweets) {
                         $this->logger->output('Posting %d tweets..', count($aTweets));
@@ -80,12 +85,7 @@ class DSTNotify
 
                 if ((new Auth($this->oConfig))->isUserAuthed($this->sUsername)) {
 
-                    $aMentions = $this->checkMentions();
-
-                    foreach ($aMentions as $oMention) {
-                        $this->replyToMention($oMention);
-                    }
-
+                    $this->processMentions();
                     $this->logger->output('done!');
                 }
             }
@@ -97,8 +97,7 @@ class DSTNotify
         $this->logger->output('Checking for DST start..');
         $aTweets = array();
 
-        //$sToday = strtotime(date('Y-m-d UTC'));
-        $sToday = strtotime('tomorrow UTC');
+        $sToday = strtotime(date('Y-m-d UTC'));
 
         //check if any of the countries are switching to DST (summer time) NOW
         if ($aGroups = $this->checkDSTStart($sToday)) {
@@ -219,11 +218,139 @@ class DSTNotify
 
         return $aTweets;
     }
+
+    private function processMentions()
+    {
+        //fetch new mentions since last run
+        $oReply = new Reply($this->oConfig);
+        if ($aMentions = $oReply->getMentions()) {
+            foreach ($aMentions as $oMention) {
+                $this->replyToMention($oMention);
+            }
+            $this->logger->output('Processed %d mentions.', count($aMentions));
+        }
+        die('done');
+    }
+
+    private function replyToMention($oMention)
+    {
+        //ignore mentions where our name is not at the start of the tweet
+        if (stripos($oMention->text, '@' . $this->sUsername) !== 0) {
+            return true;
+        }
+
+        //get actual question from tweet
+        $sId = $oMention->id_str;
+        $sQuestion = str_replace('@' . strtolower($this->sUsername) . ' ', '', strtolower($oMention->text));
+        $this->logger->output('Parsing question "%s" from %s..', $sQuestion, $oMention->user->screen_name);
+
+        //find type of question
+		$sEvent = $this->findQuestionType($oMention);
+        if (!$sEvent) {
+            return $this->replyToQuestion($oMention, $this->aAnswerPhrases['reply_default']);
+        }
+
+		//find country in question, if any
+		$aCountryInfo = $this->findQuestionCountry($oMention, $sEvent);
+
+		//construct info beyond basic reply
+		$sExtra = $this->getExtraInfo($aCountryInfo);
+
+		if (!$aCountryInfo) {
+            //couldn't understand question or find country, default reply
+            return $this->replyToQuestion($oMention, $this->aAnswerPhrases['reply_default']);
+		} elseif ($aCountryInfo['group'] == 'no dst') {
+            //DST not in effect in target country
+            return $this->replyToQuestion($oMention, sprintf($this->aAnswerPhrases['reply_no_dst'], $aCountryInfo['name'], $sExtra));
+		}
+
+		//reply based on event
+		switch ($sEvent) {
+			case 'start':
+			case 'end':
+
+				//example: #DST [start]s in [Belgium] on the [last sunday of march] ([2015: 29th, 2016: 28th). [More info: ...]
+				return $this->replyToQuestion($oMention, sprintf($this->aAnswerPhrases['reply_dst_startstop'],
+					$aCountryInfo['name'],
+					$sEvent,
+					$aCountryInfo[$sEvent],
+					$aCountryInfo[$sEvent . 'day'],
+					trim($sExtra)
+				));
+				break;
+
+			case 'since':
+
+				//example: DST has not been observed in Russia since 1947
+				//return $this->replyToQuestion($oMention, sprintf('#DST has%s been observed in %s since %s. %s',
+				if (!empty($aCountryInfo['since'])) {
+
+					return $this->replyToQuestion($oMention, sprintf($this->aAnswerPhrases['reply_dst_since'],
+						($aCountryInfo['group'] == 'no dst' ? ' not' : ''),
+						$aCountryInfo['name'],
+						$aCountryInfo['since'],
+						trim($sExtra)
+					));
+
+				} else {
+
+					return $this->replyToQuestion($oMention, sprintf($this->aAnswerPhrases['reply_dst'],
+						($aCountryInfo['group'] == 'no dst' ? ' not' : ''),
+						$aCountryInfo['name'],
+						trim($sExtra)
+					));
+				}
+				break;
+
+			case 'next':
+
+				//'next' event is special: aCountryInfo can either contain start or stop event info
+				//so determine which of the two occurs first from now
+				if (!isset($aCountryInfo['event'])) {
+					$iNextStart = strtotime($aCountryInfo['start'] . ' ' . date('Y'));
+					$iNextStartY = strtotime($aCountryInfo['start'] . ' ' . (date('Y') + 1));
+					$iNextEnd = strtotime($aCountryInfo['end'] . ' ' . date('Y'));
+					$iNextEndY = strtotime($aCountryInfo['end'] . ' ' . (date('Y') + 1));
+
+					$iNextStart = ($iNextStart < time() ? $iNextStartY : $iNextStart);
+					$iNextEnd = ($iNextEnd < time() ? $iNextEndY : $iNextEnd);
+
+					$sEvent = ($iNextStart < $iNextEnd ? 'start' : 'end');
+				} else {
+					$sEvent = $aCountryInfo['event'];
+				}
+
+				//example: Next change: DST starts in United States on the last Sunday of March (2014: 29th, 2015: 28th).
+				return $this->replyToQuestion($oMention, sprintf(sprintf($this->aAnswerPhrases['reply_dst_next'],
+						$this->aAnswerPhrases['reply_dst_startstop']),
+					$aCountryInfo['name'],
+					$sEvent,
+					$aCountryInfo[$sEvent],
+					$aCountryInfo[$sEvent . 'day'],
+					trim($sExtra)
+				));
+		}
+
+        //event not understood, send default reply
+        return $this->replyToQuestion($oMention, $this->aAnswerPhrases['reply_default']);
+    }
+
+    private function findQuestionType($oMention)
+    {
+    }
+
+    private function getExtraInfo($aCountryInfo)
+    {
+    }
+
+    private function replyToQuestion($oMention, $sReply)
+    {
+    }
 }
 
 //RUN SCRIPT WITH CLI ARGUMENT 'mentions' TO PARSE & REPLY TO MENTIONS
-if (!empty($argv[1]) && $argv1[1] == 'mentions') {
-    //(new DSTNotify)->runMentions();
+if (!empty($argv[1]) && $argv[1] == 'mentions') {
+    (new DSTNotify)->runMentions();
 } else {
     (new DSTNotify)->run();
 }

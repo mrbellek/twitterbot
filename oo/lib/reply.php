@@ -10,19 +10,44 @@ use Twitterbot\Lib\Tweet;
  */
 class Reply extends Base
 {
+    private $aMentions = array();
+
+    /**
+     * Return new mentions since last check
+     *
+     * return array
+     */
+    public function getMentions()
+    {
+        if (!$this->aMentions) {
+            $this->fetchMentions();
+        }
+
+        return $this->aMentions;
+    }
+
     /**
      * Get new mentions (from followers) since last check
      *
      * return bool
      */
-    public function getMentions()
+    public function fetchMentions()
     {
         $this->logger->output('Checking mentions since %s for commands..', $this->oConfig->get('last_mentions_timestamp', 'never'));
+
+        //DEBUG
+        if (is_file('mentions.dat')) {
+            $this->aMentions = unserialize(file_get_contents('mentions.dat'));
+
+            $this->logger->output('- %d new mentions', count($this->aMentions));
+            return true;
+        }
+        //END DEBUG
 
         //fetch new mentions since last run
         $aMentions = $this->oTwitter->get('statuses/mentions_timeline', array(
             'count'         => 10,
-			'since_id'		=> $this->oConfig->get('last_mentions_check', 1),
+			'since_id'		=> $this->oConfig->get('last_mentions_max_id', 1),
         ));
 
         if (is_object($aMentions) && !empty($aMentions->errors[0]->message)) {
@@ -30,32 +55,40 @@ class Reply extends Base
             $this->logger->output(sprintf('- Failed getting mentions, halting. (%s)', $aMentions->errors[0]->message));
         }
 
+        $this->oConfig->set('last_mentions_timestamp', date('Y-m-d H:i:s'));
+
         //if we have mentions, get friends for auth (we will only respond to commands from people that follow us)
         if (count($aMentions) > 0) {
-            $aFollowing = (new Following($this->oConfig))
-                ->getAll();
+            $oFollowing = new Following($this->oConfig);
+            $aFollowing = $oFollowing->getAll();
 
         } else {
             $this->logger->output('- no new mentions.');
+            $this->aMentions = array();
 
-            return true;
+            return false;
         }
 
         //only reply to friends (people we are following)
-        if ($this->oConfig->get('only_reply_friends', true)) {
-            foreach ($aMentions as $i => $oMention) {
+        $bOnlyReplyToFriends = $this->oConfig->get('only_reply_friends', true);
+        $iMaxId = 1;
+        foreach ($aMentions as $i => $oMention) {
+            $iMaxId = max($iMaxId, $oMention->id_str);
 
+            if ($bOnlyReplyToFriends) {
                 //remove all mentions from non-friends
-                if (!in_array($oMention->user->id_str, $aFollowing)) {
+                if ($oFollowing->isFollowing($oMention)) {
                     unset($aMentions[$i]);
                 }
             }
-            printf('- %d new mentions (from friends)', count($aMentions));
-        } else {
-            printf('- %d new mentions', count($aMentions));
         }
 
+        printf('- %d new mentions %s', count($aMentions), ($bOnlyReplyToFriends ? '(from friends)' : ''));
+
         $this->aMentions = $aMentions;
+        file_put_contents('mentions.dat', serialize($aMentions)); //DEBUG
+        $this->oConfig->set('last_mentions_max_id', $iMaxId);
+        //$this->oConfig->writeConfig(); //DEBUG
 
         return true;
     }
@@ -68,14 +101,20 @@ class Reply extends Base
      */
     public function replyToMentions()
     {
-        if (!isset($this->aMentions)) {
+        if (!$this->aMentions) {
             $this->getMentions();
         }
 
         foreach ($this->aMentions as $oMention) {
 
+            $sText = strtolower($oMention->text);
+            if (stripos($sText, '@' . $this->oConfig->get('sUsername')) !== 0) {
+                //skip tweet because it was not directly to us
+                continue;
+            }
+
             $sId = $oMention->id_str;
-            $sCommand = str_replace(sprintf('@%s ', strtolower($this->oConfig->get('sUsername'))), '', strtolower($oMention->text));
+            $sCommand = str_replace(sprintf('@%s ', strtolower($this->oConfig->get('sUsername'))), '', $sText);
             $this->logger->output('Parsing command \'%s\' from @%s..', $sCommand, $oMention->user->screen_name);
 
             switch ($sCommand) {

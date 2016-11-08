@@ -54,7 +54,11 @@ class Config
      */
     public function get($sName, $mDefault = false)
     {
-        if (isset($this->oSettings->$sName)) {
+        if ($sName == 'sUsername') {
+
+            return $this->sUsername;
+
+        } elseif (isset($this->oSettings->$sName)) {
 
             return $this->oSettings->$sName;
 

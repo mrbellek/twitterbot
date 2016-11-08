@@ -1,5 +1,5 @@
 <?php
-namespasce Twitterbot\Lib;
+namespace Twitterbot\Lib;
 
 /**
  * Get all users that we are following (friends), check if given user is friend
