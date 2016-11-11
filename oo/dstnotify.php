@@ -245,7 +245,7 @@ class DSTNotify
         $this->logger->output('Parsing question "%s" from %s..', $sQuestion, $oMention->user->screen_name);
 
         //find type of question
-		$sEvent = $this->findQuestionType($oMention);
+		$sEvent = $this->findQuestionType($sQuestion);
         if (!$sEvent) {
             return $this->replyToQuestion($oMention, $this->aAnswerPhrases['reply_default']);
         }
@@ -337,14 +337,294 @@ class DSTNotify
 
     private function findQuestionType($oMention)
     {
+        //the order of the arrays at the top of the class is the order we're searching in
+        foreach ($this->aQuestionKeywords as $sEvent => $aWords) {
+			foreach ($aWords as $sWord) {
+				if (stripos($oMention->text, $sWord) !== false) {
+					return $sEvent;
+				}
+			}
+        }
+
+		return false;
+    }
+
+    private function findQuestionCountry($oMention, $sEvent)
+    {
+
+        //try to find country in tweet
+        $aCountryInfo = $this->findCountryInText($oMention->text);
+        if (!$aCountryInfo && !empty($oMention->user->location) && stripos($oMention->text, 'worldwide') === false) {
+
+            //try to find country name in 'location' field of user profile (unless tweet contains 'worldwide')
+            $aCountryInfo = $this->findCountryInText($oMention->user->location);
+        }
+
+        if (!$aCountryInfo) {
+            if ($sEvent == 'next') {
+                //for 'next' event without country, use 'worldwide' i.e. get next DST change anywhere
+                $aCountryInfo = $this->getNextDSTChange();
+            } else {
+                //no country found, reply default
+                return false;
+            }
+
+        } elseif ($aCountryInfo && $sEvent == 'next') {
+            //if country was found AND no event was specified ('when is next change'), find whichever is soonest
+            $aNextChange = $this->getNextCountryChange($aCountryInfo);
+            if ($aNextChange['event']) {
+                $aCountryInfo['event'] = $aNextChange['event'];
+            }
+        }
+
+		return $aCountryInfo;
+    }
+
+    private function findCountryInText($sText)
+    {
+        $aCountryInfo = array();
+
+        //try to find country in text
+        foreach ($this->oConfig->get('dst') as $sGroupName => $oGroup) {
+
+            //check for group name
+            if (stripos($sText, $sGroupName) !== false) {
+                $aFoundCountry[$sGroupName] = (array) $oGroup;
+                $aFoundCountry[$sGroupName]['name'] = ucwords($sGroupName);
+                break;
+            }
+
+            //check 'includes' array
+            if (isset($oGroup->includes)) {
+                foreach ($oGroup->includes as $sName => $oInclude) {
+
+                    //check name of country against question
+                    if (stripos($sText, $sName) !== false) {
+                        $aFoundCountry[$sGroupName] = array_merge((array) $oGroup, (array) $oInclude);
+                        $aFoundCountry[$sGroupName]['name'] = ucwords($sName);
+                        unset($aFoundCountry[$sGroupName]['includes']);
+                        unset($aFoundCountry[$sGroupName]['excludes']);
+                        unset($aFoundCountry[$sGroupName]['alias']);
+                        break 2;
+                    }
+
+                    if (!empty($oInclude->alias)) {
+                        foreach ($oInclude->alias as $sAlias) {
+                            if (stripos($sText, $sAlias) !== false) {
+                                $aFoundCountry[$sGroupName] = array_merge((array) $aGroup, (array) $oInclude);
+                                $aFoundCountry[$sGroupName]['name'] = ucwords($sName);
+                                unset($aFoundCountry[$sGroupName]['includes']);
+                                unset($aFoundCountry[$sGroupName]['excludes']);
+                                unset($aFoundCountry[$sGroupName]['alias']);
+                                break 2;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (isset($aFoundCountry)) {
+
+            $sGroupName = key($aFoundCountry);
+            $aGroup = $aFoundCountry[$sGroupName];
+            $aGroup['group'] = $sGroupName;
+
+            return $this->formatCountryInfo((object) $aGroup);
+        }
+
+        return false;
+    }
+
+    private function getNextDSTChange()
+    {
+        $iNextChange = strtotime('+1 year');
+        $aNextCountry = array();
+
+        foreach ($this->oConfig->get('dst') as $sGroupName => $oGroup) {
+
+            if ($sGroupName != 'no dst') {
+                $oGroup->group = $sGroupName;
+
+                //get next DST change for this group
+                $aChange = $this->getNextCountryChange($oGroup); //TODO: check arg use in this function
+
+                //save closest change
+                if ($aChange['event'] && $aChange['timestamp'] < $iNextChange) {
+                    $oNextCountry = $oGroup;
+                    $oNextCountry->event = $aChange['event'];
+                    $iNextChange = $aChange['timestamp'];
+                }
+
+                if (empty($oNextCountry->name)) {
+                    $oNextCountry->name = ucwords($sGroupName);
+                }
+            }
+        }
+
+        return $this->formatCountryInfo($oNextCountry);
+    }
+
+    private function getNextCountryChange($oGroup)
+    {
+        $aReturn = array(
+            'event' => false,
+            'timestamp' => false,
+        );
+
+        if (isset($oGroup->start)) {
+
+            //check if this DST start is this year or next
+            if (strtotime($oGroup->start . ' ' . date('Y')) > time()) {
+                $iChange = strtotime($oGroup->start . ' ' . date('Y'));
+            } else {
+                $iChange = strtotime($oGroup->start . ' ' . (date('Y') + 1));
+            }
+
+            $aReturn['event'] = 'start';
+            $aReturn['timestamp'] = $iChange;
+        }
+
+        if (isset($oGroup->end)) {
+            //check if this DST stop is this year or next
+            if (strtotime($oGroup->end . ' ' . date('Y')) > time()) {
+                $iChange = strtotime($oGroup->end . ' ' . date('Y'));
+            } else {
+                $iChange = strtotime($oGroup->end . ' ' . (date('Y') + 1));
+            }
+
+            if ($iChange < $aReturn['timestamp']) {
+                $aReturn['event'] = 'end';
+                $aReturn['timestamp'] = $iChange;
+            }
+        }
+
+        return $aReturn;
+    }
+
+    private function formatCountryInfo($oGroup)
+    {
+        //format some fields, add some more for convenience
+        $aCountryInfo = array(
+            'group'     => (isset($oGroup->group)     ? $oGroup->group : FALSE),
+            'name'      => (isset($oGroup->name)      ? ucwords($oGroup->name) : FALSE),
+            'since'     => (isset($oGroup->since)     ? $oGroup->since : FALSE),
+            'info'      => (isset($oGroup->info)      ? $oGroup->info : FALSE),
+            'note'      => (isset($oGroup->note)      ? $oGroup->note : FALSE),
+            'timezone'  => (isset($oGroup->timezone)  ? $oGroup->timezone : FALSE),
+            'event'     => (isset($oGroup->event)     ? $oGroup->event : FALSE),
+        );
+        if ($aCountryInfo['group'] != 'no dst') {
+            //start and end in relative terms (last sunday of september)
+            $aCountryInfo['start'] = $this->capitalizeStuff($oGroup->start);
+            $aCountryInfo['end'] = $this->capitalizeStuff($oGroup->end);
+
+            //work out when that is for current + next year
+            $sStartDayNow = date('jS', strtotime($oGroup->start . ' ' . date('Y')));
+            $sStartDayNext = date('jS', strtotime($oGroup->start . ' ' . (date('Y') + 1)));
+            $sEndDayNow = date('jS', strtotime($oGroup->end . ' ' . date('Y')));
+            $sEndDayNext = date('jS', strtotime($oGroup->end . ' ' . (date('Y') + 1)));
+            $aCountryInfo['startday'] = sprintf('%d: %s, %d: %s', date('Y'), $sStartDayNow, (date('Y') + 1), $sStartDayNext);
+            $aCountryInfo['endday'] = sprintf('%d: %s, %d: %s', date('Y'), $sEndDayNow, (date('Y') + 1), $sEndDayNext);
+        }
+        if (isset($oGroup->permanent)) {
+            $aCountryInfo['permanent'] = $oGroup->permanent;
+        }
+
+        return $aCountryInfo;
     }
 
     private function getExtraInfo($aCountryInfo)
     {
+		if ($aCountryInfo['group'] == 'no dst') {
+			//skip question type parsing if country does not observe DST
+            $sExtra = '';
+            if (!empty($aCountryInfo['since'])) {
+				//normally just mention the year they stopped observing DST, unless it's permanently in effect
+                if (isset($aCountryInfo['permanent']) && $aCountryInfo['permanent'] == 1) {
+					$sExtra = sprintf($this->aAnswerPhrases['extra_perma_since'], $aCountryInfo['since']);
+                } else {
+					$sExtra = sprintf($this->aAnswerPhrases['extra_not_since'], $aCountryInfo['since']);
+                }
+            }
+
+			return $sExtra;
+        }
+
+        //construct extra information
+        $sExtra = '';
+        if (!empty($aCountryInfo['note'])) {
+
+            //some countries have a note in parentheses
+            $sExtra .= $aCountryInfo['note'];
+        }
+        if (!empty($aCountryInfo['info'])) {
+
+            //some countries are complicated, and have their own wiki page with more info
+            $sExtra .= sprintf($this->aAnswerPhrases['extra_more_info'], $aCountryInfo['info']);
+        }
+
+        if (isset($aCountryInfo['permanent'])) {
+            //some countries have permanent DST in effect
+            if ($aCountryInfo['permanent'] == 1) {
+				$sExtra .= $this->aAnswerPhrases['extra_perma_always'];
+            } else {
+                //just in case, never used
+				$sExtra .= $this->aAnswerPhrases['extra_perma_never'];
+            }
+        }
+
+		return $sExtra;
     }
 
     private function replyToQuestion($oMention, $sReply)
     {
+        //TODO: use Reply class here
+        //TODO: use Following class here
+
+        //remove spaces where needed
+        $sReply = trim(preg_replace('/ +/', ' ', $sReply));
+
+        //check friendship between bot and sender
+        $oRet = $this->oTwitter->get('friendships/show', array('source_screen_name' => $this->sUsername, 'target_screen_name' => $oMention->user->screen_name));
+        if (!empty($oRet->errors)) {
+            $this->logger(2, sprintf('Twitter API call failed: GET friendships/show (%s)', $oRet->errors[0]->message));
+            $this->halt(sprintf('- Failed to check friendship, halting. (%s)', $oRet->errors[0]->message));
+            return FALSE;
+        }
+
+        //if we can DM the source of the command, do that
+        if ($this->bReplyInDM && $oRet->relationship->source->can_dm) {
+
+            $oRet = $this->oTwitter->post('direct_messages/new', array('user_id' => $oMention->user->id_str, 'text' => substr($sReply, 0, 140)));
+
+            if (!empty($oRet->errors)) {
+                $this->logger(2, sprintf('Twitter API call failed: POST direct_messages/new (%s)', $oRet->errors[0]->message), array('question' => serialize($oMention), 'message' => substr($sReply, 0, 140)));
+                $this->halt(sprintf('- Failed to send DM, halting. (%s)', $oRet->errors[0]->message));
+                return FALSE;
+            }
+
+        } else {
+            //otherwise, use public reply
+
+            $oRet = $this->oTwitter->post('statuses/update', array(
+                'in_reply_to_status_id' => $oMention->id_str,
+                'trim_user' => TRUE,
+                'status' => sprintf('@%s %s',
+                    $oMention->user->screen_name,
+                    substr($sReply, 0, 140 - 2 - strlen($oMention->user->screen_name))
+                )
+            ));
+
+            if (!empty($oRet->errors)) {
+                $this->logger(2, sprintf('Twitter API call failed: POST statuses/update (%s)', $oRet->errors[0]->message));
+                $this->halt(sprintf('- Failed to reply, halting. (%s)', $oRet->errors[0]->message));
+                return FALSE;
+            }
+        }
+
+        printf("- Replied: %s\n", $sReply);
+        return TRUE;
     }
 }
 
