@@ -35,15 +35,6 @@ class Reply extends Base
     {
         $this->logger->output('Checking mentions since %s for commands..', $this->oConfig->get('last_mentions_timestamp', 'never'));
 
-        //DEBUG
-        if (is_file('mentions.dat')) {
-            $this->aMentions = unserialize(file_get_contents('mentions.dat'));
-
-            $this->logger->output('- %d new mentions', count($this->aMentions));
-            return true;
-        }
-        //END DEBUG
-
         //fetch new mentions since last run
         $aMentions = $this->oTwitter->get('statuses/mentions_timeline', array(
             'count'         => 10,
@@ -86,9 +77,8 @@ class Reply extends Base
         printf('- %d new mentions %s', count($aMentions), ($bOnlyReplyToFriends ? '(from friends)' : ''));
 
         $this->aMentions = $aMentions;
-        file_put_contents('mentions.dat', serialize($aMentions)); //DEBUG
         $this->oConfig->set('last_mentions_max_id', $iMaxId);
-        //$this->oConfig->writeConfig(); //DEBUG
+        $this->oConfig->writeConfig();
 
         return true;
     }

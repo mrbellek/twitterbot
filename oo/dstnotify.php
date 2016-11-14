@@ -229,7 +229,6 @@ class DSTNotify
             }
             $this->logger->output('Processed %d mentions.', count($aMentions));
         }
-        die('done');
     }
 
     private function replyToMention($oMention)
@@ -335,12 +334,12 @@ class DSTNotify
         return $this->replyToQuestion($oMention, $this->aAnswerPhrases['reply_default']);
     }
 
-    private function findQuestionType($oMention)
+    private function findQuestionType($sTweet)
     {
         //the order of the arrays at the top of the class is the order we're searching in
         foreach ($this->aQuestionKeywords as $sEvent => $aWords) {
 			foreach ($aWords as $sWord) {
-				if (stripos($oMention->text, $sWord) !== false) {
+				if (stripos($sTweet, $sWord) !== false) {
 					return $sEvent;
 				}
 			}
@@ -534,6 +533,22 @@ class DSTNotify
         return $aCountryInfo;
     }
 
+    private function capitalizeStuff($sString)
+    {
+        //capitalize days of week and months
+        $aCapitalize = array(
+            'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday',
+            'january', 'february', 'march', 'april', 'may', 'june',
+            'july', 'august', 'september', 'october', 'november', 'december',
+        );
+
+        foreach ($aCapitalize as $sWord) {
+            $sString = str_ireplace($sWord, ucfirst($sWord), $sString);
+        }
+
+        return $sString;
+    }
+
     private function getExtraInfo($aCountryInfo)
     {
 		if ($aCountryInfo['group'] == 'no dst') {
@@ -579,52 +594,12 @@ class DSTNotify
 
     private function replyToQuestion($oMention, $sReply)
     {
-        //TODO: use Reply class here
-        //TODO: use Following class here
+        $oTweet = new Tweet($this->oConfig);
 
         //remove spaces where needed
         $sReply = trim(preg_replace('/ +/', ' ', $sReply));
 
-        //check friendship between bot and sender
-        $oRet = $this->oTwitter->get('friendships/show', array('source_screen_name' => $this->sUsername, 'target_screen_name' => $oMention->user->screen_name));
-        if (!empty($oRet->errors)) {
-            $this->logger(2, sprintf('Twitter API call failed: GET friendships/show (%s)', $oRet->errors[0]->message));
-            $this->halt(sprintf('- Failed to check friendship, halting. (%s)', $oRet->errors[0]->message));
-            return FALSE;
-        }
-
-        //if we can DM the source of the command, do that
-        if ($this->bReplyInDM && $oRet->relationship->source->can_dm) {
-
-            $oRet = $this->oTwitter->post('direct_messages/new', array('user_id' => $oMention->user->id_str, 'text' => substr($sReply, 0, 140)));
-
-            if (!empty($oRet->errors)) {
-                $this->logger(2, sprintf('Twitter API call failed: POST direct_messages/new (%s)', $oRet->errors[0]->message), array('question' => serialize($oMention), 'message' => substr($sReply, 0, 140)));
-                $this->halt(sprintf('- Failed to send DM, halting. (%s)', $oRet->errors[0]->message));
-                return FALSE;
-            }
-
-        } else {
-            //otherwise, use public reply
-
-            $oRet = $this->oTwitter->post('statuses/update', array(
-                'in_reply_to_status_id' => $oMention->id_str,
-                'trim_user' => TRUE,
-                'status' => sprintf('@%s %s',
-                    $oMention->user->screen_name,
-                    substr($sReply, 0, 140 - 2 - strlen($oMention->user->screen_name))
-                )
-            ));
-
-            if (!empty($oRet->errors)) {
-                $this->logger(2, sprintf('Twitter API call failed: POST statuses/update (%s)', $oRet->errors[0]->message));
-                $this->halt(sprintf('- Failed to reply, halting. (%s)', $oRet->errors[0]->message));
-                return FALSE;
-            }
-        }
-
-        printf("- Replied: %s\n", $sReply);
-        return TRUE;
+        return $oTweet->replyTo($oMention, $sReply);
     }
 }
 
