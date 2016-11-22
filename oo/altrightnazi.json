@@ -1,0 +1,21 @@
+{
+    "search_strings": {
+        "0": {
+            "search": "\"alt-right\" -nazi -nazis filter:links -RT",
+            "max_id": "801096388478169088",
+            "timestamp": "2016-11-22 17:14:25"
+        }
+    },
+    "filters": {
+        "tweet": [
+            "@altrightnazi"
+        ],
+        "username": []
+    },
+    "dice_values": {
+        "media": 0.5,
+        "urls": 0.5,
+        "mentions": 0,
+        "base": 0
+    }
+}

@@ -28,7 +28,7 @@ class Search extends Base
 
 		$aTweets = array();
 
-        foreach ($aQuery as $i => $oSearch) {
+        foreach ($oQuery as $i => $oSearch) {
             $sSearchString = $oSearch->search;
 
             $this->logger->output('Searching for max %d tweets with: %s..', $this->oConfig->get('search_max'), $sSearchString);
@@ -51,6 +51,7 @@ class Search extends Base
             //save data for next run
             $this->oConfig->set('search_strings', $i, 'max_id', $oSearch->search_metadata->max_id_str);
             $this->oConfig->set('search_strings', $i, 'timestamp', date('Y-m-d H:i:s'));
+            $this->oConfig->writeConfig();
 
             if (empty($oSearch->statuses) || count($oSearch->statuses) == 0) {
                 $this->logger->output('- No results since last search at %s.', $oSearch->timestamp);
