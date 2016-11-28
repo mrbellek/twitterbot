@@ -73,20 +73,21 @@ class AltRightNazi
     private function getComment()
     {
         $aComments = [
+            'Actually they\'re just nazis.',
+            'I think the right term for these people is \'nazis\'.',
+            'I think you mean nazis.',
+            'It\'s not just a racist movement, it\'s straight nazis.',
+            'It\'s ok to say it: they\'re nazis.',
+            'Or as they\'re usually called: nazis.',
+            'These guys aren\'t moderate, they\'re nazis.',
+            'They do the nazi salute. They\'re nazis.',
             'They\'re just nazis.',
             'They\'re nazis.',
-            'It\'s ok to say it: they\'re nazis.',
             'They\'re not alt-right, they\'re nazis.',
-            'They do the nazi salute. They\'re nazis.',
-            'I think the right term for these people is \'nazis\'.',
-            'Actually they\'re just nazis.',
-            'It\'s not just a racist movement, it\'s straight nazis.',
             'They\'re not just racists, they\'re straight nazis.',
-            'You know what? They\'re just nazis.',
-            'These guys aren\'t moderate, they\'re nazis.',
             'This is not a joke: they\'re nazis.',
-            'Or as they\'re usually called: nazis.',
-            'I think you mean nazis.',
+            'You can say it: they\'re nazis.',
+            'You know what? They\'re just nazis.',
         ];
 
         return $aComments[array_rand($aComments)];
