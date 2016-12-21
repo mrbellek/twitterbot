@@ -234,6 +234,10 @@ class Format extends Base
                     //single image on imgur.com page
                     $sResult = 'image';
                     $bAttachFile = true;
+                } elseif (preg_match('/reddituploads\.com/i', $sSubject)) {
+                    //reddit hosted file
+                    $sResult = 'image';
+                    $bAttachFile = true;
                 } elseif (preg_match('/imgur\.com\/a\//i', $sSubject)) {
                     //multiple images on imgur.com page
                     $sResult = 'gallery';
@@ -247,6 +251,10 @@ class Format extends Base
                 //    $sResult = 'gif';
                 //    $bAttachFile = true;
                 } elseif (preg_match('/\.gifv|\.webm|youtube\.com\/|youtu\.be\/|vine\.co\/|vimeo\.com\/|liveleak\.com\//i', $sSubject)) {
+                    //common video hosting websites
+                    $sResult = 'video';
+                } elseif (preg_match('/pornhub\.com|xhamster\.com/i', $sSubject)) {
+                    //porn video hosting websites
                     $sResult = 'video';
                 } else {
                     $sResult = 'external';

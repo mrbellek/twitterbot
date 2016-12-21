@@ -394,6 +394,12 @@ class RssBot {
                         if ($bAttachImage) {
                             $this->uploadImageToTwitter($sText);
                         }
+                    } elseif (preg_match('/reddituploads\.com/i', $sText)) {
+                        //reddit hosted file
+                        $sResult = 'image';
+                        if ($bAttachImage) {
+                            $this->uploadImageToTwitter($sText);
+                        }
 					} elseif (preg_match('/imgur\.com\/.[^\/]/i', $sText) || preg_match('/imgur\/.com\/gallery\//', $sText)) {
 						//single image on imgur.com page
 						$sResult = 'image';
@@ -419,6 +425,9 @@ class RssBot {
 						}*/
 
                     } elseif (preg_match('/\.gifv|\.webm|youtube\.com\/|youtu\.be\/|vine\.co\/|vimeo\.com\/|liveleak\.com\//i', $sText)) {
+                        $sResult = 'video';
+                    } elseif (preg_match('/pornhub\.com|xhamster\.com/i', $sText)) {
+                        //porn video hosting websites
                         $sResult = 'video';
                     } else {
                         $sResult = 'external';
