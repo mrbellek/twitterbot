@@ -13,6 +13,8 @@ use Twitterbot\Lib\Block;
 use Twitterbot\Lib\Filter;
 use Twitterbot\Lib\Retweet;
 
+use Twitterbot\Lib\Media;
+
 /**
  * Retweetbot class - generic framework to find and retweet posts based on given search terms
  *

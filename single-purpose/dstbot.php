@@ -201,7 +201,7 @@ class DstBot {
             echo "Checking for DST start..\n";
 
             //check if any of the countries are switching to DST (summer time) NOW
-            if ($aGroups = $this->checkDSTStart(time())) {
+            if ($aGroups = $this->checkDSTStart(strtotime(date('Y-m-d H:i:s UTC')))) {
 
                 if (!$this->postTweetDST('starting', $aGroups, 'today')) {
                     return FALSE;
@@ -209,7 +209,7 @@ class DstBot {
             }
 
             //check if any of the countries are switching to DST (summer time) in 24 hours
-            if ($aGroups = $this->checkDSTStart(time() + 24 * 3600)) {
+            if ($aGroups = $this->checkDSTStart(strtotime(date('Y-m-d H:i:s UTC')) + 24 * 3600)) {
 
                 if (!$this->postTweetDST('starting', $aGroups, 'tomorrow')) {
                     return FALSE;
@@ -220,7 +220,7 @@ class DstBot {
             }
 
             //check if any of the countries are switching to DST (summer time) in 7 days
-            if ($aGroups = $this->checkDSTStart(time() + 7 * 24 * 3600)) {
+            if ($aGroups = $this->checkDSTStart(strtotime(date('Y-m-d H:i:s UTC')) + 7 * 24 * 3600)) {
 
                 if (!$this->postTweetDST('starting', $aGroups, 'next week')) {
                     return FALSE;
@@ -230,7 +230,7 @@ class DstBot {
             echo "Checking for DST end..\n";
 
             //check if any of the countries are switching from DST (winter time) NOW
-            if ($aGroups = $this->checkDSTEnd(time())) {
+            if ($aGroups = $this->checkDSTEnd(strtotime(date('Y-m-d H:i:s UTC')))) {
 
                 if (!$this->postTweetDST('ending', $aGroups, 'today')) {
                     return FALSE;
@@ -238,7 +238,7 @@ class DstBot {
             }
 
             //check if any of the countries are switching from DST (winter time) in 24 hours
-            if ($aGroups = $this->checkDSTEnd(time() + 24 * 3600)) {
+            if ($aGroups = $this->checkDSTEnd(strtotime(date('Y-m-d H:i:s UTC')) + 24 * 3600)) {
 
                 if (!$this->postTweetDST('ending', $aGroups, 'tomorrow')) {
                     return FALSE;
@@ -249,7 +249,7 @@ class DstBot {
             }
 
             //check if any of the countries are switching from DST (winter time) in 7 days
-            if ($aGroups = $this->checkDSTEnd(time() + 7 * 24 * 3600)) {
+            if ($aGroups = $this->checkDSTEnd(strtotime(date('Y-m-d H:i:s UTC')) + 7 * 24 * 3600)) {
 
                 if (!$this->postTweetDST('ending', $aGroups, 'next week')) {
                     return FALSE;
@@ -269,14 +269,14 @@ class DstBot {
     //check if DST starts (summer time start) for any of the countries
     private function checkDSTStart($iTimestamp) {
 
-        $this->logger(6, sprintf('running checkDSTstart for %d (%s)', $iTimestamp, date('Y-m-d H:i:s', $iTimestamp)));
+        $this->logger(6, sprintf('running checkDSTstart for %d (%s)', $iTimestamp, date('Y-m-d H:i:s UTC', $iTimestamp)));
         $aGroupsDSTStart = array();
         foreach ($this->aSettings as $sGroup => $aSetting) {
 
             if ($sGroup != 'no dst') {
 
                 //convert 'last sunday of march 2014' to timestamp
-                $iDSTStart = strtotime($aSetting['start'] . ' ' . date('Y'));
+                $iDSTStart = strtotime($aSetting['start'] . ' ' . date('Y') . ' UTC');
 
                 //error margin of 3 minutes
                 if ($iDSTStart >= $iTimestamp - $this->iErrorMargin && $iDSTStart <= $iTimestamp + $this->iErrorMargin) {
@@ -297,14 +297,14 @@ class DstBot {
     //check if DST ends (winter time start) for any of the countries
     private function checkDSTEnd($iTimestamp) {
 
-        $this->logger(6, sprintf('running checkDSTstop for %d (%s)', $iTimestamp, date('Y-m-d H:i:s', $iTimestamp)));
+        $this->logger(6, sprintf('running checkDSTstop for %d (%s)', $iTimestamp, date('Y-m-d H:i:s UTC', $iTimestamp)));
         $aGroupsDSTEnd = array();
         foreach ($this->aSettings as $sGroup => $aSetting) {
 
             if ($sGroup != 'no dst') {
 
                 //convert 'last sunday of march 2014' to timestamp
-                $iDSTEnd = strtotime($aSetting['end'] . ' ' . date('Y'));
+                $iDSTEnd = strtotime($aSetting['end'] . ' ' . date('Y') . ' UTC');
 
                 //error margin of 1 minute
                 if ($iDSTEnd >= $iTimestamp - $this->iErrorMargin && $iDSTEnd <= $iTimestamp + $this->iErrorMargin) {
