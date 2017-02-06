@@ -83,6 +83,7 @@ if ($_POST && !$sError) {
 				if (query('
 					UPDATE holidays
 					SET name = :name,
+                        year = :year,
 						month = :month,
 						day = :day,
 						region = :region,
@@ -96,6 +97,7 @@ if ($_POST && !$sError) {
 					array(
 						'id'		=> $_POST['id'],
 						'name'		=> $_POST['name'],
+						'year'		=> $_POST['year'],
 						'month'		=> $_POST['month'],
 						'day'		=> $_POST['day'],
 						'region'	=> $_POST['region'],
@@ -114,10 +116,11 @@ if ($_POST && !$sError) {
 			} else {
 				//add holiday
 				if (query('
-					INSERT INTO holidays (name, month, day, region, country, note, dynamic, important, url)
-					VALUES (:name, :month, :day, :region, :country, :note, :dynamic, :important, :url)',
+					INSERT INTO holidays (name, year, month, day, region, country, note, dynamic, important, url)
+					VALUES (:name, :year, :month, :day, :region, :country, :note, :dynamic, :important, :url)',
 					array(
 						'name'		=> $_POST['name'],
+						'year'		=> $_POST['year'],
 						'month'		=> $_POST['month'],
 						'day'		=> $_POST['day'],
 						'region'	=> $_POST['region'],
@@ -156,6 +159,7 @@ if ($_POST && !$sError) {
 		SELECT SQL_CALC_FOUND_ROWS *
 		FROM holidays
 		WHERE name LIKE :search
+        OR year LIKE :search
 		OR region LIKE :search
 		OR country LIKE :search
 		OR note LIKE :search
@@ -177,6 +181,7 @@ if ($_POST && !$sError) {
 		SELECT SQL_CALC_FOUND_ROWS * FROM holidays
 		WHERE month = :month
 		AND day = :day
+        AND (year = YEAR(CURDATE()) OR year IS NULL OR year = 0)
 		ORDER BY name
 		LIMIT :offset, :perpage',
 		array(
@@ -192,6 +197,7 @@ if ($_POST && !$sError) {
 		SELECT SQL_CALC_FOUND_ROWS * FROM holidays
 		WHERE month = :month
 		AND day = :day
+        AND (year = YEAR(CURDATE()) OR year IS NULL OR year = 0)
 		ORDER BY name
 		LIMIT :offset, :perpage',
 		array(
@@ -253,6 +259,13 @@ $iCount = $aCount['FOUND_ROWS()'];
 					<label for="name" class="col-sm-2 control-label">Name</label>
 					<div class="col-sm-10">
 						<input type="text" id="name" name="name" class="form-control" value="<?= @$aData['name'] ?>" required />
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="year" class="col-sm-2 control-label">Year</label>
+					<div class="col-sm-10">
+                        <input type="text" id="year" name="year" class="form-control" value="<?= @$aData['year'] ?>" />
 					</div>
 				</div>
 
@@ -373,6 +386,7 @@ $iCount = $aCount['FOUND_ROWS()'];
 			<table class="table table-condensed table-hover">
 				<tr>
 					<th>Holiday (<?= count($aHolidays) ?>)</th>
+                    <th>Year</th>
 					<th>Month</th>
 					<th>Day</th>
 					<th>Region</th>
@@ -391,6 +405,7 @@ $iCount = $aCount['FOUND_ROWS()'];
 								<?= $aHoliday['name'] ?>
 							<?php } ?>
 						</td>
+						<td><?= $aHoliday['year'] ?></td>
 						<td><?= $aHoliday['month'] ?></td>
 						<td><?= $aHoliday['day'] ?></td>
 						<td><?= $aHoliday['region'] ?></td>

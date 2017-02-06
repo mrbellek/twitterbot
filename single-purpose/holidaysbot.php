@@ -15,14 +15,14 @@ require_once('holidaysbot.inc.php');
  * v bug where " in Excel turns into "" in tweet
  * v take next GIS result when downloading first pick fails
  * v index the rest of the year's holidays lol
- * ? international/worldwide note, and remove from name
- * - implement 'parrot' function to repeat something said to bot by someone it follows
  * v variable holidays?
  *   v getHolidays should return dynamic holidays' calculated date
  *   v lee-jackson day is 0 januari?
  *   x watch out for holidays involving easter that span multiple years
- *   x chinese calendar: http://stackoverflow.com/questions/23181668/convert-gregorian-to-chinese-lunar-calendar
- * - holidays that only occur on some years
+ * v holidays that only occur on some years
+ *   . chinese calendar: http://stackoverflow.com/questions/23181668/convert-gregorian-to-chinese-lunar-calendar
+ * ? international/worldwide note, and remove from name
+ * - implement 'parrot' function to repeat something said to bot by someone it follows
  * - replace 'England' with 'England, United Kingdom'?
  * - consciously not included:
  *   - Christian feast days
@@ -121,59 +121,30 @@ class HolidaysBot {
 
 	public function test() {
 
-		//print tweets for all holidays to verify they fit
-		if ($aHolidays = $this->getAllHolidays()) {
+        if (filter_input(INPUT_GET, 'month', FILTER_SANITIZE_NUMBER_INT) || filter_input(INPUT_GET, 'day', FILTER_SANITIZE_NUMBER_INT)) {
+            $aHolidays = $this->getAllHolidays(
+                filter_input(INPUT_GET, 'month', FILTER_SANITIZE_NUMBER_INT),
+                filter_input(INPUT_GET, 'day', FILTER_SANITIZE_NUMBER_INT)
+            );
+        } else {
+            $aHolidays = $this->getAllHolidays();
+        }
 
+		//print tweets for all holidays to verify they fit
+		if ($aHolidays) {
 			foreach ($aHolidays as $aHoliday) {
 				$this->testPostMessage($aHoliday);
 			}
 		}
-		echo 'done.';
-	}
-
-	public function importToDb() {
-
-		if (!$this->oPDO) {
-			$this->logger(1, 'No connection to database.');
-			$this->halt('No connection to database.');
-			return FALSE;
-		}
-
-		$sth = $this->oPDO->prepare('TRUNCATE TABLE holidays');
-		$sth->execute();
-
-		$aMonths = $this->getAllHolidays();
-		foreach ($aMonths as $iMonth => $aDays) {
-			foreach ($aDays as $iDay => $aHolidays) {
-				foreach ($aHolidays as $aHoliday) {
-
-					if (!$this->query('
-						INSERT INTO holidays
-						(month, day, name, region, country, note, important, dynamic, url)
-						VALUES
-						(:month, :day, :name, :region, :country, :note, :important, :dynamic, :url)',
-						array(
-							'month'		=> $iMonth,
-							'day'		=> $iDay,
-							'name'		=> utf8_decode($aHoliday['name']),
-							'region'	=> $aHoliday['region'],
-							'country'	=> $aHoliday['country'],
-							'note'		=> $aHoliday['note'],
-							'important'	=> $aHoliday['important'],
-							'dynamic'	=> $aHoliday['dynamic'],
-							'url'		=> $aHoliday['url'],
-						)
-					)) {
-						die(var_dump($aHoliday));
-					}
-				}
-			}
-		}
-
-		echo 'done.';
+		printf('done. %d holidays total', count($aHolidays));
 	}
 
 	public function run() {
+
+        if (filter_input(INPUT_GET, 'test') == 1) {
+            $this->test();
+            return;
+        }
 
 		//verify current twitter user is correct
 		if ($this->getIdentity()) {
@@ -231,7 +202,8 @@ class HolidaysBot {
 					SELECT *
 					FROM holidays
 					WHERE month = :month
-					AND day = :day',
+                    AND day = :day
+                    AND (year = YEAR(CURDATE()) OR year = 0 OR year IS NULL)',
 					array(
 						'month' => $iMonth,
 						'day' => $iDay,
@@ -748,5 +720,47 @@ class HolidaysBot {
 		$day = (($d + $e + 114) % 31) + 1;
 
 		return mktime(0, 0, 0, $month, $day + 13, $year);
+	}
+
+	public function importToDb() {
+
+		if (!$this->oPDO) {
+			$this->logger(1, 'No connection to database.');
+			$this->halt('No connection to database.');
+			return FALSE;
+		}
+
+		$sth = $this->oPDO->prepare('TRUNCATE TABLE holidays');
+		$sth->execute();
+
+		$aMonths = $this->getAllHolidays();
+		foreach ($aMonths as $iMonth => $aDays) {
+			foreach ($aDays as $iDay => $aHolidays) {
+				foreach ($aHolidays as $aHoliday) {
+
+					if (!$this->query('
+						INSERT INTO holidays
+						(month, day, name, region, country, note, important, dynamic, url)
+						VALUES
+						(:month, :day, :name, :region, :country, :note, :important, :dynamic, :url)',
+						array(
+							'month'		=> $iMonth,
+							'day'		=> $iDay,
+							'name'		=> utf8_decode($aHoliday['name']),
+							'region'	=> $aHoliday['region'],
+							'country'	=> $aHoliday['country'],
+							'note'		=> $aHoliday['note'],
+							'important'	=> $aHoliday['important'],
+							'dynamic'	=> $aHoliday['dynamic'],
+							'url'		=> $aHoliday['url'],
+						)
+					)) {
+						die(var_dump($aHoliday));
+					}
+				}
+			}
+		}
+
+		echo 'done.';
 	}
 }
