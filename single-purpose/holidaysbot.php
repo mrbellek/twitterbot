@@ -212,7 +212,7 @@ class HolidaysBot {
 
 			} else {
 
-				return $this->query('SELECT * FROM holidays');
+				return $this->query('SELECT * FROM holidays ORDER BY month, day');
 			}
 		} catch (Exception $e) {
 			$aError = $sth->errorInfo();

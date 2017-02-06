@@ -265,7 +265,7 @@ $iCount = $aCount['FOUND_ROWS()'];
 				<div class="form-group">
 					<label for="year" class="col-sm-2 control-label">Year</label>
 					<div class="col-sm-10">
-                        <input type="text" id="year" name="year" class="form-control" value="<?= @$aData['year'] ?>" />
+                        <input type="text" id="year" name="year" class="form-control" value="<?= (@$aData['year'] > 0 ? $aData['year'] : '') ?>" />
 					</div>
 				</div>
 
@@ -306,7 +306,7 @@ $iCount = $aCount['FOUND_ROWS()'];
 				</div>
 
 				<div class="form-group">
-					<label for="note" class="col-sm-2 control-label">Note</label>
+					<label for="note" class="col-sm-2 control-label">Note/by</label>
 					<div class="col-sm-10">
 						<input type="text" id="note" name="note" class="form-control" value="<?= @$aData['note'] ?>" />
 					</div>
