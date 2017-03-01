@@ -20,7 +20,7 @@ require_once('holidaysbot.inc.php');
  *   v lee-jackson day is 0 januari?
  *   x watch out for holidays involving easter that span multiple years
  * v holidays that only occur on some years
- *   . chinese calendar: http://stackoverflow.com/questions/23181668/convert-gregorian-to-chinese-lunar-calendar
+ *   v chinese calendar: http://stackoverflow.com/questions/23181668/convert-gregorian-to-chinese-lunar-calendar
  * ? international/worldwide note, and remove from name
  * - implement 'parrot' function to repeat something said to bot by someone it follows
  * - replace 'England' with 'England, United Kingdom'?
@@ -234,10 +234,18 @@ class HolidaysBot {
 			return FALSE;
 		}
 
+        //get all holidays for today
 		$aTodayHolidays = $this->getAllHolidays(date('n'), date('j'));
 
-		//for dynamic holidays, find date and add to list if today
-		foreach ($aHolidays as $aHoliday) {
+        //remove any dynamic holidays
+        foreach ($aTodayHolidays as $key => $aHoliday) {
+            if ($aHoliday['dynamic']) {
+                unset($aTodayHolidays[$key]);
+            }
+        }
+
+		//for all dynamic holidays, find date and add back to list if today
+		foreach ($aHolidays as $key => $aHoliday) {
 
 			if ($aHoliday['dynamic']) {
 
@@ -755,7 +763,6 @@ class HolidaysBot {
 							'url'		=> $aHoliday['url'],
 						)
 					)) {
-						die(var_dump($aHoliday));
 					}
 				}
 			}
