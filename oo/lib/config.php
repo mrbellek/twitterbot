@@ -1,6 +1,7 @@
 <?php
 namespace Twitterbot\Lib;
 use Twitterbot\Lib\Logger;
+use \stdClass;
 
 /**
  * Config class - store and retrieve persistent settings

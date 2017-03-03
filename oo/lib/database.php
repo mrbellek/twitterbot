@@ -1,6 +1,7 @@
 <?php
 namespace Twitterbot\Lib;
 use \PDO;
+use \Exception;
 
 /**
  * Database class, connect to database and run queries
@@ -14,21 +15,108 @@ class Database extends Base
      */
     public function connect()
     {
-        //connect to database
 		try {
-			$this->oPDO = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS);
+            //basic dns check to prevent warnings
+            if (gethostbyname(DB_HOST) == DB_HOST) {
+                throw new Exception ('database hostname not found');
+            }
+
+            //connect to database
+            $this->oPDO = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USER, DB_PASS, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            ]);
 		} catch(Exception $e) {
 			$this->logger->write(2, sprintf('Database connection failed. (%s)', $e->getMessage()));
 			$this->logger->output(sprintf('- Database connection failed. (%s)', $e->getMessage()));
 
-			return false;
+            die();
 		}
 
         return true;
     }
 
     /**
+     * Generic query function wrapper
+     *
+     * @param string $sQuery - mysql query
+     * @param array $aData - data for placeholders
+     *
+     * @return mixed
+     */
+    public function query($sQuery, $aData = [])
+    {
+        if (empty($this->oPDO)) {
+            $this->connect();
+        }
+
+        try {
+            //create statement
+            if($sth = $this->oPDO->prepare($sQuery)) {
+
+                foreach ($aData as $key => $value) {
+                    //prefix colon
+                    $key = (substr($key, 0, 1) == ':' ? $key : ':' . $key);
+
+                    //bind as int if it looks like a number
+                    if (is_numeric($value)) {
+                        $sth->bindValue($key, $value, PDO::PARAM_INT);
+                    } else {
+                        $sth->bindValue($key, $value, PDO::PARAM_STR);
+                    }
+                }
+
+                //run query
+                $sth->execute();
+            }
+        } catch(Exception $e) {
+            $this->logger->write(sprintf('FATAL: %s (query: %s with data %s', $e->getMessage(), $sQuery, var_export($aData, true)));
+            $this->logger->output('FATAL: %s (query: %s with data %s', $e->getMessage(), $sQuery, var_export($aData, true));
+
+            return false;
+        }
+
+        //what to return?
+        $sQueryTemp = preg_replace('/^\s+/', '', strtolower($sQuery));
+        if (strpos($sQueryTemp, 'insert') === 0) {
+            //insert, return insert id
+            return $this->oPDO->lastInsertId();
+
+        } elseif (strpos($sQueryTemp, 'delete') === 0) {
+            //delete, return bool
+            return true;
+
+        } elseif (strpos($sQueryTemp, 'update') === 0) {
+            //update, return bool
+            return true;
+
+        } elseif (strpos($sQueryTemp, 'replace') === 0) {
+            //replace into, return bool
+            return true;
+
+        } else {
+            //assume select, return rows
+            return $sth->fetchAll();
+        }
+    }
+
+    public function query_single($sQuery, $aData = [])
+    {
+        $aResult = $this->query($sQuery, $aData);
+
+        return $aResult[0];
+    }
+
+    public function query_value($sQuery, $aData = [])
+    {
+        $aResult = $this->query($sQuery, $aData);
+
+        return reset($aResult[0]);
+    }
+
+    /**
      * Wrapper for fetching record and updating postcount
+     * TODO: refactor this using above generic query() function
      *
      * @param config:db_settings
      * @param config:post_only_once
@@ -107,6 +195,7 @@ class Database extends Base
 
     /**
      * Get random record from database with lowest postcount
+     * TODO: refactor this using above generic query() function
      *
      * @return array|false
      */
@@ -140,6 +229,7 @@ class Database extends Base
 
     /**
      * Get random unposted record from database
+     * TODO: refactor this using above generic query() function
      *
      * @return array|false
      */

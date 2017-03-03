@@ -32,10 +32,10 @@ class Tweet extends Base
                 //TODO: why array_shift for just the first one? twitter API supports up to 4 attachments
                 $sMediaId = array_shift($this->aMediaIds);
                 $this->logger->output('Tweeting: [%dch] %s (with attachment)', strlen($sTweet), utf8_decode($sTweet));
-                //$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true, 'media_ids' => $sMediaId));
+                $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true, 'media_ids' => $sMediaId));
             } else {
                 $this->logger->output('Tweeting: [%dch] %s', strlen($sTweet), utf8_decode($sTweet));
-                //$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true));
+                $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true));
             }
             if (isset($oRet->errors)) {
                 $this->logger->write(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message), array('tweet' => $sTweet));

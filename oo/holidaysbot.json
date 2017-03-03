@@ -1,0 +1,48 @@
+{
+    "formats": {
+        "Today is :name :url": {
+            "country": false,
+            "region": false,
+            "note": false
+        },
+        "Today is :name in :country :url": {
+            "country": true,
+            "region": false,
+            "note": false
+        },
+        "Today is :name in :region :url": {
+            "country": false,
+            "region": true,
+            "note": false
+        },
+        "Today is :name in :region (:country) :url": {
+            "country": true,
+            "region": true,
+            "note": false
+        },
+        "Today, :name is celebrated by :note :url": {
+            "country": false,
+            "region": false,
+            "note": true
+        },
+        "Today, :name is celebrated by :note in :country :url": {
+            "country": true,
+            "region": false,
+            "note": true
+        },
+        "Today, :name is celebrated by :note in :region (:country) :url": {
+            "country": true,
+            "region": true,
+            "note": true
+        }
+    },
+    "lastrun": {
+        "date": "2017-03-01",
+        "posted": [
+            "03a44e555fadea772b895e1fcc8ac990eeabb02a",
+            "8e0dfe86d43d67d52cb56e103d95be3a1a9d09de",
+            "74f8074dd5256462e66eb01765b13ee72729e125",
+            "172d6cc5714fde6b4d10d0697e9993040f849daa"
+        ]
+    }
+}
