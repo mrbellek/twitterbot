@@ -3,6 +3,11 @@ define('DS', DIRECTORY_SEPARATOR);
 define('DOCROOT', __DIR__ . DS);
 define('NAMESPACE_PREFIX', 'Twitterbot\\');
 
+//stop xdebug from being an ass
+ini_set('xdebug.var_display_max_data', 1024 * 100);
+ini_set('xdebug.var_display_max_depth', 1024);
+ini_set('xdebug.var_display_max_children', 1024 * 100);
+
 spl_autoload_register(function($sClass)
 {
     $sClassFile = DOCROOT . str_replace('\\', DS, strtolower(str_replace(NAMESPACE_PREFIX, '', $sClass) . '.php'));

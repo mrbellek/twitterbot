@@ -18,11 +18,11 @@ x stoptextingall
 
 single-purpose:
 x benjaminfrgates
-- bitcoinpizza
-- dstbot
+v bitcoinpizza
+. dstbot
 - exactotweet
-- gameswithgold
-- holidaysbot
+v gameswithgold
+v holidaysbot
 x ialwayswin
 x tvgraphs
 - unicodebot
@@ -30,4 +30,6 @@ x tvgraphs
 
 general:
 v dependency injection instead of set('oConfig', $oConfig)
-. keep track of last item processed in last run
+v keep track of last item processed in last run
+v logger writing to database
+- logview

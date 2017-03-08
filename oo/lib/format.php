@@ -89,7 +89,7 @@ class Format extends Base
             }
         }
 
-        return $sTweet;
+        return trim($sTweet);
     }
 
     /**
@@ -169,7 +169,7 @@ class Format extends Base
             if (isset($mReturn->$sNode)) {
                 $mReturn = $mReturn->$sNode;
             } else {
-                $mReturn = $oValue->default;
+                $mReturn = (!empty($oValue->default) ? $oValue->default : '');
                 break;
             }
         }

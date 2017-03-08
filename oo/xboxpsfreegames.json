@@ -1,0 +1,32 @@
+{
+    "formats": {
+        "xbox": {
+            "start": "[:platform] Starting today, :game is free for #Xbox Live Gold members - :link",
+            "stop": "[:platform] Today is the last day :game is free for #Xbox Live Gold members - :link",
+            "default_link": "http://www.xbox.com/en-US/live/games-with-gold"
+        },
+        "psn": {
+            "start": "[:platform] Starting today, :game is free for members with #Playstation Plus - :link",
+            "stop": "[:platform] Starting today, :game is free for members with #Playstation Plus - :link",
+            "default_link": "http://www.playstation.com/en-us/explore/playstation-plus/"
+        }
+    },
+    "source": "json",
+    "format": "dummy",
+    "tweet_vars": {
+        "0": {
+            "var": ":platform",
+            "value": "platform"
+        },
+        "1": {
+            "var": ":game",
+            "value": "game",
+            "truncate": true
+        },
+        "2": {
+            "var": ":link",
+            "value": "link"
+        }
+    }
+}
+
