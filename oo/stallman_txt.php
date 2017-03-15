@@ -25,12 +25,13 @@ class StallmanTxt {
         $oConfig = new Config;
         if ($oConfig->load($this->sUsername)) {
 
+            $this->db = (new Database($oConfig));
+
             if ((new Ratelimit($oConfig))->check()) {
 
                 if ((new Auth($oConfig))->isUserAuthed($this->sUsername)) {
 
-                    $aRecord = (new Database($oConfig))
-                        ->getRecord();
+                    $aRecord = $this->db->getRecord();
 
                     if ($aRecord) {
                         $sTweet = (new Format($oConfig))

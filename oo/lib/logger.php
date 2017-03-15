@@ -90,8 +90,31 @@ class Logger
         call_user_func_array('printf', $aArgs);
     }
 
-    public function getAll()
+    public function view()
     {
-        //fetch from database
+        $this->getDatabase();
+
+        return $this->db->query('
+            SELECT *
+            FROM twitterlog
+            ORDER BY timestamp DESC'
+        );
+
+    }
+
+    public function search($sSearch)
+    {
+        $this->getDatabase();
+
+        return $this->db->query('
+            SELECT *
+            FROM twitterlog
+            WHERE botname LIKE :search
+            OR error LIKE :search
+            OR level LIKE :search
+            OR file LIKE :search
+            ORDER BY timestamp DESC',
+            [':search' => '%' . $sSearch . '%']
+        );
     }
 }

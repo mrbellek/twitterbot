@@ -22,7 +22,7 @@ v bitcoinpizza
 . dstbot
 - exactotweet
 v gameswithgold
-v holidaysbot
+. holidaysbot - admin page has unicode errors + test whole thing
 x ialwayswin
 x tvgraphs
 - unicodebot
@@ -32,4 +32,4 @@ general:
 v dependency injection instead of set('oConfig', $oConfig)
 v keep track of last item processed in last run
 v logger writing to database
-- logview
+v logview

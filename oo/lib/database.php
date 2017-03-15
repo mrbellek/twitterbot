@@ -5,9 +5,19 @@ use \Exception;
 
 /**
  * Database class, connect to database and run queries
+ *
+ * NOTE: do not use Logger::write here since there's a very high chance of
+ * ending up in an infinite loop and stuff.
  */
 class Database extends Base
 {
+    public function __construct($oConfig)
+    {
+        //override default constructor because we don't need a TwitterAPI object
+        $this->oConfig = $oConfig;
+        $this->logger = new Logger;
+    }
+
     /**
      * Connect to database (PDO)
      *
@@ -15,6 +25,8 @@ class Database extends Base
      */
     public function connect()
     {
+        $this->checkConfig();
+
 		try {
             //basic dns check to prevent warnings
             if (gethostbyname(DB_HOST) == DB_HOST) {
@@ -27,11 +39,13 @@ class Database extends Base
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             ]);
 		} catch(Exception $e) {
-			$this->logger->write(2, sprintf('Database connection failed. (%s)', $e->getMessage()));
+            //do not write to logger since database connection is down lol
 			$this->logger->output(sprintf('- Database connection failed. (%s)', $e->getMessage()));
 
-            die();
+            die('FATAL' . PHP_EOL);
 		}
+
+        $this->checkDatabase();
 
         return true;
     }
@@ -70,7 +84,6 @@ class Database extends Base
                 $sth->execute();
             }
         } catch(Exception $e) {
-            $this->logger->write(sprintf('FATAL: %s (query: %s with data %s', $e->getMessage(), $sQuery, var_export($aData, true)));
             $this->logger->output('FATAL: %s (query: %s with data %s', $e->getMessage(), $sQuery, var_export($aData, true));
 
             return false;
@@ -114,9 +127,84 @@ class Database extends Base
         return reset($aResult[0]);
     }
 
+    private function checkConfig()
+    {
+		if (!defined('DB_HOST') || !defined('DB_NAME') ||
+			!defined('DB_USER') || !defined('DB_PASS')) {
+
+			$this->logger->output('- One or more of the MySQL database credentials are missing, halting.');
+
+			return false;
+		}
+
+        if (!$this->oConfig) {
+            return true;
+        }
+
+        $this->oDbConf = $this->oConfig->get('db_settings');
+        if (empty($this->oDbConf->table) ||
+            empty($this->oDbConf->idcol) ||
+            empty($this->oDbConf->countercol) ||
+            empty($this->oDbConf->timestampcol)) {
+
+			$this->logger->output('- One or more of the database table settings are missing, halting.');
+
+			return false;
+		}
+
+        return true;
+    }
+
+    private function checkDatabase()
+    {
+        if (!$this->oConfig || !$this->oDbConf) {
+            return false;
+        }
+
+        $aTable = $this->query('SELECT 1
+            FROM information_schema.TABLES
+            WHERE TABLE_SCHEMA = :database
+            AND TABLE_NAME = :table',
+            [
+                ':database' => DB_NAME,
+                ':table' => $this->oDbConf->table,
+            ]
+        );
+
+        if (!$aTable) {
+            $this->logger->output('- Configured database table "%s" does not exist!', $this->oDbConf->table);
+
+            die('FATAL');
+        }
+
+        foreach (['idcol', 'countercol', 'timestampcol'] as $sColumn) {
+            $aTable = $this->query('SELECT 1
+                FROM information_schema.COLUMNS
+                WHERE TABLE_SCHEMA = :database
+                AND TABLE_NAME = :table
+                AND COLUMN_NAME = :column',
+                [
+                    ':database' => DB_NAME,
+                    ':table' => $this->oDbConf->table,
+                    ':column' => $this->oDbConf->{$sColumn},
+                ]
+            );
+
+            if (!$aTable) {
+                $this->logger->output('- Configured database column "%s" does not exist in table "%s"!',
+                    $this->oDbConf->{$sColumn},
+                    $this->oDbConf->table
+                );
+
+                die('FATAL');
+            }
+        }
+
+        return true;
+    }
+
     /**
      * Wrapper for fetching record and updating postcount
-     * TODO: refactor this using above generic query() function
      *
      * @param config:db_settings
      * @param config:post_only_once
@@ -131,27 +219,6 @@ class Database extends Base
 
 		$this->logger->output('Getting random record from database..');
 
-		if (!defined('DB_HOST') || !defined('DB_NAME') ||
-			!defined('DB_USER') || !defined('DB_PASS')) {
-
-			$this->logger->write(2, 'MySQL database credentials missing.');
-			$this->logger->output('- One or more of the MySQL database credentials are missing, halting.');
-
-			return false;
-		}
-
-        $this->oDbConf = $this->oConfig->get('db_settings');
-        if (empty($this->oDbConf->table) ||
-            empty($this->oDbConf->idcol) ||
-            empty($this->oDbConf->countercol) ||
-            empty($this->oDbConf->timestampcol)) {
-
-			$this->logger->write(2, 'Database table settings missing.');
-			$this->logger->output('- One or more of the database table settings are missing, halting.');
-
-			return false;
-		}
-
         //get random record
         if ($this->oConfig->get('post_only_once', false)) {
             $aRecord = $this->getRandomUnpostedRecord();
@@ -163,73 +230,53 @@ class Database extends Base
             $this->logger->output("- Fetched record that has been posted %d times before.", $aRecord['postcount']);
 
             //update record with postcount and timestamp of last post
-            $sth = $this->oPDO->prepare(sprintf('
-                UPDATE %1$s
-                SET %3$s = %3$s + 1,
-                    %4$s = NOW()
-                WHERE %2$s = :id
-                LIMIT 1',
-                $this->oDbConf->table,
-                $this->oDbConf->idcol,
-                $this->oDbConf->countercol,
-                $this->oDbConf->timestampcol
-            ));
-
-            $sth->bindValue(':id', $aRecord[$this->oDbConf->idcol], PDO::PARAM_INT);
-            if ($sth->execute() == false) {
-                $this->logger->write(2, sprintf('Update query failed. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
-                $this->logger->output(sprintf('- Update query failed, halting. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
-
-                return false;
-            }
-
-            return $aRecord;
-
-        } else {
-            $this->logger->write(3, 'Query yielded no results.');
-            $this->logger->output('- Select query yielded no records, halting.');
-
-            return false;
+            return $this->query(sprintf('
+                    UPDATE %1$s
+                    SET %3$s = %3$s + 1,
+                        %4$s = NOW()
+                    WHERE %2$s = :id
+                    LIMIT 1',
+                    $this->oDbConf->table,
+                    $this->oDbConf->idcol,
+                    $this->oDbConf->countercol,
+                    $this->oDbConf->timestampcol
+                ),
+                [':id' => $aRecord[$this->oDbConf->idcol]]
+            );
         }
     }
 
     /**
      * Get random record from database with lowest postcount
-     * TODO: refactor this using above generic query() function
      *
      * @return array|false
      */
     private function getRandomRecord()
     {
+        if (empty($this->oPDO)) {
+            $this->connect();
+        }
+
         $this->logger->output('- Fetching random record with lowest postcount..');
 
         //fetch random record out of those with the lowest counter value
-        $sth = $this->oPDO->prepare(sprintf('
-            SELECT *
-            FROM %1$s
-            WHERE %2$s = (
-                SELECT MIN(%2$s)
+        return $this->query(sprintf('
+                SELECT *
                 FROM %1$s
+                WHERE %2$s = (
+                    SELECT MIN(%2$s)
+                    FROM %1$s
+                )
+                ORDER BY RAND()
+                LIMIT 1',
+                $this->oDbConf->table,
+                $this->oDbConf->countercol
             )
-            ORDER BY RAND()
-            LIMIT 1',
-            $this->oDbConf->table,
-            $this->oDbConf->countercol
-        ));
-
-		if ($sth->execute() == false) {
-			$this->logger->write(2, sprintf('Select query failed. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
-			$this->logger->output(sprintf('- Select query failed, halting. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
-
-			return false;
-		}
-
-        return $sth->fetch(PDO::FETCH_ASSOC);
+        );
     }
 
     /**
      * Get random unposted record from database
-     * TODO: refactor this using above generic query() function
      *
      * @return array|false
      */
@@ -238,23 +285,15 @@ class Database extends Base
         $this->logger->output('- Fetching random unposted record..');
 
         //fetch random unposted record
-        $sth = $this->oPDO->prepare(sprintf('
-            SELECT *
-            FROM %1$s
-            WHERE %2$s = 0
-            ORDER BY RAND()
-            LIMIT 1',
-            $this->oDbConf->table,
-            $this->oDbConf->countercol
-        ));
-
-		if ($sth->execute() == false) {
-			$this->logger->write(2, sprintf('Select query failed. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
-			$this->logger->output(sprintf('- Select query failed, halting. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
-
-			return false;
-		}
-
-        return $sth->fetch(PDO::FETCH_ASSOC);
+        return $this->query(sprintf('
+                SELECT *
+                FROM %1$s
+                WHERE %2$s = 0
+                ORDER BY RAND()
+                LIMIT 1',
+                $this->oDbConf->table,
+                $this->oDbConf->countercol
+            )
+        );
     }
 }
