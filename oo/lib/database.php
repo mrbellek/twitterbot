@@ -227,10 +227,10 @@ class Database extends Base
         }
 
         if ($aRecord) {
-            $this->logger->output("- Fetched record that has been posted %d times before.", $aRecord['postcount']);
+            $this->logger->output("- Fetched record that has been posted %d times before.", $aRecord[$this->oDbConf->countercol]);
 
             //update record with postcount and timestamp of last post
-            return $this->query(sprintf('
+            $this->query(sprintf('
                     UPDATE %1$s
                     SET %3$s = %3$s + 1,
                         %4$s = NOW()
@@ -243,6 +243,8 @@ class Database extends Base
                 ),
                 [':id' => $aRecord[$this->oDbConf->idcol]]
             );
+
+            return $aRecord;
         }
     }
 
@@ -260,7 +262,7 @@ class Database extends Base
         $this->logger->output('- Fetching random record with lowest postcount..');
 
         //fetch random record out of those with the lowest counter value
-        return $this->query(sprintf('
+        return $this->query_single(sprintf('
                 SELECT *
                 FROM %1$s
                 WHERE %2$s = (
@@ -285,7 +287,7 @@ class Database extends Base
         $this->logger->output('- Fetching random unposted record..');
 
         //fetch random unposted record
-        return $this->query(sprintf('
+        return $this->query_single(sprintf('
                 SELECT *
                 FROM %1$s
                 WHERE %2$s = 0

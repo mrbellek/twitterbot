@@ -4,11 +4,12 @@ namespace Twitterbot\Lib;
 /**
  * Format class - formats objects into a tweet according to settings
  *
- * @param config:source database/rss where record came from, needed for handling format settings
+ * @param config:source - database/rss where record came from, needed for handling format settings
  * @param config:max_tweet_length
  * @param config:short_url_length
- * @param config:tweet_vars variables present in tweet and their values
- * @param config:format unformatted tweet string
+ * @param config:tweet_vars - variables present in tweet and their values
+ * @param config:format - unformatted tweet string
+ * @param config:allow_mentions - allow tweets to mention other users
  */
 class Format extends Base
 {
@@ -57,6 +58,11 @@ class Format extends Base
             }
         }
 
+        //disable mentions if needed
+        if (!$this->oConfig->get('allow_mentions', false)) {
+            $sTweet = str_replace('@', '@/', $sTweet);
+        }
+
         //determine maximum length left over for truncated field (links are shortened to t.co format of max 22 chars)
         $sTempTweet = preg_replace('/http:\/\/\S+/', str_repeat('x', $iShortUrlLength), $sTweet);
         $sTempTweet = preg_replace('/https:\/\/\S+/', str_repeat('x', $iShortUrlLength + 1), $sTempTweet);
@@ -71,6 +77,11 @@ class Format extends Base
 
                 //get text to replace placeholder with
                 $sText = html_entity_decode($this->getRssValue($oRecord, $oTweetVar), ENT_QUOTES, 'UTF-8');
+
+                //disable mentions if needed
+                if (!$this->oConfig->get('allow_mentions', false)) {
+                    $sText = str_replace('@', '@/', $sText);
+                }
 
                 //get length of text with url shortening
                 $sTempText = preg_replace('/http:\/\/\S+/', str_repeat('x', $iShortUrlLength), $sText);
@@ -115,6 +126,11 @@ class Format extends Base
             }
         }
 
+        //disable mentions if needed
+        if (!$this->oConfig->get('allow_mentions', false)) {
+            $sTweet = str_replace('@', '@/', $sTweet);
+        }
+
         //determine maximum length left over for truncated field (links are shortened to t.co format of max 22 chars)
         $sTempTweet = preg_replace('/http:\/\/\S+/', str_repeat('x', $iShortUrlLength), $sTweet);
         $sTempTweet = preg_replace('/https:\/\/\S+/', str_repeat('x', $iShortUrlLength + 1), $sTempTweet);
@@ -129,6 +145,11 @@ class Format extends Base
 
                 //get text to replace placeholder with
                 $sText = html_entity_decode($aRecord[$oTweetVar->recordfield], ENT_QUOTES, 'UTF-8');
+
+                //disable mentions if needed
+                if (!$this->oConfig->get('allow_mentions', false)) {
+                    $sText = str_replace('@', '@/', $sText);
+                }
 
                 //get length of text with url shortening
                 $sTempText = preg_replace('/http:\/\/\S+/', str_repeat('x', $iShortUrlLength), $sText);

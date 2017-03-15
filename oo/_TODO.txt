@@ -13,7 +13,7 @@ v notesscraper
 . rbuttcoin
 . rgonewild
 . rnsfw
-. stallman_txt
+v stallman_txt
 x stoptextingall
 
 single-purpose:
@@ -33,3 +33,5 @@ v dependency injection instead of set('oConfig', $oConfig)
 v keep track of last item processed in last run
 v logger writing to database
 v logview
+- database class altijd laden in lib\Base? dan kan logger->write() ook altijd
+. config::allow_mentions implementeren in lib\Format, default false, toepassen in dstnotify, rbimbofetish, ..?
