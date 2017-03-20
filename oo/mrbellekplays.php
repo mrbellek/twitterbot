@@ -46,8 +46,7 @@ class MrbellekPlays
                     if (isset($aSteamStatus['status'])) {
                         $this->logger->output('- Steam: %s', $aSteamStatus['status']);
                     } else {
-                        $this->logger->output('- Steam: invalid status, halting');
-                        return false;
+                        $this->logger->output('- Steam: invalid status');
                     }
 
                     $this->logger->output('Fetching current status on Xbox Live..');
@@ -56,8 +55,7 @@ class MrbellekPlays
                     if (isset($aXboxStatus['status'])) {
                         $this->logger->output('- Xbox: %s', $aXboxStatus['status']);
                     } else {
-                        $this->logger->output('- Xbox: invalid status, halting');
-                        return false;
+                        $this->logger->output('- Xbox: invalid status');
                     }
 
                     $sLastStatus = $this->oConfig->get('laststatus');
@@ -193,6 +191,7 @@ class MrbellekPlays
         $oResult = json_decode($sResult);
         curl_close($oCurl);
 
+        //$oResult = json_decode(preg_replace('/\\\u\S+/', '', '{"xuid":2533274827047006,"state":"Offline","lastSeen":{"deviceType":"XboxOne","titleId":714681658,"titleName":"Home","timestamp":"2017-03-19T21:56:10.8286148Z"}}'));
         //$oResult = json_decode(preg_replace('/\\\u\S+/', '', '{"xuid":2533274827047006,"state":"Offline","lastSeen":{"deviceType":"Xbox360","titleId":1464993871,"titleName":"LEGO\u00ae Marvel\'s Avengers","timestamp":"2017-03-12T21:21:24.0313969Z"}}'));
         //$oResult = json_decode(preg_replace('/\\\u\S+/', '', '{"xuid":2533274929739371,"state":"Online","devices":[{"type":"XboxOne","titles":[{"id":714681658,"name":"Home","placement":"Background","state":"Active","lastModified":"2017-03-14T09:53:09.6990805Z"},{"id":345903534,"activity":{"richPresence":"Idle"},"name":"Minecraft: Xbox One Edition","placement":"Full","state":"Active","lastModified":"2017-03-14T09:53:09.6990805Z"}]}]}'));
         //
@@ -216,21 +215,26 @@ class MrbellekPlays
                 //add a space between 'XboxOne' or 'Xbox360'
                 $sDevice = str_replace('Xbox', 'Xbox ', $oResult->lastSeen->deviceType);
 
-                $sPlayed = $oResult->lastSeen->titleName;
+                //don't show 'playing x' for non-games
+                if (!in_array(strtolower($oResult->lastSeen->titleName), ['home', 'xbox app'])) {
+                    $sPlayed = sprintf('playing %s', $oResult->lastSeen->titleName);
+                } else {
+                    $sPlayed = '';
+                }
 
                 $iLastOnline = time() - strtotime($oResult->lastSeen->timestamp);
                 if ($iLastOnline < 60) {
                     //last online less than 1 minute ago, show in seconds
-                    $sAgo = sprintf('Last online %d seconds ago playing %s on %s.', $iLastOnline, $sPlayed, $sDevice);
+                    $sAgo = sprintf('Last online %d seconds ago %s on %s.', $iLastOnline, $sPlayed, $sDevice);
                 } elseif ($iLastOnline < 3600) {
                     //last online less than 1 hour ago, show in minutes
-                    $sAgo = sprintf('Last online %d minutes ago playing %s on %s.', ($iLastOnline / 60), $sPlayed, $sDevice);
+                    $sAgo = sprintf('Last online %d minutes ago %s on %s.', ($iLastOnline / 60), $sPlayed, $sDevice);
                 } elseif ($iLastOnline < 24 * 3600) {
                     //last online less than 1 day ago, show in hours
-                    $sAgo = sprintf('Last online %d hours ago playing %s on %s.', ($iLastOnline / 3600), $sPlayed, $sDevice);
+                    $sAgo = sprintf('Last online %d hours ago %s on %s.', ($iLastOnline / 3600), $sPlayed, $sDevice);
                 } else {
                     //show in days
-                    $sAgo = sprintf('Last online %d days ago playing %s on %s.', ($iLastOnline / (24 * 3600)), $sPlayed, $sDevice);
+                    $sAgo = sprintf('Last online %d days ago %s on %s.', ($iLastOnline / (24 * 3600)), $sPlayed, $sDevice);
                 }
             } else {
 
@@ -239,7 +243,7 @@ class MrbellekPlays
             }
 
             return [
-                'status' => trim(sprintf('%s is currently %s on Xbox Live. %s', $sGamerTag, $sStatus, $sAgo)),
+                'status' => trim(preg_replace('/\s+/', ' ', sprintf('%s is currently %s on Xbox Live. %s', $sGamerTag, $sStatus, $sAgo))),
                 'playing_now' => false,
                 'game' => 'offline',
             ];

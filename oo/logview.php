@@ -53,6 +53,7 @@ $aBots = [
     'AppNeeds',
     'HolidaysBot',
     'ObamaReplay',
+    'mrbellekplays',
 
     //inactive/suspended
     '10millioncombos',
