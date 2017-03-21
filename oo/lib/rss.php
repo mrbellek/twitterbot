@@ -65,7 +65,7 @@ class Rss extends Base
                 $sTimestamp = $this->getRssNodeField($oNode, $oFeed->timestamp_field);
 
                 //remove node from list if timestamp is older than newest timestamp from last run
-                if (is_numeric($sTimestamp) && $sTimestamp > 0 && $sTimestamp < $sLastMaxTimestamp) {
+                if (is_numeric($sTimestamp) && $sTimestamp > 0 && $sTimestamp <= $sLastMaxTimestamp) {
                     unset($oNodes[$key]);
                 }
             }
@@ -86,6 +86,7 @@ class Rss extends Base
             //save in settings
             if ($sNewestTimestamp > 0) {
                 $this->oConfig->set('last_max_timestamp', $sNewestTimestamp);
+                $this->oConfig->writeConfig();
             }
         }
 
