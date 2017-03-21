@@ -10,8 +10,11 @@ use Twitterbot\Lib\Database;
 use Twitterbot\Lib\Format;
 use Twitterbot\Lib\Tweet;
 
-(new NotesFromBtc)->run();
-//(new NotesScraper)->run();
+if (!empty($argv[1]) && $argv[1] == 'scrape') {
+    (new NotesScraper)->run();
+} else {
+    (new NotesFromBtc)->run();
+}
 
 class NotesFromBtc {
 

@@ -259,6 +259,8 @@ class Format extends Base
                     //reddit hosted file
                     $sResult = 'image';
                     $bAttachFile = true;
+                    //ampersands seem to get mangled in posting, messing up the checksum
+                    $sSubject = str_replace('&amp;', '&', $sSubject);
                 } elseif (preg_match('/imgur\.com\/a\//i', $sSubject)) {
                     //multiple images on imgur.com page
                     $sResult = 'gallery';
