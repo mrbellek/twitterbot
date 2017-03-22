@@ -56,13 +56,13 @@ $aBots = [
     'mrbellekplays',
 
     //inactive/suspended
-    '10millioncombos',
-    'StopTextingAll',
-    'lAlwaysWin',
+    //'10millioncombos',
+    //'StopTextingAll',
+    //'lAlwaysWin',
 
     //unfinished
-    'Benjaminfrgates',
-    'TVgraphs',
+    //'Benjaminfrgates',
+    //'TVgraphs',
 ];
 
 ?><!DOCTYPE html>

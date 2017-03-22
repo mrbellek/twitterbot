@@ -1,6 +1,8 @@
 <?php
 namespace Twitterbot\Lib;
 
+use Twitterbot\Custom\Imgur;
+
 /**
  * Format class - formats objects into a tweet according to settings
  *
@@ -263,8 +265,15 @@ class Format extends Base
                     $sSubject = str_replace('&amp;', '&', $sSubject);
                 } elseif (preg_match('/imgur\.com\/a\//i', $sSubject)) {
                     //multiple images on imgur.com page
-                    $sResult = 'gallery';
+                    $sResult = 'album';
                     $bAttachFile = true;
+
+                    //use imgur API here to get number of images in album, set type to [album:n]
+                    if (($iImageCount = (new Imgur)->getAlbumImageCount($sSubject)) && is_numeric($iImageCount) && $iImageCount > 1) {
+                        $sResult = sprintf('album:%d', $iImageCount);
+                    } else {
+                        $sResult = 'album';
+                    }
                 } elseif (preg_match('/instagram\.com\/.[^\/]/i', $sSubject) || preg_match('/instagram\.com\/p\//i', $sSubject)) {
                     //instagram account link or instagram photo
                     $sResult = 'instagram';

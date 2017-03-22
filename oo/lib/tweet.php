@@ -29,10 +29,9 @@ class Tweet extends Base
 
         foreach ($aTweets as $sTweet) {
             if (!empty($this->aMediaIds)) {
-                //TODO: why array_shift for just the first one? twitter API supports up to 4 attachments
-                $sMediaId = array_shift($this->aMediaIds);
+                $sMediaIds = implode(',', $this->aMediaIds);
                 $this->logger->output('Tweeting: [%dch] %s (with attachment)', strlen($sTweet), utf8_decode($sTweet));
-                $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true, 'media_ids' => $sMediaId));
+                $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true, 'media_ids' => $sMediaIds));
             } else {
                 $this->logger->output('Tweeting: [%dch] %s', strlen($sTweet), utf8_decode($sTweet));
                 $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true));
@@ -77,7 +76,7 @@ class Tweet extends Base
     }
 
     /**
-     * Set media ids to be posted with next tweet
+     * Set media ids to be posted with next tweet (max 4)
      *
      * @param array $aMediaIds
      *
@@ -86,6 +85,10 @@ class Tweet extends Base
     public function setMedia($aMediaIds)
     {
         $this->aMediaIds = $aMediaIds;
+
+        if (count($this->aMediaIds) > 4) {
+            $this->aMediaIds = array_slice($aMediaIds, 0, 4);
+        }
 
         return $this;
     }

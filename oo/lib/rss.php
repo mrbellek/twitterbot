@@ -64,7 +64,7 @@ class Rss extends Base
             foreach ($oNodes as $key => $oNode) {
 
                 //get value of timestamp field
-                $sTimestamp = $this->getRssNodeField($oNode, $oFeed->timestamp_field);
+                $sTimestamp = $this->getRssNodeField($oNode, $this->oConfig->get('timestamp_field'));
 
                 //remove node from list if timestamp is older than newest timestamp from last run
                 if (is_numeric($sTimestamp) && $sTimestamp > 0 && $sTimestamp <= $sLastMaxTimestamp) {

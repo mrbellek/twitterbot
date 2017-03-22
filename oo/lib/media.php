@@ -8,6 +8,7 @@
  */
 namespace Twitterbot\Lib;
 
+use Twitterbot\Custom\Imgur;
 use \DOMDocument;
 use \DOMXPath;
 
@@ -62,16 +63,28 @@ class Media extends Base
      */
     public function uploadFromUrl($sUrl, $sType)
     {
+        //albums can have a numeral if they have multiple pics, strip that out for here
+        if (preg_match('/album:\d/', $sType)) {
+            $sType = 'album';
+        }
+
         switch ($sType) {
-            default:
             case 'image':
                 return $this->upload($sUrl);
                 break;
             case 'gallery':
+            case 'album':
                 return $this->uploadFromGallery($sUrl);
                 break;
             case 'instagram':
                 return $this->uploadFromInstagram($sUrl);
+                break;
+            default:
+                if (preg_match('/album:\d/', $sType, $m)) {
+                    $this->uploadFromGallery($sUrl);
+                } else {
+                    $this->upload($sUrl);
+                }
                 break;
         }
     }
@@ -85,28 +98,8 @@ class Media extends Base
      */
     private function uploadFromGallery($sUrl)
     {
-        //imgur implements meta tags that indicate to twitter which urls to use for inline preview
-        //so we're going to use those same meta tags to determine which urls to upload
-        //format: <meta name="twitter:image[0-3]:src" content="http://i.imgur.com/[a-zA-Z0-9].ext"/>
-
-        //march 2016: imgur changed their meta tags, only the first (or random?) image is listed
-        $aImageUrls = array();
-
-        //fetch twitter meta tag values, up to 4
-        libxml_use_internal_errors(true);
-        $oDocument = new DOMDocument();
-        $oDocument->preserveWhiteSpace = false;
-        $oDocument->loadHTML(file_get_contents($sUrl));
-
-        $oXpath = new DOMXpath($oDocument);
-        $oMetaTags = $oXpath->query('//meta[contains(@name,"twitter:image")]');
-        foreach ($oMetaTags as $oTag) {
-            $aImageUrls[] = $oTag->getAttribute('content');
-
-            if (count($aImageUrls) == 4) {
-                break;
-            }
-        }
+        //november 2016: fuck this, use the API
+        $aImageUrls = (new Imgur)->getFourAlbumImages($sUrl);
 
         //if we have at least one image, upload it to attach to tweet
         $aMediaIds = array();
