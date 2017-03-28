@@ -4,6 +4,9 @@ namespace Twitterbot\Custom;
 require('gis.inc.php');
 
 //google image search
+
+//NB: this API is no longer maintained since March 23, 2016 (and deprecated in 2012)
+
 class Gis {
 
     private $sBaseCse = 'https://www.googleapis.com/customsearch/v1';
