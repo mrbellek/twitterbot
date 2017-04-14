@@ -27,6 +27,8 @@ class Media extends Base
     public function upload($sFilePath)
     {
         $this->logger->output(sprintf('Reading file %s..', $sFilePath));
+        /* this code is no longer needed since Abraham\TwitterOAuth takes a filename instead of its contents
+
         $sImageBinary = base64_encode(file_get_contents($sFilePath));
         if ($sImageBinary && strlen($sImageBinary) > 5 * pow(1024, 2)) {
             //max size is 3MB
@@ -37,14 +39,17 @@ class Media extends Base
         }
 
         $oRet = $this->oTwitter->upload('media/upload', array('media' => $sImageBinary));
+        */
+
+        $oRet = $this->oTwitter->upload('media/upload', array('media' => $sFilePath));
         if (isset($oRet->errors)) {
-            $this->logger->write(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message), array('file' => $sFilePath, 'length' => strlen($sImageBinary)));
+            $this->logger->write(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message), array('file' => $sFilePath));
             $this->logger->output('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
 
             return false;
 
         } elseif (isset($oRet->error)) {
-            $this->logger->write(2, sprintf('Twitter API call failed: media/upload(%s)', $oRet->error), array('file' => $sFilePath, 'length' => strlen($sImageBinary)));
+            $this->logger->write(2, sprintf('Twitter API call failed: media/upload(%s)', $oRet->error), array('file' => $sFilePath));
             $this->logger->output(sprintf('- Error: %s', $oRet->error));
         } else {
             $this->logger->output("- Uploaded %s to attach to next tweet", $sFilePath);

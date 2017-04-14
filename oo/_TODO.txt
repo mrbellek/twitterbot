@@ -35,7 +35,10 @@ v logger writing to database
 v logview
 - database class altijd laden in lib\Base? dan kan logger->write() ook altijd
 . config::allow_mentions implementeren in lib\Format, default false, toepassen in dstnotify, rbimbofetish, ..?
-- gebruik maken van abraham/twitteroauth ipv gare stokoude twitteroauth.php
+. gebruik maken van abraham/twitteroauth ipv gare stokoude twitteroauth.php
+  - lijkt te werken, moet nog volledig getest worden
+  - ondersteunt geen mp4/gifv uploads :(
 - lib\format maakt geen gebruik van tweet_vars.x.attach_image
 - attached content is niet uit de tweet gehaald
-- custom\gis omschrijven naar customsearch v2, zie gmail
+x custom\gis omschrijven naar customsearch v2, zie gmail
+- logview geeft geen error levels
