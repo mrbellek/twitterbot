@@ -29,8 +29,8 @@ class Database extends Base
 
 		try {
             //basic dns check to prevent warnings
-            if (gethostbyname(DB_HOST) == DB_HOST) {
-                throw new Exception ('database hostname not found');
+            if (!$this->validIp4OrIp6Hostname(DB_HOST)) {
+                throw new Exception('database hostname not found: ' . DB_HOST);
             }
 
             //connect to database
@@ -147,7 +147,7 @@ class Database extends Base
             empty($this->oDbConf->countercol) ||
             empty($this->oDbConf->timestampcol)) {
 
-			$this->logger->output('- One or more of the database table settings are missing, halting.');
+			$this->logger->output('- One or more of the database table settings are missing.');
 
 			return false;
 		}
@@ -297,5 +297,32 @@ class Database extends Base
                 $this->oDbConf->countercol
             )
         );
+    }
+
+    private function validIp4OrIp6Hostname($host)
+    {
+        if ($this->gethostbyname6($host)) {
+            return true;
+        }
+
+        if (gethostbyname($host) != $host) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private function gethostbyname6($host)
+    {
+        $dns6 = dns_get_record($host, DNS_AAAA);
+        $ipv6 = [];
+        foreach ($dns6 as $record) {
+            switch($record['type']) {
+                //case 'A': $ipv4[] = $record['ip'];
+                case 'AAAA': $ipv6[] = $record['ipv6'];
+            }
+        }
+
+        return count($ipv6) > 0 ? $ipv6[0] : false;
     }
 }
