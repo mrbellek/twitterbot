@@ -56,7 +56,12 @@ class Tweet extends Base
             return false;
         }
 
-        $this->logger->output('Replying: [%dch] %s', strlen($sMessage), utf8_decode($sMessage));
+        $iShortUrlLength = $this->oConfig->get('short_url_length', 23);
+        $sTempReply = preg_replace('/http:\/\/\S+/', str_repeat('x', $iShortUrlLength), $sMessage);
+        $sTempReply = preg_replace('/https:\/\/\S+/', str_repeat('x', $iShortUrlLength + 1), $sTempReply);
+        $iMessageLength = strlen($sTempReply);
+
+        $this->logger->output('Replying: [%dch] %s', $iMessageLength, utf8_decode($sMessage));
         $oRet = $this->oTwitter->post('statuses/update', array(
             'status' => sprintf('@%s %s',
                 $oTweet->user->screen_name,

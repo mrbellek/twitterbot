@@ -16,6 +16,37 @@
             "truncate": true
         }
     },
+    "answers": {
+        "reply_default": "I didn't understand your question! You can ask when #DST starts or ends in any country, or since when it's (not) used.",
+        "reply_no_dst": "%s does not observe #DST. %s",
+        "reply_dst_startstop": "#DST in %s %ss on the %s (%s). %s",
+        "reply_dst_since": "#DST has%s been observed in %s since %s. %s",
+        "reply_dst": "#DST is%s observed in %s. %s",
+        "reply_dst_next": "Next change: %s",
+        "extra_perma_since": "It has permanently been in effect since %d.",
+        "extra_not_since": "It has not since %d.",
+        "extra_more_info": " More info: %s",
+        "extra_perma_always": " DST is permanently in effect.",
+        "extra_perma_never": " DST is permanently not in effect."
+    },
+    "question_keywords": {
+        "next": [
+            "next"
+        ],
+        "start": [
+            "start",
+            "begin"
+        ],
+        "end": [
+            "stop",
+            "end",
+            "over"
+        ],
+        "since": [
+            "since",
+            "when"
+        ]
+    },
     "dst": {
         "europe": {
             "name": "Europe (except Armenia, Belarus, Georgia, Iceland, Russia)",
@@ -790,6 +821,6 @@
             }
         }
     },
-    "last_mentions_timestamp": "2016-11-14 15:50:14",
-    "last_mentions_max_id": "791971456339116033"
+    "last_mentions_timestamp": "2017-04-14 11:01:27",
+    "last_mentions_max_id": "838630385349197824"
 }

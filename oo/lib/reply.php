@@ -74,7 +74,7 @@ class Reply extends Base
             }
         }
 
-        printf('- %d new mentions %s', count($aMentions), ($bOnlyReplyToFriends ? '(from friends)' : ''));
+        $this->logger->output('- %d new mentions %s', count($aMentions), ($bOnlyReplyToFriends ? '(from friends)' : ''));
 
         $this->aMentions = $aMentions;
         $this->oConfig->set('last_mentions_max_id', $iMaxId);

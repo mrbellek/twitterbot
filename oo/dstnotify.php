@@ -5,7 +5,9 @@ require_once('dstnotify.inc.php');
 /**
  * TODO:
  * v check for DST changes now, tomorrow, next week
+ * . post tweets
  * - reply to mentions with questions
+ * - attach picture with visual instructions on what happens to the clock?
  */
 
 use Twitterbot\Lib\Logger;
@@ -14,37 +16,17 @@ use Twitterbot\Lib\Auth;
 use Twitterbot\Lib\Ratelimit;
 use Twitterbot\Lib\Format;
 use Twitterbot\Lib\Tweet;
-
 use Twitterbot\Lib\Reply;
+
+if (!empty($argv[1]) && $argv[1] == 'mentions') {
+    //RUN SCRIPT WITH CLI ARGUMENT 'mentions' TO PARSE & REPLY TO MENTIONS
+    (new DSTNotify)->runMentions();
+} else {
+    (new DSTNotify)->run();
+}
 
 class DSTNotify 
 {
-	private $aAnswerPhrases = array(
-		'reply_default'			=> 'I didn\'t understand your question! You can ask when #DST starts or ends in any country, or since when it\'s (not) used.',
-		'reply_no_dst'			=> '%s does not observe DST. %s',
-									//e.g.: DST starts in Belgium on the last Sunday of March (2015: 29th. 2016: 28th). More info: ..
-		'reply_dst_startstop'	=> '#DST in %s %ss on the %s (%s). %s', 
-									//e.g.: DST has not been observed in Russia since 1947. More info: ...
-		'reply_dst_since'		=> '#DST has%s been observed in %s since %s. %s', 
-									//e.g.: DST is not observed in Mongolia. More info: ...
-		'reply_dst'				=> '#DST is%s observed in %s. %s', 
-									//e.g.: Next DST change is: DST starts in United States etc...
-		'reply_dst_next'		=> 'Next change: %s', 
-
-		'extra_perma_since'		=> 'It has permanently been in effect since %d.',
-		'extra_not_since'		=> 'It has not since %d',
-		'extra_more_info'		=> ' More info: %s',
-		'extra_perma_always'	=> ' DST is permanently in effect.',
-        'extra_perma_never'		=> ' DST is permanently not in effect.',
-	);
-
-    private $aQuestionKeywords = array(
-		'next' => array('next'),                //when is next DST change for..
-		'start' => array('start', 'begin'),     //when does DST start in..
-		'end' => array('stop', 'end' , 'over'), //when does DST end in..
-		'since' => array('since', 'when'),      //since when does .. have DST
-	);
-
     public function __construct()
     {
         $this->sUsername = 'DSTNotify';
@@ -61,12 +43,12 @@ class DSTNotify
                 if ((new Auth($this->oConfig))->isUserAuthed($this->sUsername)) {
 
                     $aTweets = $this->checkDST();
+                    die(var_dumP($aTweets));
 
                     if ($aTweets) {
                         $this->logger->output('Posting %d tweets..', count($aTweets));
                         foreach ($aTweets as $aTweet) {
-                            (new Tweet($this->oConfig))
-                                ->post($aTweet);
+                            (new Tweet($this->oConfig))->post($aTweet);
                         }
                     }
 
@@ -97,9 +79,9 @@ class DSTNotify
         $this->logger->output('Checking for DST start..');
         $aTweets = array();
 
-        $sToday = strtotime(date('Y-m-d UTC'));
+        $sToday = strtotime(gmdate('Y-m-d'));
 
-        //check if any of the countries are switching to DST (summer time) NOW
+        //check if any of the countries are switching to DST (summer time) today
         if ($aGroups = $this->checkDSTStart($sToday)) {
             $aTweets = array_merge($aTweets, $this->formatTweetDST('starting', $aGroups, 'today'));
             $this->logger->output('- %s groups start DST today!', count($aGroups));
@@ -108,7 +90,7 @@ class DSTNotify
             $this->logger->write(5, 'No groups start DST today.');
         }
 
-        //check if any of the countries are switching to DST (summer time) in 24 hours
+        //check if any of the countries are switching to DST (summer time) tomorrow
         if ($aGroups = $this->checkDSTStart($sToday + 24 * 3600)) {
             $aTweets = array_merge($aTweets, $this->formatTweetDST('starting', $aGroups, 'tomorrow'));
             $this->logger->output('- %s groups start DST tomorrow!', count($aGroups));
@@ -128,7 +110,7 @@ class DSTNotify
 
         $this->logger->output('Checking for DST end..');
 
-        //check if any of the countries are switching from DST (winter time) NOW
+        //check if any of the countries are switching from DST (winter time) today
         if ($aGroups = $this->checkDSTEnd($sToday)) {
             $aTweets = array_merge($aTweets, $this->formatTweetDST('ending', $aGroups, 'today'));
             $this->logger->output('- %s groups exit DST today!', count($aGroups));
@@ -137,7 +119,7 @@ class DSTNotify
             $this->logger->write(5, 'No groups exit DST today.');
         }
 
-        //check if any of the countries are switching from DST (winter time) in 24 hours
+        //check if any of the countries are switching from DST (winter time) tomorrow
         if ($aGroups = $this->checkDSTEnd($sToday + 24 * 3600)) {
             $aTweets = array_merge($aTweets, $this->formatTweetDST('ending', $aGroups, 'tomorrow'));
             $this->logger->output('- %s groups exit DST tomorrow!', count($aGroups));
@@ -159,15 +141,15 @@ class DSTNotify
     }
 
     //check if DST starts (summer time start) for any of the countries
-    private function checkDSTStart($iTimestamp) {
-
+    private function checkDSTStart($iTimestamp)
+    {
         $aGroupsDSTStart = array();
         foreach ($this->oConfig->get('dst') as $sGroup => $oSetting) {
 
             if ($sGroup != 'no dst') {
 
                 //convert 'last sunday of march 2014' to timestamp (DST independent)
-                $iDSTStart = strtotime(sprintf('%s %s UTC', $oSetting->start, date('Y')));
+                $iDSTStart = strtotime(sprintf('%s %s', $oSetting->start, date('Y')));
 
                 if ($iDSTStart == $iTimestamp) {
 
@@ -189,7 +171,7 @@ class DSTNotify
             if ($sGroup != 'no dst') {
 
                 //convert 'last sunday of march 2014' to timestamp
-                $iDSTEnd = strtotime(sprintf('%s %s UTC', $oSetting->end, date('Y')));
+                $iDSTEnd = strtotime(sprintf('%s %s', $oSetting->end, date('Y')));
 
                 if ($iDSTEnd == $iTimestamp) {
 
@@ -207,13 +189,13 @@ class DSTNotify
         $aTweets = array();
         foreach ($aGroups as $sGroup => $oSetting) {
 
-            $sCountries = (isset($aGroup['name']) ? $aGroup['name'] : ucwords($sGroup));
+            $sCountries = (isset($oSetting->name) ? $oSetting->name : ucwords($sGroup));
 
-            $aTweets[] = (new Format($this->oConfig))->format((object) array(
+            $aTweets[] = (new Format($this->oConfig))->format((object) [
                 'event' => $sEvent,
                 'delay' => $sDelay,
                 'countries' => $sCountries,
-            ));
+            ]);
         }
 
         return $aTweets;
@@ -224,6 +206,7 @@ class DSTNotify
         //fetch new mentions since last run
         $oReply = new Reply($this->oConfig);
         if ($aMentions = $oReply->getMentions()) {
+
             foreach ($aMentions as $oMention) {
                 $this->replyToMention($oMention);
             }
@@ -233,6 +216,8 @@ class DSTNotify
 
     private function replyToMention($oMention)
     {
+        $aAnswerPhrases = $this->oConfig->get('answers');
+
         //ignore mentions where our name is not at the start of the tweet
         if (stripos($oMention->text, '@' . $this->sUsername) !== 0) {
             return true;
@@ -246,7 +231,7 @@ class DSTNotify
         //find type of question
 		$sEvent = $this->findQuestionType($sQuestion);
         if (!$sEvent) {
-            return $this->replyToQuestion($oMention, $this->aAnswerPhrases['reply_default']);
+            return $this->replyToQuestion($oMention, $aAnswerPhrases->reply_default);
         }
 
 		//find country in question, if any
@@ -257,10 +242,10 @@ class DSTNotify
 
 		if (!$aCountryInfo) {
             //couldn't understand question or find country, default reply
-            return $this->replyToQuestion($oMention, $this->aAnswerPhrases['reply_default']);
+            return $this->replyToQuestion($oMention, $aAnswerPhrases->reply_default);
 		} elseif ($aCountryInfo['group'] == 'no dst') {
             //DST not in effect in target country
-            return $this->replyToQuestion($oMention, sprintf($this->aAnswerPhrases['reply_no_dst'], $aCountryInfo['name'], $sExtra));
+            return $this->replyToQuestion($oMention, sprintf($aAnswerPhrases->reply_no_dst, $aCountryInfo['name'], $sExtra));
 		}
 
 		//reply based on event
@@ -269,7 +254,7 @@ class DSTNotify
 			case 'end':
 
 				//example: #DST [start]s in [Belgium] on the [last sunday of march] ([2015: 29th, 2016: 28th). [More info: ...]
-				return $this->replyToQuestion($oMention, sprintf($this->aAnswerPhrases['reply_dst_startstop'],
+				return $this->replyToQuestion($oMention, sprintf($aAnswerPhrases->reply_dst_startstop,
 					$aCountryInfo['name'],
 					$sEvent,
 					$aCountryInfo[$sEvent],
@@ -284,7 +269,7 @@ class DSTNotify
 				//return $this->replyToQuestion($oMention, sprintf('#DST has%s been observed in %s since %s. %s',
 				if (!empty($aCountryInfo['since'])) {
 
-					return $this->replyToQuestion($oMention, sprintf($this->aAnswerPhrases['reply_dst_since'],
+					return $this->replyToQuestion($oMention, sprintf($aAnswerPhrases->reply_dst_since,
 						($aCountryInfo['group'] == 'no dst' ? ' not' : ''),
 						$aCountryInfo['name'],
 						$aCountryInfo['since'],
@@ -293,7 +278,7 @@ class DSTNotify
 
 				} else {
 
-					return $this->replyToQuestion($oMention, sprintf($this->aAnswerPhrases['reply_dst'],
+					return $this->replyToQuestion($oMention, sprintf($aAnswerPhrases->reply_dst,
 						($aCountryInfo['group'] == 'no dst' ? ' not' : ''),
 						$aCountryInfo['name'],
 						trim($sExtra)
@@ -305,7 +290,7 @@ class DSTNotify
 
 				//'next' event is special: aCountryInfo can either contain start or stop event info
 				//so determine which of the two occurs first from now
-				if (!isset($aCountryInfo['event'])) {
+				if (empty($aCountryInfo['event'])) {
 					$iNextStart = strtotime($aCountryInfo['start'] . ' ' . date('Y'));
 					$iNextStartY = strtotime($aCountryInfo['start'] . ' ' . (date('Y') + 1));
 					$iNextEnd = strtotime($aCountryInfo['end'] . ' ' . date('Y'));
@@ -320,8 +305,8 @@ class DSTNotify
 				}
 
 				//example: Next change: DST starts in United States on the last Sunday of March (2014: 29th, 2015: 28th).
-				return $this->replyToQuestion($oMention, sprintf(sprintf($this->aAnswerPhrases['reply_dst_next'],
-						$this->aAnswerPhrases['reply_dst_startstop']),
+				return $this->replyToQuestion($oMention, sprintf(sprintf($aAnswerPhrases->reply_dst_next,
+						$aAnswerPhrases->reply_dst_startstop),
 					$aCountryInfo['name'],
 					$sEvent,
 					$aCountryInfo[$sEvent],
@@ -331,13 +316,13 @@ class DSTNotify
 		}
 
         //event not understood, send default reply
-        return $this->replyToQuestion($oMention, $this->aAnswerPhrases['reply_default']);
+        return $this->replyToQuestion($oMention, $aAnswerPhrases->reply_default);
     }
 
     private function findQuestionType($sTweet)
     {
         //the order of the arrays at the top of the class is the order we're searching in
-        foreach ($this->aQuestionKeywords as $sEvent => $aWords) {
+        foreach ($this->oConfig->get('question_keywords') as $sEvent => $aWords) {
 			foreach ($aWords as $sWord) {
 				if (stripos($sTweet, $sWord) !== false) {
 					return $sEvent;
@@ -551,15 +536,17 @@ class DSTNotify
 
     private function getExtraInfo($aCountryInfo)
     {
+        $aAnswerPhrases = $this->oConfig->get('answers');
+
 		if ($aCountryInfo['group'] == 'no dst') {
 			//skip question type parsing if country does not observe DST
             $sExtra = '';
             if (!empty($aCountryInfo['since'])) {
 				//normally just mention the year they stopped observing DST, unless it's permanently in effect
                 if (isset($aCountryInfo['permanent']) && $aCountryInfo['permanent'] == 1) {
-					$sExtra = sprintf($this->aAnswerPhrases['extra_perma_since'], $aCountryInfo['since']);
+					$sExtra = sprintf($aAnswerPhrases->extra_perma_since, $aCountryInfo['since']);
                 } else {
-					$sExtra = sprintf($this->aAnswerPhrases['extra_not_since'], $aCountryInfo['since']);
+					$sExtra = sprintf($aAnswerPhrases->extra_not_since, $aCountryInfo['since']);
                 }
             }
 
@@ -576,16 +563,16 @@ class DSTNotify
         if (!empty($aCountryInfo['info'])) {
 
             //some countries are complicated, and have their own wiki page with more info
-            $sExtra .= sprintf($this->aAnswerPhrases['extra_more_info'], $aCountryInfo['info']);
+            $sExtra .= sprintf($aAnswerPhrases->extra_more_info, $aCountryInfo['info']);
         }
 
         if (isset($aCountryInfo['permanent'])) {
             //some countries have permanent DST in effect
             if ($aCountryInfo['permanent'] == 1) {
-				$sExtra .= $this->aAnswerPhrases['extra_perma_always'];
+				$sExtra .= $aAnswerPhrases->extra_perma_always;
             } else {
                 //just in case, never used
-				$sExtra .= $this->aAnswerPhrases['extra_perma_never'];
+				$sExtra .= $aAnswerPhrases->extra_perma_never;
             }
         }
 
@@ -601,11 +588,4 @@ class DSTNotify
 
         return $oTweet->replyTo($oMention, $sReply);
     }
-}
-
-//RUN SCRIPT WITH CLI ARGUMENT 'mentions' TO PARSE & REPLY TO MENTIONS
-if (!empty($argv[1]) && $argv[1] == 'mentions') {
-    (new DSTNotify)->runMentions();
-} else {
-    (new DSTNotify)->run();
 }
