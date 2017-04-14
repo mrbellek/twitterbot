@@ -1,5 +1,4 @@
 <?php
-require_once('logger.inc.php');
 
 /*
  * TODO:
