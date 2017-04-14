@@ -27,7 +27,7 @@ class Database extends Base
     {
         $this->checkConfig();
 
-		try {
+        try {
             //basic dns check to prevent warnings
             if (!$this->validIp4OrIp6Hostname(DB_HOST)) {
                 throw new Exception('database hostname not found: ' . DB_HOST);
@@ -38,12 +38,12 @@ class Database extends Base
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             ]);
-		} catch(Exception $e) {
+        } catch(Exception $e) {
             //do not write to logger since database connection is down lol
-			$this->logger->output(sprintf('- Database connection failed. (%s)', $e->getMessage()));
+            $this->logger->output(sprintf('- Database connection failed. (%s)', $e->getMessage()));
 
             die('FATAL' . PHP_EOL);
-		}
+        }
 
         $this->checkDatabase();
 
@@ -129,13 +129,13 @@ class Database extends Base
 
     private function checkConfig()
     {
-		if (!defined('DB_HOST') || !defined('DB_NAME') ||
-			!defined('DB_USER') || !defined('DB_PASS')) {
+        if (!defined('DB_HOST') || !defined('DB_NAME') ||
+            !defined('DB_USER') || !defined('DB_PASS')) {
 
-			$this->logger->output('- One or more of the MySQL database credentials are missing, halting.');
+            $this->logger->output('- One or more of the MySQL database credentials are missing, halting.');
 
-			return false;
-		}
+            return false;
+        }
 
         if (!$this->oConfig) {
             return true;
@@ -147,10 +147,10 @@ class Database extends Base
             empty($this->oDbConf->countercol) ||
             empty($this->oDbConf->timestampcol)) {
 
-			$this->logger->output('- One or more of the database table settings are missing.');
+            $this->logger->output('- One or more of the database table settings are missing.');
 
-			return false;
-		}
+            return false;
+        }
 
         return true;
     }
@@ -217,7 +217,7 @@ class Database extends Base
             $this->connect();
         }
 
-		$this->logger->output('Getting random record from database..');
+        $this->logger->output('Getting random record from database..');
 
         //get random record
         if ($this->oConfig->get('post_only_once', false)) {
