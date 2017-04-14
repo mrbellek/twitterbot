@@ -43,7 +43,6 @@ class DSTNotify
                 if ((new Auth($this->oConfig))->isUserAuthed($this->sUsername)) {
 
                     $aTweets = $this->checkDST();
-                    die(var_dumP($aTweets));
 
                     if ($aTweets) {
                         $this->logger->output('Posting %d tweets..', count($aTweets));
