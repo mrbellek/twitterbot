@@ -12,8 +12,9 @@ class RetweetBot
 	private $aSearchFilters = array();
 	private $aUsernameFilters = array();
 	private $aDiceValues = array();
+	private $iMinFaves = 0;
 
-	//stuff passed in constructor 
+	//stuff passed in constructor
 	private $sUsername;			//username we will be tweeting from
 	private $aSearchStrings;	//search query
 	private $iSearchMax;		//max search results to get at once
@@ -90,6 +91,11 @@ class RetweetBot
 		//get probability values
 		if (!empty($this->aSettings['dice'])) {
 			$this->aDiceValues = $this->aSettings['dice'];
+		}
+
+		//get fave filter
+		if (!empty($this->aSettings['minFaves'])) {
+			$this->iMinFaves = $this->aSettings['minFaves'];
 		}
 	}
 
@@ -318,11 +324,16 @@ class RetweetBot
 			return FALSE;
 		}
 
+		//fave filter
+		if (!$this->applyFaveFilter($oTweet)) {
+			return FALSE;
+		}
+
 		//check blocked list
 		if (!$this->isBlocked($oTweet)) {
 			return FALSE;
 		}
-		
+
 		//random chance
 		if (!$this->rollDie($oTweet)) {
 			return FALSE;
@@ -361,6 +372,12 @@ class RetweetBot
 		return TRUE;
 	}
 
+	//check fave count
+	private function applyFaveFilter($oTweet)  {
+
+		return $oTweet->favorite_count >= $this->iMinFaves;
+	}
+
 	//check blocked
 	private function isBlocked($oTweet) {
 
@@ -380,7 +397,7 @@ class RetweetBot
 		//regular tweets are better than mentions - medium probability
 		$lProbability = $this->aDiceValues['base'];
 
-		if (!empty($oTweet->entities->media) && count($oTweet->entities->media) > 0 
+		if (!empty($oTweet->entities->media) && count($oTweet->entities->media) > 0
 			|| strpos('instagram.com/p/', $oTweet->text) !== FALSE
 			|| strpos('vine.co/v/', $oTweet->text) !== FALSE) {
 
