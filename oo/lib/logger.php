@@ -3,8 +3,6 @@ namespace Twitterbot\Lib;
 
 use Twitterbot\Lib\Database;
 
-require_once('logger.inc.php');
-
 /**
  * Logger class, write messages to database or to screen
  */
