@@ -11,7 +11,9 @@ Instruction to use this script can be found here:
 http://www.prasannasp.net/how-to-create-a-twitter-bot/
 ```
 
-### Note: this repo is being refactored to be more modular and object oriented. New scripts are in the /oo folder ##
+### (Note: this repo is being refactored to be more modular and object oriented. New scripts are in the /oo folder) ##
+
+## Introduction ##
 
 This repository has several different types of Twitter bots with live examples:
 * **retweetbot.php** - a script that searches Twitter for certain terms and retweets them if they meet certain conditions - example: [@FoundDildo](http://twitter.com/founddildo)
