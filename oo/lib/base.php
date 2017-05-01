@@ -1,7 +1,7 @@
 <?php
 namespace Twitterbot\Lib;
 
-require_once(MYPATH . 'oo/twitteroauth/autoload.php');
+require_once(MYPATH . '/twitteroauth/autoload.php');
 require_once('base.inc.php');
 
 use Twitterbot\Lib\Logger;
