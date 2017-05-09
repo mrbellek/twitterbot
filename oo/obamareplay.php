@@ -21,7 +21,10 @@ use Twitterbot\Lib\Logger;
 use Twitterbot\Lib\Config;
 use Twitterbot\Lib\Auth;
 use Twitterbot\Lib\Tweet;
-use Twitterbot\Lib\Media;
+use Twitterbot\Lib\Database;
+//use Twitterbot\Lib\Media;
+
+(new Obamareplay)->run();
 
 class Obamareplay {
 
@@ -34,17 +37,21 @@ class Obamareplay {
     public function run()
     {
         $this->oConfig = new Config;
+        $this->logger->output('test');
         if ($this->oConfig->load($this->sUsername)) {
 
             if ((new Auth($this->oConfig))->isUserAuthed($this->sUsername)) {
 
+                $this->db = (new Database($this->oConfig));
+
+                $this->logger->output('Fetching tweets from 2 years ago +/- 15 minutes..');
                 if ($aTweets = $this->getTweets(15 * 60)) {
                     $this->logger->output('Replaying %d tweets..', count($aTweets));
                     $oTweet = new Tweet($this->oConfig);
                     foreach ($aTweets as $aTweet) {
                         $sMediaId = false;
                         $sTweet = $aTweet['text'];
-                        if ($aTweet['attachment']) {
+                        /*if ($aTweet['attachment']) {
                             $sAttachment = $sTweet['attachment'] . '.' . $sTweet['type'];
                             if (is_file('potus_images/' . $sAttachments)) {
                                 $this->logger->output(sprintf('- uploading %s..', $sAttachment));
@@ -53,18 +60,41 @@ class Obamareplay {
                                     $oTweet->setMedia($sMediaId);
                                 }
                             }
-                        }
+                        }*/
 
-                        if ($sMediaId) {
-                            $this->logger->output(sprintf('- posting with media: %s', $sTweet));
-                        } else {
-                            $this->logger->output(sprintf('- posting: %s', $sTweet));
+                        $this->logger->output(sprintf('- posting: %s', $sTweet));
+                        if ($oTweet->post($sTweet)) {
+                            $this->markPosted($aTweet['id']);
                         }
-                        $oTweet->post($sTweet);
-                        $oTweet->setMedia(false);
                     }
+                } else {
+                    $this->logger->output('- nothing to do.');
                 }
             }
         }
+    }
+
+    private function getTweets($iSeconds)
+    {
+        $aTweets = $this->db->query('
+            SELECT *
+            FROM obamareplay
+            WHERE created_at BETWEEN DATE_SUB(DATE_SUB(NOW(), INTERVAL 2 YEAR), INTERVAL :seconds SECOND) AND DATE_SUB(NOW(), INTERVAL 2 YEAR)
+            AND posted IS NULL',
+            [':seconds' => $iSeconds]
+        );
+
+        return $aTweets;
+    }
+
+    private function markPosted($id)
+    {
+        $this->db->query('
+            UPDATE obamareplay
+            SET posted = NOW()
+            WHERE id = :id
+            LIMIT 1',
+            [':id' => $id]
+        );
     }
 }

@@ -1,5 +1,6 @@
 <?php
 namespace Twitterbot\Lib;
+
 use Twitterbot\Lib\Logger;
 use \stdClass;
 
@@ -8,6 +9,11 @@ use \stdClass;
  */
 class Config
 {
+    public function __construct()
+    {
+        $this->logger = new Logger;
+    }
+
     /**
      * Load settings for given twitter username from .json file
      *
