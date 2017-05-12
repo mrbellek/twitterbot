@@ -37,7 +37,6 @@ class Obamareplay {
     public function run()
     {
         $this->oConfig = new Config;
-        $this->logger->output('test');
         if ($this->oConfig->load($this->sUsername)) {
 
             if ((new Auth($this->oConfig))->isUserAuthed($this->sUsername)) {

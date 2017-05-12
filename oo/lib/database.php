@@ -117,14 +117,14 @@ class Database extends Base
     {
         $aResult = $this->query($sQuery, $aData);
 
-        return $aResult[0];
+        return $aResult ? $aResult[0] : [];
     }
 
     public function query_value($sQuery, $aData = [])
     {
         $aResult = $this->query($sQuery, $aData);
 
-        return reset($aResult[0]);
+        return $aResult ? reset($aResult[0]) : false;
     }
 
     private function checkConfig()
@@ -142,10 +142,11 @@ class Database extends Base
         }
 
         $this->oDbConf = $this->oConfig->get('db_settings');
-        if (empty($this->oDbConf->table) ||
+        if ($this->oDbConf &&
+            (empty($this->oDbConf->table) ||
             empty($this->oDbConf->idcol) ||
             empty($this->oDbConf->countercol) ||
-            empty($this->oDbConf->timestampcol)) {
+            empty($this->oDbConf->timestampcol))) {
 
             $this->logger->output('- One or more of the database table settings are missing.');
 

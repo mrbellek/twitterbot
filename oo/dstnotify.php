@@ -5,6 +5,8 @@ require_once('dstnotify.inc.php');
 /**
  * TODO:
  * v check for DST changes now, tomorrow, next week
+ * v move dst info to database
+ * v management page
  * . post tweets
  * - reply to mentions with questions
  * - attach picture with visual instructions on what happens to the clock?
@@ -14,6 +16,7 @@ use Twitterbot\Lib\Logger;
 use Twitterbot\Lib\Config;
 use Twitterbot\Lib\Auth;
 use Twitterbot\Lib\Ratelimit;
+use Twitterbot\Lib\Database;
 use Twitterbot\Lib\Format;
 use Twitterbot\Lib\Tweet;
 use Twitterbot\Lib\Reply;
@@ -21,6 +24,8 @@ use Twitterbot\Lib\Reply;
 if (!empty($argv[1]) && $argv[1] == 'mentions') {
     //RUN SCRIPT WITH CLI ARGUMENT 'mentions' TO PARSE & REPLY TO MENTIONS
     (new DSTNotify)->runMentions();
+} elseif (!empty($argv[1]) && $argv[1] == 'test') {
+    //nothing
 } else {
     (new DSTNotify)->run();
 }
@@ -42,6 +47,9 @@ class DSTNotify
 
                 if ((new Auth($this->oConfig))->isUserAuthed($this->sUsername)) {
 
+                    $this->db = new Database($this->oConfig);
+                    //die(var_dump($this->findCountryInText('when does dst start in netherlands?')));
+
                     $aTweets = $this->checkDST();
 
                     if ($aTweets) {
@@ -57,6 +65,14 @@ class DSTNotify
         }
     }
 
+    public function runTest()
+    {
+        $this->oConfig = new Config;
+        if ($this->oConfig->load($this->sUsername)) {
+            $this->db = new Database($this->oConfig);
+        }
+    }
+
     public function runMentions()
     {
         $this->oConfig = new Config;
@@ -66,6 +82,7 @@ class DSTNotify
 
                 if ((new Auth($this->oConfig))->isUserAuthed($this->sUsername)) {
 
+                    $this->db = new Database($this->oConfig);
                     $this->processMentions();
                     $this->logger->output('done!');
                 }
@@ -80,60 +97,34 @@ class DSTNotify
 
         $sToday = strtotime(gmdate('Y-m-d'));
 
-        //check if any of the countries are switching to DST (summer time) today
-        if ($aGroups = $this->checkDSTStart($sToday)) {
-            $aTweets = array_merge($aTweets, $this->formatTweetDST('starting', $aGroups, 'today'));
-            $this->logger->output('- %s groups start DST today!', count($aGroups));
-        } else {
-            $this->logger->output('- No groups start DST today.');
-            $this->logger->write(5, 'No groups start DST today.');
-        }
+        $aDelays = [
+            'today' => 0,
+            'tomorrow' => 24 * 3600,
+            'next week' => 7 * 24 * 3600,
+        ];
 
-        //check if any of the countries are switching to DST (summer time) tomorrow
-        if ($aGroups = $this->checkDSTStart($sToday + 24 * 3600)) {
-            $aTweets = array_merge($aTweets, $this->formatTweetDST('starting', $aGroups, 'tomorrow'));
-            $this->logger->output('- %s groups start DST tomorrow!', count($aGroups));
-        } else {
-            $this->logger->output('- No groups start DST tomorrow.');
-            $this->logger->write(5, 'No groups start DST tomorrow.');
-        }
-
-        //check if any of the countries are switching to DST (summer time) in 7 days
-        if ($aGroups = $this->checkDSTStart($sToday + 7 * 24 * 3600)) {
-            $aTweets = array_merge($aTweets, $this->formatTweetDST('starting', $aGroups, 'next week'));
-            $this->logger->output('- %s groups start DST next week!', count($aGroups));
-        } else {
-            $this->logger->output('- No groups start DST next week.');
-            $this->logger->write(5, 'No groups start DST next week.');
+        //check if any of the countries are switching to DST (summer time) either today, tomorrow or next week
+        foreach ($aDelays as $sDelay => $iDelaySeconds) {
+            if ($aGroups = $this->checkDSTStart($sToday + $iDelaySeconds)) {
+                $aTweets = array_merge($aTweets, $this->formatTweetDST('starting', $aGroups, $sDelay));
+                $this->logger->output('- %s groups start DST %s!', count($aGroups), $sDelay);
+            } else {
+                $this->logger->output('- No groups start DST %s.', $sDelay);
+                $this->logger->write(5, 'No groups start DST %s.', $sDelay);
+            }
         }
 
         $this->logger->output('Checking for DST end..');
 
-        //check if any of the countries are switching from DST (winter time) today
-        if ($aGroups = $this->checkDSTEnd($sToday)) {
-            $aTweets = array_merge($aTweets, $this->formatTweetDST('ending', $aGroups, 'today'));
-            $this->logger->output('- %s groups exit DST today!', count($aGroups));
-        } else {
-            $this->logger->output('- No groups exit DST today.');
-            $this->logger->write(5, 'No groups exit DST today.');
-        }
-
-        //check if any of the countries are switching from DST (winter time) tomorrow
-        if ($aGroups = $this->checkDSTEnd($sToday + 24 * 3600)) {
-            $aTweets = array_merge($aTweets, $this->formatTweetDST('ending', $aGroups, 'tomorrow'));
-            $this->logger->output('- %s groups exit DST tomorrow!', count($aGroups));
-        } else {
-            $this->logger->output('- No groups exit DST tomorrow.');
-            $this->logger->write(5, 'No groups exit DST tomorrow.');
-        }
-
-        //check if any of the countries are switching from DST (winter time) in 7 days
-        if ($aGroups = $this->checkDSTEnd($sToday + 7 * 24 * 3600)) {
-            $aTweets = array_merge($aTweets, $this->formatTweetDST('ending', $aGroups, 'next week'));
-            $this->logger->output('- %s groups exit DST next week!', count($aGroups));
-        } else {
-            $this->logger->output('- No groups exit DST next week.');
-            $this->logger->write(5, 'No groups exit DST next week.');
+        //check if any of the countries are switching from DST (winter time) today, tomorrow or next week
+        foreach ($aDelays as $sDelay => $iDelaySeconds) {
+            if ($aGroups = $this->checkDSTEnd($sToday + $iDelaySeconds)) {
+                $aTweets = array_merge($aTweets, $this->formatTweetDST('ending', $aGroups, $sDelay));
+                $this->logger->output('- %s groups exit DST %s!', count($aGroups), $sDelay);
+            } else {
+                $this->logger->output('- No groups exit DST %s.', $sDelay);
+                $this->logger->write(5, 'No groups exit DST %s.', $sDelay);
+            }
         }
 
         return $aTweets;
@@ -143,18 +134,28 @@ class DSTNotify
     private function checkDSTStart($iTimestamp)
     {
         $aGroupsDSTStart = array();
-        foreach ($this->oConfig->get('dst') as $sGroup => $oSetting) {
 
-            if ($sGroup != 'no dst') {
+        //check groups
+        foreach ($this->getAllGroups() as $aGroup) {
+            if (strtolower($aGroup['shortname'] != 'no dst')) {
 
-                //convert 'last sunday of march 2014' to timestamp (DST independent)
-                $iDSTStart = strtotime(sprintf('%s %s', $oSetting->start, date('Y')));
+                //convert 'last sunday of march 2014' to timestamp 
+                $iDSTStart = strtotime(sprintf('%s %s', $aGroup['start'], date('Y')));
 
                 if ($iDSTStart == $iTimestamp) {
 
                     //DST will start here
-                    $aGroupsDSTStart[$sGroup] = $oSetting;
+                    $aGroup['includes'] = $this->getGroupCountries($aGroup['id']);
+                    $aGroupsDSTStart[$aGroup['shortname']] = $aGroup;
                 }
+            }
+        }
+
+        //check countries without group
+        foreach ($this->getUngroupedCountries() as $aCountry) {
+            $iDSTStart = strtotime(sprintf('%s %s', $aCountry['start'], date('Y')));
+            if ($iDSTStart == $iTimestamp) {
+                $aGroupsDSTStart[$aCountry['name']] = $aCountry;
             }
         }
 
@@ -165,39 +166,83 @@ class DSTNotify
     private function checkDSTEnd($iTimestamp) {
 
         $aGroupsDSTEnd = array();
-        foreach ($this->oConfig->get('dst') as $sGroup => $oSetting) {
 
-            if ($sGroup != 'no dst') {
+        //check groups
+        foreach ($this->getAllGroups() as $aGroup) {
+            if (strtolower($aGroup['shortname'] != 'no dst')) {
 
-                //convert 'last sunday of march 2014' to timestamp
-                $iDSTEnd = strtotime(sprintf('%s %s', $oSetting->end, date('Y')));
+                //convert 'last sunday of march 2014' to timestamp 
+                $iDSTEnd = strtotime(sprintf('%s %s', $aGroup['end'], date('Y')));
 
                 if ($iDSTEnd == $iTimestamp) {
 
                     //DST will end here
-                    $aGroupsDSTEnd[$sGroup] = $oSetting;
+                    $aGroup['includes'] = $this->getGroupCountries($aGroup['id']);
+                    $aGroupsDSTEnd[$aGroup['shortname']] = $aGroup;
                 }
+            }
+        }
+
+        //check countries without group
+        foreach ($this->getUngroupedCountries() as $aCountry) {
+            $iDSTEnd = strtotime(sprintf('%s %s', $aCountry['end'], date('Y')));
+            if ($iDSTEnd == $iTimestamp) {
+                $aGroupsDSTEnd[$aCountry['name']] = $aCountry;
             }
         }
 
         return ($aGroupsDSTEnd ? $aGroupsDSTEnd : array());
     }
 
-    private function formatTweetDST($sEvent, $aGroups, $sDelay) {
+    public function formatTweetDST($sEvent, $aGroups, $sDelay) {
 
         $aTweets = array();
-        foreach ($aGroups as $sGroup => $oSetting) {
+        foreach ($aGroups as $sShortName => $aGroup) {
+            if ($sShortName != 'No dst') {
+                $sName = (isset($aGroup['name']) ? $aGroup['name'] : ucwords($aShortName));
 
-            $sCountries = (isset($oSetting->name) ? $oSetting->name : ucwords($sGroup));
-
-            $aTweets[] = (new Format($this->oConfig))->format((object) [
-                'event' => $sEvent,
-                'delay' => $sDelay,
-                'countries' => $sCountries,
-            ]);
+                $aTweets[] = (new Format($this->oConfig))->format((object) [
+                    'event' => $sEvent . 's',   //start[s] or end[s]
+                    'delay' => $sDelay,         //today/tomorrow/next week
+                    'countries' => $sName,      //group name or country name
+                ]);
+            }
         }
 
         return $aTweets;
+    }
+
+    private function getAllGroups()
+    {
+        return $this->db->query('
+            SELECT g.*, GROUP_CONCAT(e.exclude SEPARATOR "|") AS excludes
+            FROM dst_group g
+            LEFT JOIN dst_exclude e ON e.group_id = g.id
+            GROUP BY g.id'
+        );
+    }
+
+    private function getGroupCountries($groupId)
+    {
+        return $this->db->query('
+            SELECT c.*, GROUP_CONCAT(ca.alias SEPARATOR "|") AS aliases
+            FROM dst_country c
+            LEFT JOIN dst_country_alias ca ON ca.country_id = c.id
+            WHERE c.group_id = :group_id
+            GROUP BY c.id',
+            [':group_id' => $groupId]
+        );
+    }
+
+    private function getUngroupedCountries()
+    {
+        return $this->db->query('
+            SELECT c.*, GROUP_CONCAT(ca.alias SEPARATOR "|") AS aliases
+            FROM dst_country c
+            LEFT JOIN dst_country_alias ca ON ca.country_id = c.id
+            WHERE c.group_id IS NULL
+            GROUP BY c.id'
+        );
     }
 
     private function processMentions()
@@ -368,6 +413,25 @@ class DSTNotify
         $aCountryInfo = array();
 
         //try to find country in text
+        foreach ($this->db->getAllGroups() as $aGroup) {
+
+            //check for group name
+            if (stripos($sText, $aGroup['shortname']) !== false) {
+                $aFoundCountry[$aGroup['shortname']] = $aGroup;
+                break;
+            }
+
+            //check 'includes' array
+            if (isset($aGroup['includes'])) {
+                foreach ($aGroup['includes'] as $aInclude) {
+
+                    //check name of country against question
+                    if (stripos($sText, $aInclude['include']) !== false) {
+                        //TODO
+                    }
+                }
+            }
+        }
         foreach ($this->oConfig->get('dst') as $sGroupName => $oGroup) {
 
             //check for group name
