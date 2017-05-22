@@ -141,44 +141,51 @@ $preview = (!empty($preview[0]) ? $preview[0] : '');
 if (empty($error) && filter_input(INPUT_SERVER, 'REQUEST_METHOD', FILTER_SANITIZE_STRING) == 'POST' && ($show = filter_input(INPUT_POST, 'show', FILTER_SANITIZE_STRING))) {
     $id = filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT);
     $action = strtolower(filter_input(INPUT_POST, 'action', FILTER_SANITIZE_STRING));
+    $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
     $data = filter_input(INPUT_POST, 'post', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+
+    if ($password != FORM_PASSWORD) {
+        $action = '';
+        $error = 'Password is wrong.';
+    }
+
     if ($id) {
         $data['id'] = $id;
     }
+
     switch ($action) {
         case 'delete':
             switch ($show) {
-            case 'group':
-                if ((new Group($id, $db))->delete()) {
-                    redirect(sprintf('?show=group&deleted=%d', $id));
-                } else {
-                    $error = sprintf('Error deleting group %d!', $id);
-                }
-                break;
-            case 'country':
-                if ((new Country($id, $db))->delete()) {
-                    redirect(sprintf('?show=country&deleted=%d', $id));
-                } else {
-                    $error = sprintf('Error deleting country %d!', $id);
-                }
-                break;
-            case 'alias':
-                if ((new Alias($id, $db))->delete()) {
-                    redirect(sprintf('?show=alias&deleted=%d', $id));
-                } else {
-                    $error = sprintf('Error deleting alias %d!', $id);
-                }
-                break;
-            case 'exclude':
-                if ((new Exclude($id, $db))->delete()) {
-                    redirect(sprintf('?show=exclude&deleted=%d', $id));
-                } else {
-                    $error = sprintf('Error deleting alias %d!', $id);
-                }
-                break;
+                case 'group':
+                    if ((new Group($id, $db))->delete()) {
+                        redirect(sprintf('?show=group&deleted=%d', $id));
+                    } else {
+                        $error = sprintf('Error deleting group %d!', $id);
+                    }
+                    break;
+                case 'country':
+                    if ((new Country($id, $db))->delete()) {
+                        redirect(sprintf('?show=country&deleted=%d', $id));
+                    } else {
+                        $error = sprintf('Error deleting country %d!', $id);
+                    }
+                    break;
+                case 'alias':
+                    if ((new Alias($id, $db))->delete()) {
+                        redirect(sprintf('?show=alias&deleted=%d', $id));
+                    } else {
+                        $error = sprintf('Error deleting alias %d!', $id);
+                    }
+                    break;
+                case 'exclude':
+                    if ((new Exclude($id, $db))->delete()) {
+                        redirect(sprintf('?show=exclude&deleted=%d', $id));
+                    } else {
+                        $error = sprintf('Error deleting alias %d!', $id);
+                    }
+                    break;
             }
             break;
-        default:
         case 'save':
             switch ($show) {
             case 'group':
@@ -489,6 +496,12 @@ if (empty($error) && filter_input(INPUT_SERVER, 'REQUEST_METHOD', FILTER_SANITIZ
                 </div>
 
             <?php } ?>
+                <div class="form-group">
+                    <label for="password" class="col-sm-2 control-label">Password</label>
+                    <div class="col-sm-10">
+                        <input type="password" id="password" name="password" class="form-control" required />
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="col-sm-2 control-label">&nbsp;</label>
                     <input type="submit" name="action" value="Save" class="btn btn-primary" />
