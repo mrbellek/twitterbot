@@ -72,13 +72,13 @@ if ($_POST && !$sError) {
 					LIMIT 1',
 					array(
 						'id'		=> filter_input(INPUT_POST, 'id'),
-						'name'		=> filter_input(INPUT_POST, 'name'),
+						'name'		=> utf8_decode(filter_input(INPUT_POST, 'name')),
 						'year'		=> filter_input(INPUT_POST, 'year'),
 						'month'		=> filter_input(INPUT_POST, 'month'),
 						'day'		=> filter_input(INPUT_POST, 'day'),
-						'region'	=> filter_input(INPUT_POST, 'region'),
-						'country'	=> filter_input(INPUT_POST, 'country'),
-						'note'		=> filter_input(INPUT_POST, 'note'),
+						'region'	=> utf8_decode(filter_input(INPUT_POST, 'region')),
+						'country'	=> utf8_decode(filter_input(INPUT_POST, 'country')),
+						'note'		=> utf8_decode(filter_input(INPUT_POST, 'note')),
 						'dynamic'	=> filter_input(INPUT_POST, 'dynamic'),
 						'important'	=> filter_input(INPUT_POST, 'important', FILTER_SANITIZE_NUMBER_INT),
 						'url'		=> filter_input(INPUT_POST, 'url'),
@@ -95,13 +95,13 @@ if ($_POST && !$sError) {
 					INSERT INTO holidays (name, year, month, day, region, country, note, dynamic, important, url)
 					VALUES (:name, :year, :month, :day, :region, :country, :note, :dynamic, :important, :url)',
 					array(
-						'name'		=> filter_input(INPUT_POST, 'name'),
+						'name'		=> utf8_decode(filter_input(INPUT_POST, 'name')),
 						'year'		=> filter_input(INPUT_POST, 'year'),
 						'month'		=> filter_input(INPUT_POST, 'month'),
 						'day'		=> filter_input(INPUT_POST, 'day'),
-						'region'	=> filter_input(INPUT_POST, 'region'),
-						'country'	=> filter_input(INPUT_POST, 'country'),
-						'note'		=> filter_input(INPUT_POST, 'note'),
+						'region'	=> utf8_decode(filter_input(INPUT_POST, 'region')),
+						'country'	=> utf8_decode(filter_input(INPUT_POST, 'country')),
+						'note'		=> utf8_decode(filter_input(INPUT_POST, 'note')),
 						'dynamic'	=> filter_input(INPUT_POST, 'dynamic'),
 						'important'	=> filter_input(INPUT_POST, 'important', FILTER_SANITIZE_NUMBER_INT),
 						'url'		=> filter_input(INPUT_POST, 'url'),
@@ -234,7 +234,7 @@ $iCount = $aCount[0]['FOUND_ROWS()'];
 				<div class="form-group">
 					<label for="name" class="col-sm-2 control-label">Name</label>
 					<div class="col-sm-10">
-						<input type="text" id="name" name="name" class="form-control" value="<?= @$aData['name'] ?>" required />
+						<input type="text" id="name" name="name" class="form-control" value="<?= @utf8_encode($aData['name']) ?>" required />
 					</div>
 				</div>
 
@@ -270,21 +270,21 @@ $iCount = $aCount[0]['FOUND_ROWS()'];
 				<div class="form-group">
 					<label for="region" class="col-sm-2 control-label">Region</label>
 					<div class="col-sm-10">
-						<input type="text" id="region" name="region" class="form-control" value="<?= @$aData['region'] ?>" />
+						<input type="text" id="region" name="region" class="form-control" value="<?= @utf8_encode($aData['region']) ?>" />
 					</div>
 				</div>
 
 				<div class="form-group">
 					<label for="country" class="col-sm-2 control-label">Country</label>
 					<div class="col-sm-10">
-						<input type="text" id="country" name="country" class="form-control" value="<?= @$aData['country'] ?>" />
+						<input type="text" id="country" name="country" class="form-control" value="<?= @utf8_encode($aData['country']) ?>" />
 					</div>
 				</div>
 
 				<div class="form-group">
 					<label for="note" class="col-sm-2 control-label">Note/by</label>
 					<div class="col-sm-10">
-						<input type="text" id="note" name="note" class="form-control" value="<?= @$aData['note'] ?>" />
+						<input type="text" id="note" name="note" class="form-control" value="<?= @utf8_encode($aData['note']) ?>" />
 					</div>
 				</div>
 
@@ -353,8 +353,8 @@ $iCount = $aCount[0]['FOUND_ROWS()'];
 						<?php if (@$sSearch || filter_input(INPUT_GET, 'today') || filter_input(INPUT_GET, 'tomorrow')) { ?>
 							<a href="<?= $sThisFile ?>" class="btn btn-danger">Reset</a>
 						<?php } ?>
-						<a href="<?= $sThisFile ?>?today" class="btn btn-default">Today's holidays</a>
-						<a href="<?= $sThisFile ?>?tomorrow" class="btn btn-default">Tomorrow's holidays</a>
+						<a href="<?= $sThisFile ?>?today=1" class="btn btn-default">Today's holidays</a>
+						<a href="<?= $sThisFile ?>?tomorrow=1" class="btn btn-default">Tomorrow's holidays</a>
 					</div>
 				</div>
 			</form>
@@ -376,9 +376,9 @@ $iCount = $aCount[0]['FOUND_ROWS()'];
 				<tr class="table-striped <?= ($aHoliday['important'] ? "bg-info" : "") ?> <?= ($aHoliday['dynamic'] ? "bg-warning" : "") ?>">
 						<td>
 							<?php if ($aHoliday['url']) { ?>
-								<a href="<?= $aHoliday['url'] ?>" target="_blank"><?= $aHoliday['name'] ?></a>
+								<a href="<?= $aHoliday['url'] ?>" target="_blank"><?= utf8_encode($aHoliday['name']) ?></a>
 							<?php } else { ?>
-								<?= $aHoliday['name'] ?>
+								<?= utf8_encode($aHoliday['name']) ?>
 							<?php } ?>
 						</td>
 						<td><?= $aHoliday['year'] ?></td>

@@ -1,13 +1,4 @@
 <?php
-/**
- * TODO:
- * v browse/manage groups, countries, includes, excludes, aliases
- * v refactor into classes
- * - post-add redirect so refreshing doesn't dupe records
- * - password
- * - proper sorting on all overviews
- */
-
 require('autoload.php');
 require('dstnotify.inc.php');
 
@@ -769,6 +760,22 @@ class Country extends Base
         }
 
         return $this->group;
+    }
+
+    static public function all($db)
+    {
+        $rows = $db->query('
+            SELECT *
+            FROM dst_country
+            ORDER BY name'
+        );
+
+        $countries = [];
+        foreach ($rows as $row) {
+            $countries[$row['id']] = new Country($row['id'], $db);
+        }
+
+        return $countries;
     }
 
     public function hasGroup()
