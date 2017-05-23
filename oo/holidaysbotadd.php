@@ -22,7 +22,7 @@ $sError = '';
 $sSuccess = '';
 $aHolidays = array();
 
-$iPage = (!empty(filter_input(INPUT_GET, 'page')) ? (int)filter_input(INPUT_GET, 'page') : 1);
+$iPage = (!empty(filter_input(INPUT_GET, 'page')) ? filter_input(INPUT_GET, 'page', FILTER_SANITIZE_NUMBER_INT) : 1);
 $iPerPage = 100;
 $iOffset = ($iPage - 1) * $iPerPage;
 
@@ -30,20 +30,20 @@ $aParams = array();
 if ($_POST && !$sError) {
 	//add/edit holiday
 
-	if (filter_input(INPUT_POST, 'password') != FORM_PASSWORD) {
+	if (filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING) != FORM_PASSWORD) {
 
 		$sError = 'Wrong password.';
 		$aData = $_POST;
 
 	} else {
 
-		if (!empty(filter_input(INPUT_POST, 'action')) && strtolower(filter_input(INPUT_POST, 'action')) == 'delete') {
+		if (!empty(filter_input(INPUT_POST, 'action')) && strtolower(filter_input(INPUT_POST, 'action', FILTER_SANITIZE_STRING)) == 'delete') {
 			//delete record
 			if ($oDatabase->query('
 				DELETE FROM holidays
 				WHERE id = :id
 				LIMIT 1',
-				array('id' => (int)filter_input(INPUT_POST, 'id'))
+				array('id' => filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT))
 			)) {
 				$sSuccess = 'Holiday deleted.';
 			} else {
@@ -52,14 +52,14 @@ if ($_POST && !$sError) {
 			}
 			unset($sth);
 
-		} elseif (!empty(filter_input(INPUT_POST, 'action')) && strtolower(filter_input(INPUT_POST, 'action')) == 'save') {
+		} elseif (!empty(filter_input(INPUT_POST, 'action')) && strtolower(filter_input(INPUT_POST, 'action', FILTER_SANITIZE_STRING)) == 'save') {
 
 			if (!empty(filter_input(INPUT_POST, 'id'))) {
 				//edit holiday
 				if ($oDatabase->query('
 					UPDATE holidays
 					SET name = :name,
-                        year = :year,
+                        year = NULLIF(:year, 0),
 						month = :month,
 						day = :day,
 						region = :region,
@@ -71,17 +71,17 @@ if ($_POST && !$sError) {
 					WHERE id = :id
 					LIMIT 1',
 					array(
-						'id'		=> filter_input(INPUT_POST, 'id'),
-						'name'		=> utf8_decode(filter_input(INPUT_POST, 'name')),
-						'year'		=> filter_input(INPUT_POST, 'year'),
-						'month'		=> filter_input(INPUT_POST, 'month'),
-						'day'		=> filter_input(INPUT_POST, 'day'),
-						'region'	=> utf8_decode(filter_input(INPUT_POST, 'region')),
-						'country'	=> utf8_decode(filter_input(INPUT_POST, 'country')),
-						'note'		=> utf8_decode(filter_input(INPUT_POST, 'note')),
-						'dynamic'	=> filter_input(INPUT_POST, 'dynamic'),
+						'id'		=> filter_input(INPUT_POST, 'id', FILTER_SANITIZE_NUMBER_INT),
+						'name'		=> utf8_decode(filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING)),
+						'year'		=> filter_input(INPUT_POST, 'year', FILTER_SANITIZE_NUMBER_INT),
+						'month'		=> filter_input(INPUT_POST, 'month', FILTER_SANITIZE_NUMBER_INT),
+						'day'		=> filter_input(INPUT_POST, 'day', FILTER_SANITIZE_NUMBER_INT),
+						'region'	=> utf8_decode(filter_input(INPUT_POST, 'region', FILTER_SANITIZE_STRING)),
+						'country'	=> utf8_decode(filter_input(INPUT_POST, 'country', FILTER_SANITIZE_STRING)),
+						'note'		=> utf8_decode(filter_input(INPUT_POST, 'note', FILTER_SANITIZE_STRING)),
+						'dynamic'	=> filter_input(INPUT_POST, 'dynamic', FILTER_SANITIZE_STRING),
 						'important'	=> filter_input(INPUT_POST, 'important', FILTER_SANITIZE_NUMBER_INT),
-						'url'		=> filter_input(INPUT_POST, 'url'),
+						'url'		=> filter_input(INPUT_POST, 'url', FILTER_SANITIZE_URL),
 					)
 				)) {
 					$sSuccess = 'Holiday edited.';
@@ -93,18 +93,18 @@ if ($_POST && !$sError) {
 				//add holiday
 				if ($oDatabase->query('
 					INSERT INTO holidays (name, year, month, day, region, country, note, dynamic, important, url)
-					VALUES (:name, :year, :month, :day, :region, :country, :note, :dynamic, :important, :url)',
+					VALUES (:name, NULLIF(:year, 0), :month, :day, :region, :country, :note, :dynamic, :important, :url)',
 					array(
-						'name'		=> utf8_decode(filter_input(INPUT_POST, 'name')),
-						'year'		=> filter_input(INPUT_POST, 'year'),
-						'month'		=> filter_input(INPUT_POST, 'month'),
-						'day'		=> filter_input(INPUT_POST, 'day'),
-						'region'	=> utf8_decode(filter_input(INPUT_POST, 'region')),
-						'country'	=> utf8_decode(filter_input(INPUT_POST, 'country')),
-						'note'		=> utf8_decode(filter_input(INPUT_POST, 'note')),
-						'dynamic'	=> filter_input(INPUT_POST, 'dynamic'),
+						'name'		=> utf8_decode(filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING)),
+						'year'		=> filter_input(INPUT_POST, 'year', FILTER_SANITIZE_NUMBER_INT),
+						'month'		=> filter_input(INPUT_POST, 'month', FILTER_SANITIZE_NUMBER_INT),
+						'day'		=> filter_input(INPUT_POST, 'day', FILTER_SANITIZE_NUMBER_INT),
+						'region'	=> utf8_decode(filter_input(INPUT_POST, 'region', FILTER_SANITIZE_STRING)),
+						'country'	=> utf8_decode(filter_input(INPUT_POST, 'country', FILTER_SANITIZE_STRING)),
+						'note'		=> utf8_decode(filter_input(INPUT_POST, 'note', FILTER_SANITIZE_STRING)),
+						'dynamic'	=> filter_input(INPUT_POST, 'dynamic', FILTER_SANITIZE_STRING),
 						'important'	=> filter_input(INPUT_POST, 'important', FILTER_SANITIZE_NUMBER_INT),
-						'url'		=> filter_input(INPUT_POST, 'url'),
+						'url'		=> filter_input(INPUT_POST, 'url', FILTER_SANITIZE_URL),
 					)
 				)) {
 					$sSuccess = 'Holiday added.';
@@ -125,7 +125,7 @@ if ($_POST && !$sError) {
 		FROM holidays
 		WHERE id = :id
 		LIMIT 1',
-		array('id' => (int)filter_input(INPUT_GET, 'id'))
+		array('id' => filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT))
 	);
     $aData = $aData[0];
 
@@ -143,13 +143,13 @@ if ($_POST && !$sError) {
 		ORDER BY month, day, name
 		LIMIT :offset, :perpage',
 		array(
-			'search' => '%' . filter_input(INPUT_GET, 'search') . '%',
+			'search' => '%' . filter_input(INPUT_GET, 'search', FILTER_SANITIZE_STRING) . '%',
 			'offset' => $iOffset,
 			'perpage' => $iPerPage,
 		)
 	);
 
-	$sSearch = filter_input(INPUT_GET, 'search');
+	$sSearch = filter_input(INPUT_GET, 'search', FILTER_SANITIZE_STRING);
 	
 } elseif (filter_input(INPUT_GET, 'today') && !$sError) {
 	//display today's holidays
@@ -222,13 +222,13 @@ $iCount = $aCount[0]['FOUND_ROWS()'];
 	</head>
 	<body>
 		<div class="container">
-			<h1 class="col-md->offset-2"><a href="https://twitter.com/HolidaysBot" target="_blank">@HolidaysBot</a> - <?= (empty(filter_input(INPUT_GET, 'id')) ? 'add' : 'edit') ?> holiday</h1>
+			<h1 class="col-md->offset-2"><a href="https://twitter.com/HolidaysBot" target="_blank">@HolidaysBot</a> - <?= (empty(filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT)) ? 'add' : 'edit') ?> holiday</h1>
             <?php if (!empty($sSuccess)) { ?><div role="alert" class="alert alert-success"><?= $sSuccess ?></div><?php } ?>
             <?php if (!empty($sError)) { ?><div role="alert" class="alert alert-danger"><?= $sError ?></div><?php } ?>
 			<form method="post" action="<?= $sThisFile ?>" class="form-horizontal" role="form">
 
                 <?php if (!empty(filter_input(INPUT_GET, 'id'))) { ?>
-                    <input type="hidden" name="id" value="<?= (int)filter_input(INPUT_GET, 'id') ?>" />
+                    <input type="hidden" name="id" value="<?= filter_input(INPUT_GET, 'id', FILTER_INPUT_SANITIZE_NUMBER_INT) ?>" />
                 <?php } ?>
 
 				<div class="form-group">
