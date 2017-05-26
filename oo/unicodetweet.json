@@ -1,0 +1,20 @@
+{
+    "source": "json",
+    "format": ":description: &#:dec; (U+:hex)",
+    "tweet_vars": {
+        "0": {
+            "var": ":description",
+            "value": "description",
+            "truncate": true
+        },
+        "1": {
+            "var": ":dec",
+            "value": "dec"
+        },
+        "2": {
+            "var": ":hex",
+            "value": "hex"
+        }
+    },
+    "unicode-names" : "unicode_names.json"
+}
