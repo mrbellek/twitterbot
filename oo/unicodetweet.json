@@ -16,5 +16,5 @@
             "value": "hex"
         }
     },
-    "unicode-names" : "unicode_names.json"
+    "unicode-names" : "unicode_names.txt"
 }

@@ -8,6 +8,7 @@
  * - ZWJ-enabled (emoji) combinations?
  * - update database with newer unicode versions from https://github.com/unicode-table/unicode-table-data
  * - remove link from tweets to save space?
+ * - don't post 'unnamed' characters
  */
 require_once('autoload.php');
 require_once('unicodetweet.inc.php');
@@ -35,7 +36,6 @@ class UnicodeTweet
             if ((new Auth($this->oConfig))->isUserAuthed($this->sUsername)) {
 
                 if ($aUnicode = $this->getRow()) {
-                    die(var_dump($aUnicode));
                     $sTweet = (new Format($this->oConfig))->format((object)$aUnicode);
 
                     //replace unicode characters with hex html entities
@@ -47,7 +47,6 @@ class UnicodeTweet
 
                     $this->logger->output($sTweet);
                     die();
-                    die(var_dumP($aUnicode, $sTweet));
 
                     if ((new Tweet($this->oConfig))->post($sTweet)) {
                         $this->logger->output('Done!');
@@ -61,7 +60,7 @@ class UnicodeTweet
     {
         $rows = json_decode(file_get_contents($this->oConfig->get('unicode-names')));
 
-        if (1||date('w') == 0) {
+        if (date('w') == 0) {
             return $this->getSmileyRow($rows);
         } else {
             return $this->getRandomRow($rows);
@@ -72,9 +71,23 @@ class UnicodeTweet
     {
         $this->logger->output('Getting random record..');
 
-        //valid range is all
-        $value = array_rand((array)$rows);
-        $description = $rows->{$value};
+        //filter out some crap
+        $value = null;
+        $description = null;
+        for ($i = 0; $i < 1000; $i++) {
+
+            //valid range is all (with exceptions above)
+            $value = array_rand((array)$rows);
+            $description = $rows->{$value};
+
+            if (!empty($rows->{$value}) && !in_array($description, ['', '<Reserved>', '<Not a Character>'])) {
+                break;
+            }
+        }
+        if (empty($rows->{$value})) {
+            $this->logger('- FAILED! unable to find character in %d rows after 1000 tries.', count($rows));
+            die();
+        }
 
         $this->logger->output('- picked U+%s %s', $value, $description);
 
@@ -93,46 +106,78 @@ class UnicodeTweet
         $aEmojis = $this->getEmojiRanges();
 
         $value = null;
+        $description = null;
         //the official emoji ranges may be newer than the
         //full list of unicode I have, so find one that actually exists
-        do {
+        for ($i = 0; $i < 1000; $i++) {
             $this->logger->output('- getting random emoji');
             $key = array_rand($aEmojis);
             $value = str_pad(strtoupper(dechex($aEmojis[$key])), 4, '0');
-        } while (empty($rows->{$value}));
+            $description = $rows->{$value};
+
+            if (!empty($rows->{$value}) && !in_array($description, ['', '<Reserved>', '<Not a Character>'])) {
+                break;
+            }
+        }
+        if (empty($rows->{$value})) {
+            $this->logger('- FAILED! unable to find emoji in %d rows after 1000 tries.', count($rows));
+            die();
+        }
+
+        $fitzpatrick = false;
+        $fitzpatrickKey = false;
 
         //apply fitzpatrick scale (skintone)
         $aFitzpatrickRanges = $this->getFitzpatrickRanges();
         if (in_array($aEmojis[$key], $aFitzpatrickRanges)) {
 
-            //@TODO: 50% chance of applying fitzpatrick modifier
-            $aFitzpatrick = [
-                'type 1-2' => 0x1F3FB,
-                'type 3' => 0x1F3FC,
-                'type 4' => 0x1F3FD,
-                'type 5' => 0x1F3FE,
-                'type 6' => 0x1F3FF,
-            ];
+            if (rand(1, 2) == 1) {
+                //50% chance of applying fitzpatrick modifier
+                $aFitzpatrick = [
+                    'type 1-2' => 0x1F3FB,
+                    'type 3' => 0x1F3FC,
+                    'type 4' => 0x1F3FD,
+                    'type 5' => 0x1F3FE,
+                    'type 6' => 0x1F3FF,
+                ];
+
+                $fitzpatrickKey = array_rand($aFitzpatrick);
+                $fitzpatrick = $aFitzpatrick[$fitzpatrickKey];
+            }
         }
+
+        $variation = false;
+        $variationKey = false;
 
         //apply variation selector
         $aVariationRanges = $this->getVariationRanges();
-        if (in_array($aEmojis[$ley], $aVariationRanges)) {
+        if (in_array($aEmojis[$key], $aVariationRanges)) {
 
-            //@TODO: 50% chance of applying variation modifier (VS15 or VS16)
-            $aVariation = [
-                'VS15' => 0xFE0E,
-                'VS16' => 0xFE0F,
-            ];
+            if (rand(1, 2) == 1) {
+                //50% chance of applying variation modifier (VS15 or VS16)
+                $aVariation = [
+                    'VS15' => 0xFE0E,
+                    'VS16' => 0xFE0F,
+                ];
+
+                $variationKey = array_rand($aVariation);
+                $variation = $aVariation[$variationKey];
+            }
         }
 
-        $description = $rows->{$value};
-        $this->logger->output('- picked U+%s %s', $value, $description);
+        $this->logger->output('- picked U+%s %s %s %s',
+            $value,
+            $description,
+            $fitzpatrickKey ? sprintf('with Fitzpatrick scale %s', $fitzpatrickKey) : '',
+            $variationKey ? sprintf('with variation %s', $variationKey) : ''
+        );
 
         return [
             'description' => $description,
             'hex' => $value,
             'dec' => hexdec($value),
+            'modifier1' => $fitzpatrickKey ? $fitzpatrick : '',
+            'modifier2' => $variationKey ? $variation : '',
         ];
     }
 
