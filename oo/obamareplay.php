@@ -6,11 +6,11 @@ namespace Twitterbot\Core;
  * - sanitize tweets:
  *   v escape mentions
  *   v include images, links
+ *   v post original tweets with media t.co links and all... seems to work!
+ *   v include videos
  *   x unescape html entities
+ *   x expand truncated tweets
  *   - fix foreign chars
- *   - expand truncated tweets
- *   x include videos
- *   - post original tweets with media t.co links and all... seems to work!
  *
  * - run bot every 15 minutes, post everything that was posted within 2 years + 15 minutes ago
  */
@@ -22,7 +22,6 @@ use Twitterbot\Lib\Config;
 use Twitterbot\Lib\Auth;
 use Twitterbot\Lib\Tweet;
 use Twitterbot\Lib\Database;
-//use Twitterbot\Lib\Media;
 
 (new Obamareplay)->run();
 
@@ -48,20 +47,10 @@ class Obamareplay {
                     $this->logger->output('Replaying %d tweets..', count($aTweets));
                     $oTweet = new Tweet($this->oConfig);
                     foreach ($aTweets as $aTweet) {
-                        $sMediaId = false;
-                        $sTweet = $aTweet['text'];
-                        /*if ($aTweet['attachment']) {
-                            $sAttachment = $sTweet['attachment'] . '.' . $sTweet['type'];
-                            if (is_file('potus_images/' . $sAttachments)) {
-                                $this->logger->output(sprintf('- uploading %s..', $sAttachment));
-                                $sMediaId = (new Media($this->oConfiog))->upload('potus_images/' . $sAttachment);
-                                if ($sMediaId) {
-                                    $oTweet->setMedia($sMediaId);
-                                }
-                            }
-                        }*/
 
+                        $sTweet = $aTweet['text'];
                         $this->logger->output(sprintf('- posting: %s', $sTweet));
+
                         if ($oTweet->post($sTweet)) {
                             $this->markPosted($aTweet['id']);
                         }

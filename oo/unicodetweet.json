@@ -1,6 +1,6 @@
 {
     "source": "json",
-    "format": ":description: &#:dec; (U+:hex)",
+    "format": ":description &#:dec;:modifiers (U+:hex)",
     "tweet_vars": {
         "0": {
             "var": ":description",
@@ -14,7 +14,12 @@
         "2": {
             "var": ":hex",
             "value": "hex"
+        },
+        "3": {
+            "var": ":modifiers",
+            "value": "modifiers",
+            "default": ""
         }
     },
-    "unicode-names" : "unicode_names.txt"
+    "unicode-names" : "/unicode_names.txt"
 }

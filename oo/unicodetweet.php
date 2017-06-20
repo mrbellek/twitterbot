@@ -3,12 +3,12 @@
  * TODO:
  * v get random char, format, post - also replace unicode references in description
  * v emoji ranges 'additional emoji can also be found in the following' https://en.wikipedia.org/wiki/Emoji#Unicode_blocks
- * . emoji modifiers: fitzpatrick scale (skin tone) for certain ranges
- * . emoji variation selectors (VS16) https://en.wikipedia.org/wiki/Variation_Selectors_(Unicode_block)
+ * v remove link from tweets to save space?
+ * v update database with newer unicode versions from https://github.com/unicode-table/unicode-table-data
+ * v don't post 'unnamed' characters
+ * v emoji modifiers: fitzpatrick scale (skin tone) for certain ranges
+ * v emoji variation selectors (VS16) https://en.wikipedia.org/wiki/Variation_Selectors_(Unicode_block)
  * - ZWJ-enabled (emoji) combinations?
- * - update database with newer unicode versions from https://github.com/unicode-table/unicode-table-data
- * - remove link from tweets to save space?
- * - don't post 'unnamed' characters
  */
 require_once('autoload.php');
 require_once('unicodetweet.inc.php');
@@ -45,10 +45,7 @@ class UnicodeTweet
                         return sprintf('&#x%s;', ltrim(strtoupper(bin2hex($utf)), '0'));
                     }, $sTweet);
 
-                    $this->logger->output($sTweet);
-                    die();
-
-                    if ((new Tweet($this->oConfig))->post($sTweet)) {
+                    if ((new Tweet($this->oConfig))->post(mb_convert_encoding($sTweet, 'UTF-8', 'HTML-ENTITIES'))) {
                         $this->logger->output('Done!');
                     }
                 }
@@ -58,7 +55,7 @@ class UnicodeTweet
 
     private function getRow()
     {
-        $rows = json_decode(file_get_contents($this->oConfig->get('unicode-names')));
+        $rows = json_decode(file_get_contents(MYPATH . $this->oConfig->get('unicode-names')));
 
         if (date('w') == 0) {
             return $this->getSmileyRow($rows);
@@ -149,9 +146,9 @@ class UnicodeTweet
         $variation = false;
         $variationKey = false;
 
-        //apply variation selector
+        //apply variation selector (if no fitzpatrick applied)
         $aVariationRanges = $this->getVariationRanges();
-        if (in_array($aEmojis[$key], $aVariationRanges)) {
+        if (!$fitzpatrick && in_array($aEmojis[$key], $aVariationRanges)) {
 
             if (rand(1, 2) == 1) {
                 //50% chance of applying variation modifier (VS15 or VS16)
@@ -165,19 +162,21 @@ class UnicodeTweet
             }
         }
 
-        $this->logger->output('- picked U+%s %s %s %s',
-            $value,
-            $description,
-            $fitzpatrickKey ? sprintf('with Fitzpatrick scale %s', $fitzpatrickKey) : '',
-            $variationKey ? sprintf('with variation %s', $variationKey) : ''
-        );
+        //append any modifiers to description field
+        $description .= $fitzpatrickKey ? sprintf(' (%s)', $fitzpatrickKey) : '';
+        $description .= $variationKey ? sprintf(' (%s)', $variationKey) : '';
+
+        $modifiers = '';
+        $modifiers .= $fitzpatrickKey ? '&#' . $fitzpatrick . ';' : '';
+        $modifiers .= $variationKey ? '&#' . $variation . ';' : '';
+
+        $this->logger->output('- picked U+%s %s', $value, $description);
 
         return [
             'description' => $description,
             'hex' => $value,
             'dec' => hexdec($value),
-            'modifier1' => $fitzpatrickKey ? $fitzpatrick : '',
-            'modifier2' => $variationKey ? $variation : '',
+            'modifiers' => $modifiers,
         ];
     }
 
