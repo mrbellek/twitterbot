@@ -1,5 +1,6 @@
 examples:
 x 10millioncombos
+x stoptextingall
 v appneeds
 v mbibleverses
 v chunkybot
@@ -9,23 +10,22 @@ v iwantabot
 v mypictures
 v notesfrombtc
 v notesscraper
-. rbimbofetish
 v rbuttcoin
+v stallman_txt
+. rbimbofetish
 . rgonewild
 . rnsfw
-v stallman_txt
-x stoptextingall
 
 single-purpose:
 x benjaminfrgates
-v bitcoinpizza
-. dstbot
-- exactotweet
-v gameswithgold
-. holidaysbot - admin page has unicode errors + test whole thing
 x ialwayswin
 x tvgraphs
-- unicodebot
+v bitcoinpizza
+v gameswithgold
+v unicodebot
+. holidaysbot - admin page has unicode errors + test whole thing
+. dstbot
+- exactotweet
 
 
 general:

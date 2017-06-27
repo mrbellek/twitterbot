@@ -1,0 +1,15 @@
+{
+    "source": "other",
+    "format": "\":albumtitle\" by :bandname",
+    "tweet_vars": {
+        "0": {
+            "var": ":albumtitle",
+            "value": "albumtitle",
+            "truncate": true
+        },
+        "1": {
+            "var": ":bandname",
+            "value": "bandname"
+        }
+    }
+}

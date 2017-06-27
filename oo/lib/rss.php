@@ -88,7 +88,7 @@ class Rss extends Base
             //save in settings
             if ($sNewestTimestamp > 0) {
                 $this->oConfig->set('last_max_timestamp', $sNewestTimestamp);
-                $this->oConfig->writeConfig();
+                //$this->oConfig->writeConfig(); //DEBUG
             }
         }
 

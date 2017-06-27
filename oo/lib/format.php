@@ -6,6 +6,9 @@ use Twitterbot\Custom\Imgur;
 /**
  * Format class - formats objects into a tweet according to settings
  *
+ * TODO: the tweet_vars.x.attach_image field is not checked, instead hardcoding it based on content type
+ * TODO: any attached content isn't removed from the tweet
+ *
  * @param config:source - database/rss where record came from, needed for handling format settings
  * @param config:max_tweet_length
  * @param config:short_url_length
@@ -24,6 +27,10 @@ class Format extends Base
      */
     public function format($oRecord)
     {
+        if (is_array($oRecord)) {
+            $oRecord = (object) $oRecord;
+        }
+
         switch ($this->oConfig->get('source')) {
             case 'database':
             default:
@@ -32,6 +39,7 @@ class Format extends Base
 
             case 'rss':
             case 'json':
+            case 'other':
 
                 return $this->rss_format($oRecord);
         }
@@ -118,7 +126,7 @@ class Format extends Base
         $iShortUrlLength = $this->oConfig->get('short_url_length', 23);
 
         //format message according to format in settings, and return it
-        $aTweetVars = $this->oConfig->get('tweet_vars');
+        $aTweetVars = $this->oConfig->get('tweet_vars', []);
         $sTweet = $this->oConfig->get('format');
 
         //replace all non-truncated fields
