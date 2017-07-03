@@ -1,15 +1,12 @@
 <?php
 /**
  * How to Make Your Own Album Cover
- * 1 Go to wikipedia. Hit 'random'
- * or click http://en.wikipedia.org/wiki/Special:Random
- * The first random wikipedia article you get is the name of your band.
- * 2 Go to 'Random quotations'
- * or click http://www.quotationspage.com/random.php3
- * The last four or five words of the very last quote of the page is the title of your first album.
- * 3 Go to flickr and click on 'explore the last seven days'
- * or click http://www.flickr.com/explore/interesting/7days
- * Third picture, no matter what it is, will be your album cover.
+ * 1 Go to wikipedia. click http://en.wikipedia.org/wiki/Special:Random
+ *   The first random wikipedia article you get is the name of your band.
+ * 2 Go to 'Random quotations' http://www.quotationspage.com/random.php3
+ *   The last four or five words of the very last quote of the page is the title of your first album.
+ * 3 Go to flickr and click on 'explore the last seven days' http://www.flickr.com/explore/interesting/7days
+ *   Third picture, no matter what it is, will be your album cover.
  * 4 Use photoshop or similar to put it all together.
  * 5 Post it with this text in the 'caption' and TAG the friends you want to join.
  *
@@ -19,10 +16,11 @@
  * v random text position
  * v random font size, that fits in image
  * v watermark
+ * v properly construct tweet
+ * v font shading
+ * v better contrast on text vs image, either pick text color based on bg or use outline (both reverse color)
  * ? random font
- * ? font shading
- * - properly construct tweet
- * - better contrast on text vs image, either pick text color based on bg or use outline (both reverse color)
+ * ? use normal CD case aspect ratio (a square)
  */
 
 require_once('autoload.php');
@@ -118,6 +116,7 @@ class RandomAlbumCovr
                     if ($this->generateAlbumCover($sBandName, $sAlbumTitle, $oImage, $sAlbumCoverFilename)) {
 
                         $this->logger->output('- wrote album cover to %s!', $sAlbumCoverFilename);
+                        die();
 
                         $this->logger->output('Uploading album cover to Twitter..');
                         $sMediaId = (new Media($oConfig))
@@ -208,7 +207,7 @@ class RandomAlbumCovr
 
         $this->drawText($oImage, $aBandName);
         $this->drawText($oImage, $aAlbumTitle);
-        $this->drawText($oImage, $aWatermark);
+        $this->drawText($oImage, $aWatermark, true);
 
         $this->logger->output('- writing generated file to disk..');
         imagepng($oImage, $sFilePath);
@@ -216,8 +215,15 @@ class RandomAlbumCovr
         return true;
     }
 
-    private function drawText($oImage, $aArgs)
+    private function drawText($oImage, $aArgs, $bSimpleShadow = false)
     {
+        $oBlack = imagecolorallocate($oImage, 0, 0, 0);
+        imagettftext($oImage, $aArgs['fontSize'], $aArgs['angle'], $aArgs['x'] - 1, $aArgs['y'] - 1, $oBlack, $aArgs['fontName'], $aArgs['text']);
+        if (!$bSimpleShadow) {
+            $oWhite = imagecolorallocate($oImage, 255, 255, 255);
+            imagettftext($oImage, $aArgs['fontSize'], $aArgs['angle'], $aArgs['x'] + 1, $aArgs['y'] + 1, $oWhite, $aArgs['fontName'], $aArgs['text']);
+        }
+
         imagettftext($oImage, $aArgs['fontSize'], $aArgs['angle'], $aArgs['x'], $aArgs['y'], $aArgs['color'], $aArgs['fontName'], $aArgs['text']);
     }
 
