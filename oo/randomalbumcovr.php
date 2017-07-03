@@ -116,7 +116,6 @@ class RandomAlbumCovr
                     if ($this->generateAlbumCover($sBandName, $sAlbumTitle, $oImage, $sAlbumCoverFilename)) {
 
                         $this->logger->output('- wrote album cover to %s!', $sAlbumCoverFilename);
-                        die();
 
                         $this->logger->output('Uploading album cover to Twitter..');
                         $sMediaId = (new Media($oConfig))
@@ -134,6 +133,10 @@ class RandomAlbumCovr
                             (new Tweet($oConfig))
                                 ->set('aMediaIds', [$sMediaId])
                                 ->post($sTweet);
+
+                            if (isset($_SERVER['DOCUMENT_ROOT'])) {
+                                $this->logger->output('<img src="randomalbumcovr.png" />');
+                            }
                         } else {
                             $this->logger->output('Failed to upload image, halting.');
                         }
