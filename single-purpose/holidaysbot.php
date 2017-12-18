@@ -348,7 +348,7 @@ class HolidaysBot {
 		}
 		
 		//check if formatted tweet has room for attached image (23 + 1 chars)
-		if (strlen($sTempTweet) > 140 - 24) {
+		if (strlen($sTempTweet) > 280 - 24) {
 			printf("<hr>- %d-%d <b style='color: red;'>[%d]</b> %s<hr>\n", $aHoliday['month'], $aHoliday['day'], strlen($sTempTweet), $sTweet);
 		} else {
 			printf("- %d-%d <b>[%d]</b> %s\n", $aHoliday['month'], $aHoliday['day'], strlen($sTempTweet), $sTweet);

@@ -65,7 +65,7 @@ class Tweet extends Base
         $oRet = $this->oTwitter->post('statuses/update', array(
             'status' => sprintf('@%s %s',
                 $oTweet->user->screen_name,
-                substr($sMessage, 0, 140 - 2 - strlen($oTweet->user->screen_name))
+                substr($sMessage, 0, 280 - 2 - strlen($oTweet->user->screen_name))
             ),
             'trim_users' => true,
             'in_reply_to_status_id' => $oTweet->id_str,

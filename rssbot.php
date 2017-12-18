@@ -216,7 +216,7 @@ class RssBot {
     private function formatTweet($oItem) {
 
         //should get this by API (GET /help/configuration ->short_url_length) but it rarely changes
-        $iMaxTweetLength = 140;
+        $iMaxTweetLength = 280;
         $iShortUrlLength = 23;
         $iMediaUrlLength = 23;
 

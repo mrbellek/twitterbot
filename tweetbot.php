@@ -264,8 +264,8 @@ class TweetBot {
 	private function formatTweet($aRecord) {
 
 		//should get this by API (GET /help/configuration ->short_url_length) but it rarely changes
-		$iMaxTweetLength = 140;
-		$iShortUrlLength = 22;	//NB: 1 char more for https links
+		$iMaxTweetLength = 280;
+		$iShortUrlLength = 23;
 
 		if (empty($this->aTweetSettings['sFormat']) || empty($this->aTweetSettings['aTweetVars'])) {
 			$this->logger(2, 'Tweet format settings missing.');
@@ -410,7 +410,7 @@ class TweetBot {
         //if we can DM the source of the command, do that
         if ($oRet->relationship->source->can_dm) {
 
-            $oRet = $this->oTwitter->post('direct_messages/new', array('user_id' => $oMention->user->id_str, 'text' => substr($sReply, 0, 140)));
+            $oRet = $this->oTwitter->post('direct_messages/new', array('user_id' => $oMention->user->id_str, 'text' => $sReply));
 
             if (!empty($oRet->errors)) {
                 $this->logger(2, sprintf('Twitter API call failed: POST direct_messages/new (%s)', $oRet->errors[0]->message));
@@ -426,7 +426,7 @@ class TweetBot {
                 'trim_user' => TRUE,
                 'status' => sprintf('@%s %s',
                     $oMention->user->screen_name,
-                    substr($sReply, 0, 140 - 2 - strlen($oMention->user->screen_name))
+                    substr($sReply, 0, 280 - 2 - strlen($oMention->user->screen_name))
                 )
             ));
 

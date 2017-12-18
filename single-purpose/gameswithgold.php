@@ -45,8 +45,8 @@ class GamesWithGold {
     private $iLogLevel = 3; //increase for debugging
     private $aSettings;
 
-	private $iTweetMaxLength = 140;
-	private $iTweetLinkLength = 22;
+	private $iTweetMaxLength = 280;
+	private $iTweetLinkLength = 23;
 
     public function __construct($aArgs) {
 

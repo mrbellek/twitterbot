@@ -257,8 +257,8 @@ class PictureBot {
 	private function formatTweet($aFile) {
 
 		//should get this by API (GET /help/configuration ->short_url_length) but it rarely changes
-		$iMaxTweetLength = 140;
-		$iShortUrlLength = 22;	//NB: 1 char more for https links
+		$iMaxTweetLength = 280;
+		$iShortUrlLength = 23;
 
 		if (empty($this->aTweetSettings['sFormat'])) {
 			$this->logger(2, 'Tweet format settings missing.');

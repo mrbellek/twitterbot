@@ -304,7 +304,7 @@ class HolidaysBot
 		}
 		
 		//check if formatted tweet has room for attached image (23 + 1 chars)
-		if (strlen($sTempTweet) > 140 - 24) {
+		if (strlen($sTempTweet) > 280 - 24) {
 			$this->logger->output("<hr>- %d-%d <b style='color: red;'>[%d]</b> %s<hr>", $oHoliday->month, $oHoliday->day, strlen($sTempTweet), utf8_decode($sTweet));
             return false;
 		} else {
