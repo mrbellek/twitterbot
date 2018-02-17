@@ -587,6 +587,12 @@ class RssBot {
 			$sName = $sImage;
 		}
 
+        //make sure file is not too large before it makes us run out of memory
+        $sImageBinarySize = $this->curl_get_file_size($sImage);
+        if ($sImageBinarySize > 3 * pow(1024, 2)) {
+            return FALSE;
+        }
+
 		//upload image and save media id to attach to tweet
 		$sImageBinary = base64_encode(file_get_contents($sImage));
 		if ($sImageBinary && strlen($sImageBinary) < 3 * pow(1024, 2)) { //max size is 3MB
@@ -608,6 +614,43 @@ class RssBot {
 
 		return FALSE;
 	}
+
+    private function curl_get_file_size( $url ) {
+        // Assume failure.
+        $result = -1;
+
+        $curl = curl_init( $url );
+
+        // Issue a HEAD request and follow any redirects.
+        curl_setopt( $curl, CURLOPT_NOBODY, true );
+        curl_setopt( $curl, CURLOPT_HEADER, true );
+        curl_setopt( $curl, CURLOPT_RETURNTRANSFER, true );
+        curl_setopt( $curl, CURLOPT_FOLLOWLOCATION, true );
+        //curl_setopt( $curl, CURLOPT_USERAGENT, get_user_agent_string() );
+
+        $data = curl_exec( $curl );
+        curl_close( $curl );
+
+        if( $data ) {
+            $content_length = "unknown";
+            $status = "unknown";
+
+            if( preg_match( "/^HTTP\/1\.[01] (\d\d\d)/", $data, $matches ) ) {
+                $status = (int)$matches[1];
+            }
+
+            if( preg_match( "/Content-Length: (\d+)/", $data, $matches ) ) {
+                $content_length = (int)$matches[1];
+            }
+
+            // http://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+            if( $status == 200 || ($status > 300 && $status <= 308) ) {
+                $result = $content_length;
+            }
+        }
+
+        return $result;
+    }
 
     private function halt($sMessage = '') {
         echo $sMessage . "\n\nDone!\n\n";
