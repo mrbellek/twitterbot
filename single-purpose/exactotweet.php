@@ -142,7 +142,7 @@ class ExactoTweet {
 		foreach ($aTimeline as $oTweet) {
 
 			//check length, filter retweets
-			if (strlen($oTweet->text) == 140 && substr($oTweet->text, 0, 3) !== 'RT ') {
+			if ((strlen($oTweet->text) == 280 || strlen($oTweet->text) == 140) && substr($oTweet->text, 0, 3) !== 'RT ') {
 
 				//exactotweet!
 				printf('Exactotweet by <b>@%s</b>: %s<br>', $oTweet->user->screen_name, str_replace("\n", ' ', $oTweet->text));
@@ -346,7 +346,7 @@ class ExactoTweet {
 		//if we can DM the source of the command, do that
 		if ($this->bReplyInDM && $oRet->relationship->source->can_dm) {
 
-			$oRet = $this->oTwitter->post('direct_messages/new', array('user_id' => $oMention->user->id_str, 'text' => substr($sReply, 0, 140)));
+			$oRet = $this->oTwitter->post('direct_messages/new', array('user_id' => $oMention->user->id_str, 'text' => $sReply));
 
 			if (!empty($oRet->errors)) {
 				$this->logger(2, sprintf('Twitter API call failed: POST direct_messages/new (%s)', $oRet->errors[0]->message));
@@ -362,7 +362,7 @@ class ExactoTweet {
 				'trim_user' => TRUE,
 				'status' => sprintf('@%s %s',
 					$oMention->user->screen_name,
-					substr($sReply, 0, 140 - 2 - strlen($oMention->user->screen_name))
+					substr($sReply, 0, 280 - 2 - strlen($oMention->user->screen_name))
 				)
 			));
 

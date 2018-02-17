@@ -75,10 +75,10 @@ class PictureBot {
 					//format and post message
 					if ($this->postMessage($aFile)) {
 
-						$this->updatePostCount($aFile);
-
 						$this->halt('Done.');
 					}
+
+                    $this->updatePostCount($aFile);
 				}
 			}
 		}
@@ -257,8 +257,8 @@ class PictureBot {
 	private function formatTweet($aFile) {
 
 		//should get this by API (GET /help/configuration ->short_url_length) but it rarely changes
-		$iMaxTweetLength = 140;
-		$iShortUrlLength = 22;	//NB: 1 char more for https links
+		$iMaxTweetLength = 280;
+		$iShortUrlLength = 23;
 
 		if (empty($this->aTweetSettings['sFormat'])) {
 			$this->logger(2, 'Tweet format settings missing.');
@@ -286,8 +286,9 @@ class PictureBot {
 	private function uploadPicture($sImage) {
 
 		//upload image and save media id to attach to tweet
+        printf("Uploading to Twitter: %s\n", $sImage);
 		$sImageBinary = base64_encode(file_get_contents($sImage));
-		if ($sImageBinary && strlen($sImageBinary) < 5 * pow(1024, 2)) { //max size is 3MB
+		if ($sImageBinary && strlen($sImageBinary) < 15 * pow(1024, 2)) { //max size is 15MB
 
 			$oRet = $this->oTwitter->upload('media/upload', array('media' => $sImageBinary));
 			if (isset($oRet->errors)) {
@@ -300,6 +301,8 @@ class PictureBot {
 			}
 
 			return TRUE;
+        } else {
+            printf("- picture is too large!\n");
 		}
 
 		return FALSE;

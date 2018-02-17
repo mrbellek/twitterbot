@@ -385,7 +385,7 @@ $iCount = $aCount['FOUND_ROWS()'];
 
 			<table class="table table-condensed table-hover">
 				<tr>
-					<th>Holiday (<?= count($aHolidays) ?>)</th>
+					<th>Holiday (<?= $iCount ?>)</th>
                     <th>Year</th>
 					<th>Month</th>
 					<th>Day</th>

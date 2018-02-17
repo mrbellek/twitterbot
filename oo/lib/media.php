@@ -8,6 +8,7 @@
  */
 namespace Twitterbot\Lib;
 
+use Twitterbot\Custom\Imgur;
 use \DOMDocument;
 use \DOMXPath;
 
@@ -26,6 +27,8 @@ class Media extends Base
     public function upload($sFilePath)
     {
         $this->logger->output(sprintf('Reading file %s..', $sFilePath));
+        /* this code is no longer needed since Abraham\TwitterOAuth takes a filename instead of its contents
+
         $sImageBinary = base64_encode(file_get_contents($sFilePath));
         if ($sImageBinary && strlen($sImageBinary) > 5 * pow(1024, 2)) {
             //max size is 3MB
@@ -36,14 +39,17 @@ class Media extends Base
         }
 
         $oRet = $this->oTwitter->upload('media/upload', array('media' => $sImageBinary));
+        */
+
+        $oRet = $this->oTwitter->upload('media/upload', array('media' => $sFilePath));
         if (isset($oRet->errors)) {
-            $this->logger->write(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message), array('file' => $sFilePath, 'length' => strlen($sImageBinary)));
+            $this->logger->write(2, sprintf('Twitter API call failed: media/upload (%s)', $oRet->errors[0]->message), array('file' => $sFilePath));
             $this->logger->output('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
 
             return false;
 
         } elseif (isset($oRet->error)) {
-            $this->logger->write(2, sprintf('Twitter API call failed: media/upload(%s)', $oRet->error), array('file' => $sFilePath, 'length' => strlen($sImageBinary)));
+            $this->logger->write(2, sprintf('Twitter API call failed: media/upload(%s)', $oRet->error), array('file' => $sFilePath));
             $this->logger->output(sprintf('- Error: %s', $oRet->error));
         } else {
             $this->logger->output("- Uploaded %s to attach to next tweet", $sFilePath);
@@ -62,16 +68,28 @@ class Media extends Base
      */
     public function uploadFromUrl($sUrl, $sType)
     {
+        //albums can have a numeral if they have multiple pics, strip that out for here
+        if (preg_match('/album:\d/', $sType)) {
+            $sType = 'album';
+        }
+
         switch ($sType) {
-            default:
             case 'image':
                 return $this->upload($sUrl);
                 break;
             case 'gallery':
+            case 'album':
                 return $this->uploadFromGallery($sUrl);
                 break;
             case 'instagram':
                 return $this->uploadFromInstagram($sUrl);
+                break;
+            default:
+                if (preg_match('/album:\d/', $sType, $m)) {
+                    $this->uploadFromGallery($sUrl);
+                } else {
+                    $this->upload($sUrl);
+                }
                 break;
         }
     }
@@ -85,28 +103,8 @@ class Media extends Base
      */
     private function uploadFromGallery($sUrl)
     {
-        //imgur implements meta tags that indicate to twitter which urls to use for inline preview
-        //so we're going to use those same meta tags to determine which urls to upload
-        //format: <meta name="twitter:image[0-3]:src" content="http://i.imgur.com/[a-zA-Z0-9].ext"/>
-
-        //march 2016: imgur changed their meta tags, only the first (or random?) image is listed
-        $aImageUrls = array();
-
-        //fetch twitter meta tag values, up to 4
-        libxml_use_internal_errors(true);
-        $oDocument = new DOMDocument();
-        $oDocument->preserveWhiteSpace = false;
-        $oDocument->loadHTML(file_get_contents($sUrl));
-
-        $oXpath = new DOMXpath($oDocument);
-        $oMetaTags = $oXpath->query('//meta[contains(@name,"twitter:image")]');
-        foreach ($oMetaTags as $oTag) {
-            $aImageUrls[] = $oTag->getAttribute('content');
-
-            if (count($aImageUrls) == 4) {
-                break;
-            }
-        }
+        //november 2016: fuck this, use the API
+        $aImageUrls = (new Imgur)->getFourAlbumImages($sUrl);
 
         //if we have at least one image, upload it to attach to tweet
         $aMediaIds = array();

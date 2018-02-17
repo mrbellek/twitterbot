@@ -1,14 +1,20 @@
 <?php
 namespace Twitterbot\Lib;
 
+use Twitterbot\Custom\Imgur;
+
 /**
  * Format class - formats objects into a tweet according to settings
  *
- * @param config:source database/rss where record came from, needed for handling format settings
+ * TODO: the tweet_vars.x.attach_image field is not checked, instead hardcoding it based on content type
+ * TODO: any attached content isn't removed from the tweet
+ *
+ * @param config:source - database/rss where record came from, needed for handling format settings
  * @param config:max_tweet_length
  * @param config:short_url_length
- * @param config:tweet_vars variables present in tweet and their values
- * @param config:format unformatted tweet string
+ * @param config:tweet_vars - variables present in tweet and their values
+ * @param config:format - unformatted tweet string
+ * @param config:allow_mentions - allow tweets to mention other users
  */
 class Format extends Base
 {
@@ -21,6 +27,10 @@ class Format extends Base
      */
     public function format($oRecord)
     {
+        if (is_array($oRecord)) {
+            $oRecord = (object) $oRecord;
+        }
+
         switch ($this->oConfig->get('source')) {
             case 'database':
             default:
@@ -29,6 +39,7 @@ class Format extends Base
 
             case 'rss':
             case 'json':
+            case 'other':
 
                 return $this->rss_format($oRecord);
         }
@@ -57,6 +68,11 @@ class Format extends Base
             }
         }
 
+        //disable mentions if needed
+        if (!$this->oConfig->get('allow_mentions', false)) {
+            $sTweet = str_replace('@', '@/', $sTweet);
+        }
+
         //determine maximum length left over for truncated field (links are shortened to t.co format of max 22 chars)
         $sTempTweet = preg_replace('/http:\/\/\S+/', str_repeat('x', $iShortUrlLength), $sTweet);
         $sTempTweet = preg_replace('/https:\/\/\S+/', str_repeat('x', $iShortUrlLength + 1), $sTempTweet);
@@ -71,6 +87,11 @@ class Format extends Base
 
                 //get text to replace placeholder with
                 $sText = html_entity_decode($this->getRssValue($oRecord, $oTweetVar), ENT_QUOTES, 'UTF-8');
+
+                //disable mentions if needed
+                if (!$this->oConfig->get('allow_mentions', false)) {
+                    $sText = str_replace('@', '@/', $sText);
+                }
 
                 //get length of text with url shortening
                 $sTempText = preg_replace('/http:\/\/\S+/', str_repeat('x', $iShortUrlLength), $sText);
@@ -89,7 +110,7 @@ class Format extends Base
             }
         }
 
-        return $sTweet;
+        return trim($sTweet);
     }
 
     /**
@@ -105,7 +126,7 @@ class Format extends Base
         $iShortUrlLength = $this->oConfig->get('short_url_length', 23);
 
         //format message according to format in settings, and return it
-        $aTweetVars = $this->oConfig->get('tweet_vars');
+        $aTweetVars = $this->oConfig->get('tweet_vars', []);
         $sTweet = $this->oConfig->get('format');
 
         //replace all non-truncated fields
@@ -113,6 +134,11 @@ class Format extends Base
             if (empty($oTweetVar->truncate) || $oTweetVar->truncate == false) {
                 $sTweet = str_replace($oTweetVar->var, $aRecord[$oTweetVar->recordfield], $sTweet);
             }
+        }
+
+        //disable mentions if needed
+        if (!$this->oConfig->get('allow_mentions', false)) {
+            $sTweet = str_replace('@', '@/', $sTweet);
         }
 
         //determine maximum length left over for truncated field (links are shortened to t.co format of max 22 chars)
@@ -129,6 +155,11 @@ class Format extends Base
 
                 //get text to replace placeholder with
                 $sText = html_entity_decode($aRecord[$oTweetVar->recordfield], ENT_QUOTES, 'UTF-8');
+
+                //disable mentions if needed
+                if (!$this->oConfig->get('allow_mentions', false)) {
+                    $sText = str_replace('@', '@/', $sText);
+                }
 
                 //get length of text with url shortening
                 $sTempText = preg_replace('/http:\/\/\S+/', str_repeat('x', $iShortUrlLength), $sText);
@@ -169,7 +200,7 @@ class Format extends Base
             if (isset($mReturn->$sNode)) {
                 $mReturn = $mReturn->$sNode;
             } else {
-                $mReturn = $oValue->default;
+                $mReturn = (!empty($oValue->default) ? $oValue->default : '');
                 break;
             }
         }
@@ -238,10 +269,19 @@ class Format extends Base
                     //reddit hosted file
                     $sResult = 'image';
                     $bAttachFile = true;
+                    //ampersands seem to get mangled in posting, messing up the checksum
+                    $sSubject = str_replace('&amp;', '&', $sSubject);
                 } elseif (preg_match('/imgur\.com\/a\//i', $sSubject)) {
                     //multiple images on imgur.com page
-                    $sResult = 'gallery';
+                    $sResult = 'album';
                     $bAttachFile = true;
+
+                    //use imgur API here to get number of images in album, set type to [album:n]
+                    if (($iImageCount = (new Imgur)->getAlbumImageCount($sSubject)) && is_numeric($iImageCount) && $iImageCount > 1) {
+                        $sResult = sprintf('album:%d', $iImageCount);
+                    } else {
+                        $sResult = 'album';
+                    }
                 } elseif (preg_match('/instagram\.com\/.[^\/]/i', $sSubject) || preg_match('/instagram\.com\/p\//i', $sSubject)) {
                     //instagram account link or instagram photo
                     $sResult = 'instagram';

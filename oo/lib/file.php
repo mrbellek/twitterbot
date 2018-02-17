@@ -21,7 +21,7 @@ class File extends Base
         if ($this->oConfig->get('filelist') && (strtotime($this->oConfig->get('filelist_mtime')) + $this->oConfig->get('max_index_age') > time())) {
 
             $this->logger->output('- Using cached filelist');
-            $this->aFileList = $this->oConfig->get('filelist');
+            $this->aFileList = (array) $this->oConfig->get('filelist');
 
             return true;
         }
@@ -69,6 +69,10 @@ class File extends Base
      */
     private function recursiveScan($sFolder)
     {
+        if (!is_dir($sFolder)) {
+            return [];
+        }
+
 		$aFiles = scandir($sFolder);
 
 		foreach ($aFiles as $key => $sFile) {

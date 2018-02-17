@@ -29,13 +29,12 @@ class Tweet extends Base
 
         foreach ($aTweets as $sTweet) {
             if (!empty($this->aMediaIds)) {
-                //TODO: why array_shift for just the first one? twitter API supports up to 4 attachments
-                $sMediaId = array_shift($this->aMediaIds);
+                $sMediaIds = implode(',', $this->aMediaIds);
                 $this->logger->output('Tweeting: [%dch] %s (with attachment)', strlen($sTweet), utf8_decode($sTweet));
-                //$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true, 'media_ids' => $sMediaId));
+                $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true, 'media_ids' => $sMediaIds));
             } else {
                 $this->logger->output('Tweeting: [%dch] %s', strlen($sTweet), utf8_decode($sTweet));
-                //$oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true));
+                $oRet = $this->oTwitter->post('statuses/update', array('status' => $sTweet, 'trim_users' => true));
             }
             if (isset($oRet->errors)) {
                 $this->logger->write(2, sprintf('Twitter API call failed: statuses/update (%s)', $oRet->errors[0]->message), array('tweet' => $sTweet));
@@ -57,11 +56,16 @@ class Tweet extends Base
             return false;
         }
 
-        $this->logger->output('Replying: [%dch] %s', strlen($sMessage), utf8_decode($sMessage));
+        $iShortUrlLength = $this->oConfig->get('short_url_length', 23);
+        $sTempReply = preg_replace('/http:\/\/\S+/', str_repeat('x', $iShortUrlLength), $sMessage);
+        $sTempReply = preg_replace('/https:\/\/\S+/', str_repeat('x', $iShortUrlLength + 1), $sTempReply);
+        $iMessageLength = strlen($sTempReply);
+
+        $this->logger->output('Replying: [%dch] %s', $iMessageLength, utf8_decode($sMessage));
         $oRet = $this->oTwitter->post('statuses/update', array(
             'status' => sprintf('@%s %s',
                 $oTweet->user->screen_name,
-                substr($sMessage, 0, 140 - 2 - strlen($oTweet->user->screen_name))
+                substr($sMessage, 0, 280 - 2 - strlen($oTweet->user->screen_name))
             ),
             'trim_users' => true,
             'in_reply_to_status_id' => $oTweet->id_str,
@@ -77,7 +81,7 @@ class Tweet extends Base
     }
 
     /**
-     * Set media ids to be posted with next tweet
+     * Set media ids to be posted with next tweet (max 4)
      *
      * @param array $aMediaIds
      *
@@ -86,6 +90,10 @@ class Tweet extends Base
     public function setMedia($aMediaIds)
     {
         $this->aMediaIds = $aMediaIds;
+
+        if (count($this->aMediaIds) > 4) {
+            $this->aMediaIds = array_slice($aMediaIds, 0, 4);
+        }
 
         return $this;
     }

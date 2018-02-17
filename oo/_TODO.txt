@@ -1,5 +1,6 @@
 examples:
 x 10millioncombos
+x stoptextingall
 v appneeds
 v mbibleverses
 v chunkybot
@@ -9,25 +10,35 @@ v iwantabot
 v mypictures
 v notesfrombtc
 v notesscraper
+v rbuttcoin
+v stallman_txt
 . rbimbofetish
-. rbuttcoin
 . rgonewild
 . rnsfw
-. stallman_txt
-x stoptextingall
 
 single-purpose:
 x benjaminfrgates
-- bitcoinpizza
-- dstbot
-- exactotweet
-- gameswithgold
-- holidaysbot
 x ialwayswin
 x tvgraphs
-- unicodebot
+v bitcoinpizza
+v gameswithgold
+v unicodebot
+. holidaysbot - admin page has unicode errors + test whole thing
+. dstbot
+- exactotweet
 
 
 general:
 v dependency injection instead of set('oConfig', $oConfig)
-. keep track of last item processed in last run
+v keep track of last item processed in last run
+v logger writing to database
+v logview
+- database class altijd laden in lib\Base? dan kan logger->write() ook altijd
+. config::allow_mentions implementeren in lib\Format, default false, toepassen in dstnotify, rbimbofetish, ..?
+. gebruik maken van abraham/twitteroauth ipv gare stokoude twitteroauth.php
+  - lijkt te werken, moet nog volledig getest worden
+  - ondersteunt geen mp4/gifv uploads :(
+- lib\format maakt geen gebruik van tweet_vars.x.attach_image
+- attached content is niet uit de tweet gehaald
+x custom\gis omschrijven naar customsearch v2, zie gmail
+- logview geeft geen error levels

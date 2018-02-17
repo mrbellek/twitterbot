@@ -1,6 +1,8 @@
 <?php
 namespace Twitterbot\Lib;
 
+use \Exception;
+
 /**
  * Rss class - retrieves xml/json feed and returns only new items since last fetch
  *
@@ -62,10 +64,10 @@ class Rss extends Base
             foreach ($oNodes as $key => $oNode) {
 
                 //get value of timestamp field
-                $sTimestamp = $this->getRssNodeField($oNode, $oFeed->timestamp_field);
+                $sTimestamp = $this->getRssNodeField($oNode, $this->oConfig->get('timestamp_field'));
 
                 //remove node from list if timestamp is older than newest timestamp from last run
-                if (is_numeric($sTimestamp) && $sTimestamp > 0 && $sTimestamp < $sLastMaxTimestamp) {
+                if (is_numeric($sTimestamp) && $sTimestamp > 0 && $sTimestamp <= $sLastMaxTimestamp) {
                     unset($oNodes[$key]);
                 }
             }
@@ -73,11 +75,11 @@ class Rss extends Base
 
         //get highest timestamp in list of nodes and save it
         $sNewestTimestamp = 0;
-        if (!empty($oFeed->timestamp_field)) {
+        if ($sTimestampField = $this->oConfig->get('timestamp_field')) {
             foreach ($oNodes as $oItem) {
 
                 //get value of timestamp field
-                $sTimestamp = $this->getRssNodeField($oItem, $oFeed->timestamp_field);
+                $sTimestamp = $this->getRssNodeField($oItem, $sTimestampField);
 
                 //save highest value of timestamp
                 $sNewestTimestamp = (is_numeric($sTimestamp) && $sTimestamp > $sNewestTimestamp ? $sTimestamp : $sNewestTimestamp);
@@ -86,6 +88,7 @@ class Rss extends Base
             //save in settings
             if ($sNewestTimestamp > 0) {
                 $this->oConfig->set('last_max_timestamp', $sNewestTimestamp);
+                //$this->oConfig->writeConfig(); //DEBUG
             }
         }
 

@@ -105,7 +105,7 @@ class Markov extends Base
             $sKey = implode(' ', $aKey);
 
             //add next word to tweet
-            if (strlen($sNewTweet . ' ' . $sNextWord) <= 140) {
+            if (strlen($sNewTweet . ' ' . $sNextWord) <= 280) {
                 $sNewTweet .= ' ' . $sNextWord;
             } else {
                 break;

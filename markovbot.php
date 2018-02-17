@@ -225,8 +225,8 @@ class MarkovBot {
     private function formatTweet($aRecord) {
 
 		//should get this by API (GET /help/configuration ->short_url_length) but it rarely changes
-		$iMaxTweetLength = 140;
-		$iShortUrlLength = 22;	//NB: 1 char more for https links
+		$iMaxTweetLength = 280;
+		$iShortUrlLength = 23;
 
 		if (empty($this->aTweetSettings['sFormat']) || empty($this->aTweetSettings['aTweetVars'])) {
 			$this->logger(2, 'Tweet format settings missing.');
@@ -380,7 +380,7 @@ class MarkovBot {
             $sKey = implode(' ', $aKey);
 
             //add next word to tweet
-            if (strlen($sNewTweet . ' ' . $sNextWord) <= 140) {
+            if (strlen($sNewTweet . ' ' . $sNextWord) <= 280) {
                 $sNewTweet .= ' ' . $sNextWord;
             } else {
                 break;

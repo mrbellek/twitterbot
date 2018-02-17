@@ -12,9 +12,7 @@ class Auth extends Base
 {
     public function isUserAuthed($sUsername)
     {
-        return TRUE; //DEBUG
-
-        $this->logger->output('Fetching identify..');
+        $this->logger->output('Fetching identity..');
 
         if (!$sUsername) {
             $this->logger->write(2, 'No username');
