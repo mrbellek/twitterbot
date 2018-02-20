@@ -1,18 +1,17 @@
 <?php
 require_once('autoload.php');
-require_once('factsbot.inc.php');
+require_once('factsdumps.inc.php');
 
 use Twitterbot\Lib\Logger;
 use Twitterbot\Lib\Config;
 use Twitterbot\Lib\Auth;
-use Twitterbot\Lib\Tweet;
 use Twitterbot\Lib\Media;
 use Twitterbot\Lib\Tweet;
 use Twitterbot\Custom\Imgur;
 
-(new FactsBot)->run();
+(new FactsDumps)->run();
 
-class FactsBot
+class FactsDumps
 {
     private $aFactsDumps = [
         'https://imgur.com/gallery/bEDYg',
@@ -30,7 +29,7 @@ class FactsBot
 
     public function __construct()
     {
-        $this->sUsername = 'FactsBot';
+        $this->sUsername = 'FactsDumps';
         $this->logger = new Logger;
     }
 
@@ -41,9 +40,12 @@ class FactsBot
 
             if ((new Auth($this->oConfig))->isUserAuthed($this->sUsername)) {
 
+                $this->oImgur = new Imgur;
+
                 $iAlbumKey = array_rand($this->aFactsDumps);
                 $sImageUrl = $this->getRandomImageFromAlbum($this->aFactsDumps[$iAlbumKey]);
                 $this->logger->output('- Picked image to upload %s', $sImageUrl);
+                die();
                 $lMediaId = $this->uploadImage($sImageUrl);
 
                 if ($lMediaId) {
@@ -59,5 +61,12 @@ class FactsBot
             }
         }
         $this->logger->output('Done!');
+    }
+
+    private function getRandomImageFromAlbum($sUrl)
+    {
+        $aImages = $this->oImgur->getAllAlbumImages($sUrl);
+
+        return $aImages[array_rand($aImages)];
     }
 }

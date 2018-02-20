@@ -10,9 +10,11 @@ class Imgur {
 
     public function getAlbumImageCount($sUrl)
     {
-        //url format will be imgur.com/a/asdf123
+        //url format will be imgur.com/a/asdf123 or imgur.com/gallery/asdf123
         if (!preg_match('/imgur\.com\/a\/([a-z0-9]+)/i', $sUrl, $aMatch)) {
-            return false;
+            if (!preg_match('/imgur\.com\/gallery\/([a-z0-9]+)/i', $sUrl, $aMatch)) {
+                return false;
+            }
         }
 
         //api url format is https://api.imgur.com/3/album/asdf123
@@ -26,6 +28,34 @@ class Imgur {
             return (int) $oResponse->data->images_count;
         } else {
             return false;
+        }
+    }
+
+    public function getAllAlbumImages($sUrl)
+    {
+        if (!preg_match('/imgur\.com\/a\/([a-z0-9]+)/i', $sUrl, $aMatch)) {
+            if (!preg_match('/imgur\.com\/gallery\/([a-z0-9]+)/i', $sUrl, $aMatch)) {
+                return [];
+            }
+        }
+
+        //api url format is https://api.imgur.com/3/album/asdf123
+        $sUrl = sprintf($this->sImgurBaseUrl, $aMatch[1] . '/images');
+
+        //do the request
+        $oResponse = $this->curlGet($sUrl);
+
+        if ($oResponse->success && !empty($oResponse->data)) {
+            //@TODO: filter out animated gifs as long as I
+            //don't have posting those to twitter working..
+            $aImageUrls = [];
+            foreach ($oResponse->data as $oImage) {
+                $aImageUrls[] = $oImage->link;
+            }
+
+            return $aImageUrls;
+        } else {
+            return [];
         }
     }
 
