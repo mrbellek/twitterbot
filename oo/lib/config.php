@@ -34,8 +34,8 @@ class Config
         if (is_file(DOCROOT . strtolower($sUsername) . '.json')) {
             $this->oSettings = @json_decode(file_get_contents(DOCROOT . strtolower($sUsername) . '.json'));
         } else {
-            $this->logger->write(1, sprintf('Config json file not found for username %s!', $sUsername));
             $this->logger->output('Config json file not found for username %s! Halting.', $sUsername);
+            $this->logger->write(1, sprintf('Config json file not found for username %s!', $sUsername));
             exit();
         }
 

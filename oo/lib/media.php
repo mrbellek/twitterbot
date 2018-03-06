@@ -84,6 +84,9 @@ class Media extends Base
             case 'instagram':
                 return $this->uploadFromInstagram($sUrl);
                 break;
+            case 'gif':
+                return $this->uploadVideoFromGfycat($sUrl);
+                break;
             default:
                 if (preg_match('/album:\d/', $sType, $m)) {
                     $this->uploadFromGallery($sUrl);
@@ -204,7 +207,6 @@ class Media extends Base
 
     /**
      * Upload media to twitter from gfycat, return media id if possible
-     * @TODO: get this to work
      *
      * @param string $sUrl
      *
@@ -246,7 +248,7 @@ class Media extends Base
 
             $oRet = $this->oTwitter->upload('media/upload', array('media' => $sVideoBinary));
             var_dump(strlen($sVideoBinary), $oRet);
-            die();
         }
+            die();
     }
 }

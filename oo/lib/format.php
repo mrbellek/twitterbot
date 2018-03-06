@@ -54,7 +54,7 @@ class Format extends Base
      */
     public function rss_format($oRecord)
     {
-        $iMaxTweetLength = $this->oConfig->get('max_tweet_lengh', 140);
+        $iMaxTweetLength = $this->oConfig->get('max_tweet_lengh', 280);
         $iShortUrlLength = $this->oConfig->get('short_url_length', 23);
 
         //format message according to format in settings, and return it
@@ -122,7 +122,7 @@ class Format extends Base
      */
     public function db_format($aRecord)
     {
-        $iMaxTweetLength = $this->oConfig->get('max_tweet_lengh', 140);
+        $iMaxTweetLength = $this->oConfig->get('max_tweet_lengh', 280);
         $iShortUrlLength = $this->oConfig->get('short_url_length', 23);
 
         //format message according to format in settings, and return it
