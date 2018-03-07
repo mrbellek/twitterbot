@@ -47,6 +47,13 @@ class MarkovBot {
                 $this->sInputFile       = (!empty($aArgs['sInputFile'])      ? $aArgs['sInputFile']     : strtolower($this->sUsername) . '.csv');
                 break;
 
+            case 'generatesql':
+                ini_set('memory_limit', '256M');
+                $this->sInputFile       = (!empty($aArgs['sInputFile'])      ? $aArgs['sInputFile']     : strtolower($this->sUsername) . '.csv');
+                $this->iTweetCount      = (!empty($aArgs['iTweetCount'])     ? $aArgs['iTweetCount']    : 1000);
+                $this->sOutputFile      = (!empty($aArgs['sOutputFile'])     ? $aArgs['sOutputFile']    : strtolower($this->sUsername) . '.sql');
+                break;
+
             case 'pregenerated':
                 $this->sInputFile       = (!empty($aArgs['sInputFile'])      ? $aArgs['sInputFile']     : strtolower($this->sUsername) . '.json');
                 break;
@@ -80,14 +87,39 @@ class MarkovBot {
                     if ($this->generateMarkovChain()) {
 
                         //create a tweet!
+                        echo "Generating tweet..\n";
                         if ($sTweet = $this->generateTweet()) {
 
                             //tweet it
                             if ($this->postMessage($sTweet)) {
 
-                                $this->halt('Done!');
+                                $this->halt();
                             }
                         }
+                    }
+                break;
+
+                case 'generatesql':
+
+                    //analyze text into markov chain
+                    if ($this->generateMarkovChain()) {
+
+                        //generate body of tweets
+                        $hFile = fopen(MYPATH . DIRECTORY_SEPARATOR . $this->sOutputFile, 'w');
+
+                        printf("Generating %d tweets..\n", $this->iTweetCount);
+                        for ($i = 0; $i < $this->iTweetCount; $i++) {
+                            $sTweet = $this->generateTweet();
+                            fwrite($hFile, sprintf('"%s",', str_replace('"', '\\"', $sTweet)) . PHP_EOL);
+                            if ($i % 100 == 0) {
+                                echo '.';
+                            }
+                        }
+                        echo PHP_EOL;
+
+                        fclose($hFile);
+
+                        $this->halt();
                     }
                 break;
 
@@ -103,7 +135,7 @@ class MarkovBot {
                             //tweet it
                             if ($this->postMessage($sTweet)) {
 
-                                $this->halt('Done!');
+                                $this->halt();
                             }
                         }
                     }
@@ -119,7 +151,7 @@ class MarkovBot {
                         //tweet it
                         if ($this->postMessage($sTweet)) {
 
-                            $this->halt('Done!');
+                            $this->halt();
                         }
                     }
                 break;
@@ -160,7 +192,7 @@ class MarkovBot {
 
         echo "Generating Markov chains\n";
 
-        if (!$this->sInputFile || filesize($this->sInputFile) == 0) {
+        if (!$this->sInputFile || filesize(MYPATH . DIRECTORY_SEPARATOR . $this->sInputFile) == 0) {
             $this->logger(2, 'No input file specified.');
             $this->halt('- No input file specified, halting.');
             return FALSE;
@@ -168,8 +200,8 @@ class MarkovBot {
 
         $aMarkovChains = array();
         $lStart = microtime(TRUE);
-        $sInput = implode(' ', file($this->sInputFile, FILE_IGNORE_NEW_LINES));
-        printf("- Read input file %s (%d bytes in %.3fs)..\n", $this->sInputFile, filesize($this->sInputFile), microtime(TRUE) - $lStart);
+        $sInput = implode(' ', file(MYPATH . DIRECTORY_SEPARATOR . $this->sInputFile, FILE_IGNORE_NEW_LINES));
+        printf("- Read input file %s (%d bytes in %.3fs)..\n", $this->sInputFile, filesize(MYPATH . DIRECTORY_SEPARATOR . $this->sInputFile), microtime(TRUE) - $lStart);
         $this->aMarkovChains = $this->generateMarkovChainsWords($sInput);
 
         return TRUE;
@@ -194,10 +226,10 @@ class MarkovBot {
 
         echo "Loading Markov chains\n";
 
-        if (is_file($this->sInputFile)) {
+        if (is_file(MYPATH . DIRECTORY_SEPARATOR . $this->sInputFile)) {
 
             $lStart = microtime(TRUE);
-            $this->aMarkovChains = @json_decode(file_get_contents($this->sInputFile));
+            $this->aMarkovChains = @json_decode(file_get_contents(MYPATH . DIRECTORY_SEPARATOR . $this->sInputFile));
 
             if ($iJsonErr = json_last_error()) {
 
@@ -210,7 +242,7 @@ class MarkovBot {
             }
         }
 
-        printf("- error loading from %s: file does not exist\n\n", $this->sInputFile);
+        printf("- error loading from %s: file does not exist\n\n", MYPATH . DIRECTORY_SEPARATOR . $this->sInputFile);
         return FALSE;
     }
 
@@ -361,8 +393,6 @@ class MarkovBot {
 
     private function generateTweet() {
 
-        echo "Generating tweet..\n";
-
         //TODO: pick key with capital letter first?
         srand();
         mt_srand();
@@ -382,6 +412,11 @@ class MarkovBot {
             //add next word to tweet
             if (strlen($sNewTweet . ' ' . $sNextWord) <= 280) {
                 $sNewTweet .= ' ' . $sNextWord;
+
+                if (substr($sNewTweet, -1) == '.' && rand(1, 2) == 1) {
+                    //sometimes stop on a period
+                    break;
+                }
             } else {
                 break;
             }
