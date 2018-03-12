@@ -15,7 +15,7 @@ class Tweet extends Base
      */
     public function post($aTweets = array())
     {
-        if (!$aTweets) {
+        if (!$aTweets && !$this->aMediaIds) {
             $this->logger->write(3, 'Nothing to tweet.');
             $this->logger->output('Nothing to tweet.');
 

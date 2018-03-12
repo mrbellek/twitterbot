@@ -21,24 +21,25 @@ class FactsDumps
 
     public function run()
     {
-        $this->oConfig = new Config;
-        if ($this->oConfig->load($this->sUsername)) {
+        $oConfig = new Config;
+        if ($oConfig->load($this->sUsername)) {
 
-            if ((new Auth($this->oConfig))->isUserAuthed($this->sUsername)) {
+            if ((new Auth($oConfig))->isUserAuthed($this->sUsername)) {
 
-                $this->aFactsDumps = $this->oConfig->get('dumps');
+                $this->aFactsDumps = $oConfig->get('dumps');
 
                 $this->oImgur = new Imgur;
 
                 $iAlbumKey = array_rand($this->aFactsDumps);
                 $sImageUrl = $this->getRandomImageFromAlbum($this->aFactsDumps[$iAlbumKey]);
                 $this->logger->output('- Picked image to upload: %s', $sImageUrl);
-                $lMediaId = $this->uploadImage($sImageUrl);
+                $sMediaId = (new Media($oConfig))
+                    ->upload($sImageUrl);
 
-                if ($lMediaId) {
+                if ($sMediaId) {
                     $this->logger->output('- Image uploaded ok.');
-                    $oTweet = new Tweet($this->oConfig);
-                    $oTweet->setMediaId($lMediaId);
+                    $oTweet = new Tweet($oConfig);
+                    $oTweet->set('aMediaIds', [$sMediaId]);
                     if ($oTweet->post('')) {
                         $this->logger->output('Image posted!');
                     }
