@@ -259,11 +259,10 @@ class RssBot {
                     $sValue = '';
                 }
 
-				//if text starts with @ and is at start of tweet, prefix dot
-				if ($sValue && strpos($sTweet, $aVar['sVar']) === 0 && substr($sValue, 0, 1) == '@') {
-					$sValue = '.' . $sValue;
-				}
-
+				//if text contains @, replace with #
+                if (strpos($sValue, '@') !== FALSE) {
+                    $sValue = str_replace('@', '#');
+                }
 
                 $sTweet = str_replace($aVar['sVar'], $sValue, $sTweet);
             }
@@ -302,10 +301,10 @@ class RssBot {
                     $sTempText = preg_replace('/https:\/\/\S+/', str_repeat('x', $iShortUrlLength + 1), $sTempText);
                     $iTextLength = strlen($sTempText);
 
-					//if text starts with @ and is at start of tweet, prefix dot
-					if (strpos($sTweet, $aVar['sVar']) === 0 && substr($sText, 0, 1) == '@') {
-						$sText = '.' . $sText;
-					}
+                    //if text contains @, replace with #
+                    if (strpos($sValue, '@') !== FALSE) {
+                        $sValue = str_replace('@', '#');
+                    }
 
                     //if text with url shortening falls under limit, keep it - otherwise truncate
                     if ($iTextLength <= $iTruncateLimit) {
