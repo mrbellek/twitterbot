@@ -27,19 +27,17 @@ class Media extends Base
     public function upload($sFilePath)
     {
         $this->logger->output(sprintf('Reading file %s..', $sFilePath));
-        /* this code is no longer needed since Abraham\TwitterOAuth takes a filename instead of its contents
 
-        $sImageBinary = base64_encode(file_get_contents($sFilePath));
-        if ($sImageBinary && strlen($sImageBinary) > 5 * pow(1024, 2)) {
-            //max size is 3MB
-            $this->logger->write(3, sprintf('File too large to attach: %s (%d bytes)', $sFilePath, strlen($sImageBinary)));
-            $this->logger->output(sprintf('File too large: %d bytes.', strlen($sImageBinary)));
-
-            return false;
+        if (strpos($sFilePath, 'http') === 0) {
+            //url, so download and store temp file
+            $this->logger->output('- is URL, downloading..');
+            $sBinary = file_get_contents($sFilePath);
+            if ($sBinary) {
+                $sFilePath = getcwd() . '/tempimg.jpg';
+                file_put_contents($sFilePath, $sBinary);
+                $this->logger->output('- wrote %s bytes to disk', number_format(filesize($sFilePath)));
+            }
         }
-
-        $oRet = $this->oTwitter->upload('media/upload', array('media' => $sImageBinary));
-        */
 
         $oRet = $this->oTwitter->upload('media/upload', array('media' => $sFilePath));
         if (isset($oRet->errors)) {
@@ -88,11 +86,7 @@ class Media extends Base
                 return $this->uploadVideoFromGfycat($sUrl);
                 break;
             default:
-                if (preg_match('/album:\d/', $sType, $m)) {
-                    $this->uploadFromGallery($sUrl);
-                } else {
-                    $this->upload($sUrl);
-                }
+                $this->upload($sUrl);
                 break;
         }
     }
@@ -106,7 +100,7 @@ class Media extends Base
      */
     private function uploadFromGallery($sUrl)
     {
-        //november 2016: fuck this, use the API
+        //use the API
         $aImageUrls = (new Imgur)->getFourAlbumImages($sUrl);
 
         //if we have at least one image, upload it to attach to tweet
@@ -212,17 +206,17 @@ class Media extends Base
      *
      * @return string|false
      */
-    private function uploadVideoFromGfycat($sUrl) {
+    public function uploadVideoFromGfycat($sUrl) {
 
         //construct json info url
-        $sJsonUrl = str_replace('gfycat.com/', 'gfycat.com/cajax/get/', $sUrl);
+        $sJsonUrl = str_replace('gfycat.com/', 'api.gfycat.com/v1/gfycats/', $sUrl);
         if ($sJsonUrl == $sUrl) {
             return false;
         }
 
         $oGfycatInfo = @json_decode(file_get_contents($sJsonUrl));
-        if ($oGfycatInfo && !empty($oGfycatInfo->gfyItem->webpUrl)) {
-            return $this->uploadVideoToTwitter($oGfycatInfo->gfyItem->webpUrl);
+        if ($oGfycatInfo && !empty($oGfycatInfo->gfyItem->mp4Url)) {
+            return $this->uploadVideoToTwitter($oGfycatInfo->gfyItem->mp4Url, 'video/mp4');
         }
 
         return false;
@@ -230,25 +224,44 @@ class Media extends Base
 
     /**
      * Upload video to twitter from URL, return media id if possible
-     * @TODO: get this to work
      *
      * @param string $sVideo
-     * @param string $sName
+     * @param string $sType
      *
      * @return string|false
      */
-    private function uploadVideoToTwitter($sVideo, $sName = false) {
+    private function uploadVideoToTwitter($sFilePath, $sType) {
 
-        if (!$sName) {
-            $sName = $sVideo;
-        }
+        $this->logger->output(sprintf('Reading file %s..', $sFilePath));
 
-        $sVideoBinary = file_get_contents($sVideo);
+        //need to download and save the file since the library expects a local file
+        $sVideoBinary = file_get_contents($sFilePath);
         if (strlen($sVideoBinary) < 5 * pow(1024, 2)) {
 
-            $oRet = $this->oTwitter->upload('media/upload', array('media' => $sVideoBinary));
-            var_dump(strlen($sVideoBinary), $oRet);
+            $this->logger->output('- Saving %s bytes to disk..', number_format(strlen($sVideoBinary)));
+            $sTempFilePath = getcwd() . '/video.mp4';
+            file_put_contents($sTempFilePath, $sVideoBinary);
+
+            $this->logger->output('- Uploading to twitter (chunked)..');
+            $oRet = $this->oTwitter->upload('media/upload', array('media' => $sTempFilePath, 'media_type' => $sType), true);
+            if (isset($oRet->errors)) {
+                $this->logger->write(2, sprintf('Twitter API call failed: media/upload (%s, chunked)', $oRet->errors[0]->message), array('file' => $sFilePath));
+                $this->logger->output('- Error: ' . $oRet->errors[0]->message . ' (code ' . $oRet->errors[0]->code . ')');
+
+                return false;
+
+            } elseif (isset($oRet->error)) {
+                $this->logger->write(2, sprintf('Twitter API call failed: media/upload (%s, chunked)', $oRet->error), array('file' => $sFilePath));
+                $this->logger->output(sprintf('- Error: %s', $oRet->error));
+            } else {
+                $this->logger->output("- Uploaded video %s to attach to next tweet", $sFilePath);
+
+                return $oRet->media_id_string;
+            }
         }
-            die();
+
+        $this->logger->output('- File is too large!');
+
+        return false;
     }
 }

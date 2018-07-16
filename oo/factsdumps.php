@@ -13,6 +13,8 @@ use Twitterbot\Custom\Imgur;
 
 class FactsDumps
 {
+    private $sFactsDumpAlbum = 'https://imgur.com/user/mrbellek/favorites/folder/4230993/facts-dumps';
+
     public function __construct()
     {
         $this->sUsername = 'FactsDumps';
@@ -26,12 +28,22 @@ class FactsDumps
 
             if ((new Auth($oConfig))->isUserAuthed($this->sUsername)) {
 
-                $this->aFactsDumps = $oConfig->get('dumps');
-
                 $this->oImgur = new Imgur;
+                $this->logger->output('Finding favorites albums with facts on user account..');
+                $aFactsDumps = $this->oImgur->getFavoritesAlbums('mrbellek');
+                if (!$aFactsDumps) {
+                    $aFactsDumps = $oConfig->get('dumps');
+                    $this->logger->output('- No facts dumps found in favorites, using %s from settings.', count($aFactsDumps));
+                } else {
+                    $this->logger->output('- Found %d facts dumps albums in favorites.', count($aFactsDumps));
+                }
 
-                $iAlbumKey = array_rand($this->aFactsDumps);
-                $sImageUrl = $this->getRandomImageFromAlbum($this->aFactsDumps[$iAlbumKey]);
+                $iAlbumKey = array_rand($aFactsDumps);
+                $sImageUrl = $this->getRandomImageFromAlbum($aFactsDumps[$iAlbumKey]);
+                if (!$sImageUrl) {
+                    $this->logger->output('- Failed to pick image from album.');
+                    return false;
+                }
                 $this->logger->output('- Picked image to upload: %s', $sImageUrl);
                 $sMediaId = (new Media($oConfig))
                     ->upload($sImageUrl);
@@ -54,6 +66,11 @@ class FactsDumps
     private function getRandomImageFromAlbum($sUrl)
     {
         $aImages = $this->oImgur->getAllAlbumImages($sUrl);
+        if (!$aImages) {
+            $this->logger->output('Failed to get images in album %s!', $sUrl);
+
+            return false;
+        }
 
         return $aImages[array_rand($aImages)];
     }

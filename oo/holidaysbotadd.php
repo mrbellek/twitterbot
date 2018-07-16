@@ -222,7 +222,7 @@ $iCount = $aCount[0]['FOUND_ROWS()'];
 	</head>
 	<body>
 		<div class="container">
-			<h1 class="col-md->offset-2"><a href="https://twitter.com/HolidaysBot" target="_blank">@HolidaysBot</a> - <?= (empty(filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT)) ? 'add' : 'edit') ?> holiday</h1>
+			<h1 class="col-md-offset-2"><a href="https://twitter.com/HolidaysBot" target="_blank">@HolidaysBot</a> - <?= (empty(filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT)) ? 'add' : 'edit') ?> holiday</h1>
             <?php if (!empty($sSuccess)) { ?><div role="alert" class="alert alert-success"><?= $sSuccess ?></div><?php } ?>
             <?php if (!empty($sError)) { ?><div role="alert" class="alert alert-danger"><?= $sError ?></div><?php } ?>
 			<form method="post" action="<?= $sThisFile ?>" class="form-horizontal" role="form">

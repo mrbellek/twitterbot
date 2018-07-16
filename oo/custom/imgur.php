@@ -5,8 +5,33 @@ require('imgur.inc.php');
 
 class Imgur {
 
-    private $sImgurBaseUrl = 'https://api.imgur.com/3/album/%s';
+    private $sImgurAlbumUrl = 'https://api.imgur.com/3/album/%s';
+    private $sImgurAccountUrl = 'https://api.imgur.com/3/account/%s';
     private $oCurl;
+
+    public function getFavoritesAlbums($sUsername = 'mrbellek')
+    {
+        $sUrl = sprintf($this->sImgurAccountUrl, $sUsername . '/gallery_favorites/1');
+
+        $aFactsDumpAlbums = [];
+
+        $oResponse = $this->curlGet($sUrl);
+        if ($oResponse->success) {
+            foreach ($oResponse->data as $oItem) {
+                if (isset($oItem->is_album) && $oItem->is_album && stripos($oItem->title, 'fact') !== false) {
+                    $aFactsDumpAlbums[] = $oItem->link;
+                    /*printf('Facts dump album: %s (id: %s) - %s - %d images' . PHP_EOL,
+                        $oItem->title,
+                        $oItem->id,
+                        $oItem->link,
+                        $oItem->images_count
+                    );*/
+                }
+            }
+        }
+
+        return $aFactsDumpAlbums;
+    }
 
     public function getAlbumImageCount($sUrl)
     {
@@ -18,7 +43,7 @@ class Imgur {
         }
 
         //api url format is https://api.imgur.com/3/album/asdf123
-        $sUrl = sprintf($this->sImgurBaseUrl, $aMatch[1]);
+        $sUrl = sprintf($this->sImgurAlbumUrl, $aMatch[1]);
 
         //do the request
         $oResponse = $this->curlGet($sUrl);
@@ -40,7 +65,7 @@ class Imgur {
         }
 
         //api url format is https://api.imgur.com/3/album/asdf123
-        $sUrl = sprintf($this->sImgurBaseUrl, $aMatch[1] . '/images');
+        $sUrl = sprintf($this->sImgurAlbumUrl, $aMatch[1] . '/images');
 
         //do the request
         $oResponse = $this->curlGet($sUrl);
@@ -67,7 +92,7 @@ class Imgur {
         }
 
         //api url format is https://api.imgur.com/3/album/asdf123
-        $sUrl = sprintf($this->sImgurBaseUrl, $aMatch[1] . '/images');
+        $sUrl = sprintf($this->sImgurAlbumUrl, $aMatch[1] . '/images');
 
         //do the request
         $oResponse = $this->curlGet($sUrl);
@@ -119,8 +144,14 @@ class Imgur {
         if (curl_error($this->oCurl)) {
             throw new Exception(sprintf('Imgur cURL call failed: %s', curl_error($this->oCurl)));
         }
-        curl_close($this->oCurl);
 
         return $oResponse;
+    }
+
+    public function __destruct()
+    {
+        if (!empty($this->oCurl)) {
+            curl_close($this->oCurl);
+        }
     }
 }

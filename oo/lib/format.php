@@ -254,26 +254,31 @@ class Format extends Base
                 if (strpos($sSubject, $oRecord->data->permalink) !== false) {
                     //if post links to itself, text post (no link)
                     $sResult = 'self';
+
                 } elseif (preg_match('/reddit\.com/i', $sSubject)) {
                     //link to other subreddit
-                    $sResult = 'internal';
+                    $sResult = 'xlink';
+
                 } elseif (preg_match('/\.png|\.gif$|\.jpe?g/i', $sSubject)) {
                     //naked image
                     $sResult = 'image';
                     $bAttachFile = true;
+
                 } elseif (preg_match('/imgur\.com\/.[^\/]/i', $sSubject) || preg_match('/imgur\.com\/gallery\//i', $sSubject)) {
                     //single image on imgur.com page
                     $sResult = 'image';
                     $bAttachFile = true;
+
                 } elseif (preg_match('/reddituploads\.com/i', $sSubject)) {
                     //reddit hosted file
                     $sResult = 'image';
                     $bAttachFile = true;
+
                     //ampersands seem to get mangled in posting, messing up the checksum
                     $sSubject = str_replace('&amp;', '&', $sSubject);
+
                 } elseif (preg_match('/imgur\.com\/a\//i', $sSubject)) {
-                    //multiple images on imgur.com page
-                    $sResult = 'album';
+                    //imgur.com album, possibly with multiple images
                     $bAttachFile = true;
 
                     //use imgur API here to get number of images in album, set type to [album:n]
@@ -286,10 +291,11 @@ class Format extends Base
                     //instagram account link or instagram photo
                     $sResult = 'instagram';
                     $bAttachFile = true;
-                //} elseif (preg_match('/gfycat\.com\//i', $sSubject)) {
-                //    //TODO: disabled for now because API won't play nice
-                //    $sResult = 'gif';
-                //    $bAttachFile = true;
+
+                } elseif (preg_match('/gfycat\.com\//i', $sSubject)) {
+                    //gfycat short video (no sound)
+                    $sResult = 'gif';
+                    $bAttachFile = true;
                 } elseif (preg_match('/\.gifv|\.webm|youtube\.com\/|youtu\.be\/|vine\.co\/|vimeo\.com\/|liveleak\.com\//i', $sSubject)) {
                     //common video hosting websites
                     $sResult = 'video';
