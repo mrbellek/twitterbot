@@ -261,7 +261,7 @@ class RssBot {
 
 				//if text contains @, replace with #
                 if (strpos($sValue, '@') !== FALSE) {
-                    $sValue = str_replace('@', '#');
+                    $sValue = str_replace($sValue, '@', '#');
                 }
 
                 $sTweet = str_replace($aVar['sVar'], $sValue, $sTweet);
@@ -303,7 +303,7 @@ class RssBot {
 
                     //if text contains @, replace with #
                     if (strpos($sValue, '@') !== FALSE) {
-                        $sValue = str_replace('@', '#');
+                        $sValue = str_replace($sValue, '@', '#');
                     }
 
                     //if text with url shortening falls under limit, keep it - otherwise truncate
