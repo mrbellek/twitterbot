@@ -84,11 +84,19 @@ class Filter extends Base
     private function applyFilters($oTweet)
     {
 		foreach ($this->aSearchFilters as $sFilter) {
-			if (strpos(strtolower($oTweet->text), $sFilter) !== false) {
-				$this->logger->output('<b>Skipping tweet because it contains "%s"</b>: %s', $sFilter, str_replace("\n", ' ', $oTweet->text));
+            if (is_object($oTweet)) {
+                if (strpos(strtolower($oTweet->text), $sFilter) !== false) {
+                    $this->logger->output('<b>Skipping tweet because it contains "%s"</b>: %s', $sFilter, str_replace("\n", ' ', $oTweet->text));
 
-				return false;
-			}
+                    return false;
+                }
+            } else {
+                if (strpos(strtolower($oTweet), $sFilter) !== false) {
+                    $this->logger->output('<b>Skipping tweet because it contains "%s"</b>: %s', $sFilter, str_replace("\n", ' ', $oTweet));
+
+                    return false;
+                }
+            }
 		}
 
 		return true;
@@ -103,16 +111,18 @@ class Filter extends Base
      */
     private function applyUsernameFilters($oTweet)
     {
-		foreach ($this->aUsernameFilters as $sUsername) {
-			if (strpos(strtolower($oTweet->user->screen_name), $sUsername) !== false) {
-				$this->logger->output('<b>Skipping tweet because username contains "%s"</b>: %s', $sUsername, $oTweet->user->screen_name);
-				return false;
-			}
-			if (preg_match('/@\S*' . $sUsername . '/', $oTweet->text)) {
-				$this->logger->output('<b>Skipping tweet because mentioned username contains "%s"</b>: %s', $sUsername, $oTweet->text);
-				return false;
-			}
-		}
+        if (is_object($oTweet)) {
+            foreach ($this->aUsernameFilters as $sUsername) {
+                if (strpos(strtolower($oTweet->user->screen_name), $sUsername) !== false) {
+                    $this->logger->output('<b>Skipping tweet because username contains "%s"</b>: %s', $sUsername, $oTweet->user->screen_name);
+                    return false;
+                }
+                if (preg_match('/@\S*' . $sUsername . '/', $oTweet->text)) {
+                    $this->logger->output('<b>Skipping tweet because mentioned username contains "%s"</b>: %s', $sUsername, $oTweet->text);
+                    return false;
+                }
+            }
+        }
 
 		return true;
     }
@@ -126,6 +136,10 @@ class Filter extends Base
      */
     private function rollDie($oTweet)
     {
+        if (!is_object($oTweet)) {
+            return true;
+        }
+
 		//regular tweets are better than mentions - medium probability
 		$lProbability = $this->aDiceValues['base'];
 
@@ -165,7 +179,7 @@ class Filter extends Base
     private function expandUrls($oTweet)
     {
 		//check for links/photos
-		if (strpos($oTweet->text, 'http://t.co') !== false) {
+		if (is_object($oTweet) && strpos($oTweet->text, 'http://t.co') !== false) {
             foreach($oTweet->entities->urls as $oUrl) {
                 $oTweet->text = str_replace($oUrl->url, $oUrl->expanded_url, $oTweet->text);
             }
