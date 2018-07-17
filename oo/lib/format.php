@@ -8,6 +8,7 @@ use Twitterbot\Custom\Imgur;
  *
  * TODO: the tweet_vars.x.attach_image field is not checked, instead hardcoding it based on content type
  * TODO: any attached content isn't removed from the tweet
+ * @TODO: https://imgur.com/tdXKAgN isn't correctly parsed
  *
  * @param config:source - database/rss where record came from, needed for handling format settings
  * @param config:max_tweet_length
@@ -257,7 +258,7 @@ class Format extends Base
 
                 } elseif (preg_match('/reddit\.com/i', $sSubject)) {
                     //link to other subreddit
-                    $sResult = 'xlink';
+                    $sResult = 'crosslink';
 
                 } elseif (preg_match('/\.png|\.gif$|\.jpe?g/i', $sSubject)) {
                     //naked image
@@ -296,19 +297,23 @@ class Format extends Base
                     //gfycat short video (no sound)
                     $sResult = 'gif';
                     $bAttachFile = true;
+
                 } elseif (preg_match('/\.gifv|\.webm|youtube\.com\/|youtu\.be\/|vine\.co\/|vimeo\.com\/|liveleak\.com\//i', $sSubject)) {
                     //common video hosting websites
                     $sResult = 'video';
+
                 } elseif (preg_match('/pornhub\.com|xhamster\.com/i', $sSubject)) {
                     //porn video hosting websites
                     $sResult = 'video';
+
                 } else {
-                    $sResult = 'external';
+                    $sResult = 'link';
                 }
 
                 break;
         }
 
+        $this->aAttachment = [];
         if ($bAttachFile) {
             $this->aAttachment = array(
                 'type' => $sResult,

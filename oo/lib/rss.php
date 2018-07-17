@@ -8,6 +8,9 @@ use \Exception;
  *
  * @param config:feed feed settings (url, root node, format, timestamp field name)
  * @param config:last_max_timestamp newest timestamp from last run
+ *
+ * @TODO:
+ * - limit number of items from getFeed()
  */
 class Rss extends Base
 {

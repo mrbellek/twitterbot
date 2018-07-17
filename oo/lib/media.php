@@ -5,6 +5,8 @@
  *   i.e. when attaching go.com/image.jpg, don't include url in tweet
  *   but do include when attaching imgur gallery or instagram account
  * - stop base64 encoding attachments to shrink size (use raw binary)
+ * - https://imgur.com/tdXKAgN isn't correctly parsed
+ * - always same filesize is written to disk (var only set once?)
  */
 namespace Twitterbot\Lib;
 
@@ -35,7 +37,7 @@ class Media extends Base
             if ($sBinary) {
                 $sFilePath = getcwd() . '/tempimg.jpg';
                 file_put_contents($sFilePath, $sBinary);
-                $this->logger->output('- wrote %s bytes to disk', number_format(filesize($sFilePath)));
+                $this->logger->output('- wrote %s bytes to disk', number_format(strlen($sBinary)));
             }
         }
 
