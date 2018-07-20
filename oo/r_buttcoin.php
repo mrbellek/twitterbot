@@ -1,6 +1,7 @@
 <?php
 require_once('autoload.php');
-require_once('r_buttcoin.inc.php');
+require_once('testing.inc.php');
+//require_once('r_buttcoin.inc.php');
 
 use Twitterbot\Lib\Logger;
 use Twitterbot\Lib\Config;
@@ -10,6 +11,7 @@ use Twitterbot\Lib\Rss;
 use Twitterbot\Lib\Format;
 use Twitterbot\Lib\Media;
 use Twitterbot\Lib\Tweet;
+use Twitterbot\Lib\Filter;
 
 (new rButtcoin)->run();
 
@@ -31,10 +33,15 @@ class rButtcoin
                 if ($aRssFeed = (new Rss($oConfig))->getFeed()) {
 
                     $oFormat = new Format($oConfig);
+                    $oFilter = new Filter($oConfig);
+                    $oFilter->setFilters();
 
                     foreach ($aRssFeed as $oRssItem) {
 
                         $sTweet = $oFormat->format($oRssItem);
+                        if (!$oFilter->filter([$sTweet])) {
+                            continue;
+                        }
 
                         $aMediaIds = [];
                         if ($aAttachment = $oFormat->getAttachment()) {
@@ -42,13 +49,15 @@ class rButtcoin
                         }
 
                         if ($sTweet) {
-                            (new Tweet($oConfig))
-                                ->setMedia($aMediaIds)
-                                ->post($sTweet);
+                            $oTweet = (new Tweet($oConfig));
+                            if ($aMediaIds) {
+                                $oTweet->setMedia($aMediaIds);
+                            }
+                            $oTweet->post($sTweet);
                         }
                     }
 
-                    $this->logger->output('done!');
+                    $this->logger->output('Done!');
                 }
             }
         }

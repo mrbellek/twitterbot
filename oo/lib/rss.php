@@ -23,27 +23,26 @@ class Rss extends Base
     {
         $oFeed = $this->oConfig->get('feed');
 
+        $hCurl = curl_init();
+        curl_setopt_array($hCurl, array(
+            CURLOPT_RETURNTRANSFER  => true,
+            CURLOPT_SSL_VERIFYPEER  => false,
+            CURLOPT_FOLLOWLOCATION  => true,
+            CURLOPT_AUTOREFERER     => true,
+            CURLOPT_CONNECTTIMEOUT  => 5,
+            CURLOPT_TIMEOUT         => 5,
+            CURLOPT_URL             => $oFeed->url,
+        ));
+
+        $sRssFeedRaw = curl_exec($hCurl);
+        curl_close($hCurl);
+
         //DEBUG
-        if (!is_file('feed.json')) {
-
-            $hCurl = curl_init();
-            curl_setopt_array($hCurl, array(
-                CURLOPT_RETURNTRANSFER  => true,
-                CURLOPT_SSL_VERIFYPEER  => false,
-                CURLOPT_FOLLOWLOCATION  => true,
-                CURLOPT_AUTOREFERER     => true,
-                CURLOPT_CONNECTTIMEOUT  => 5,
-                CURLOPT_TIMEOUT         => 5,
-                CURLOPT_URL             => $oFeed->url,
-            ));
-
-            $sRssFeedRaw = curl_exec($hCurl);
-            curl_close($hCurl);
-
+        /*if (!is_file('feed.json')) {
             file_put_contents('feed.json', json_encode(json_decode($sRssFeedRaw), JSON_PRETTY_PRINT));
         } else {
             $sRssFeedRaw = file_get_contents('feed.json');
-        }
+        }*/
 
         switch ($oFeed->format) {
             case 'xml':

@@ -137,6 +137,6 @@ class Config
 
     public function __destruct()
     {
-        //$this->writeConfig();
+        $this->writeConfig();
     }
 }
