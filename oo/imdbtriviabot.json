@@ -1,0 +1,37 @@
+{
+    "source": "database",
+    "db_settings": {
+        "table": "imdbtrivia",
+        "idcol": "id",
+        "countercol": "postcount",
+        "timestampcol": "lastposted"
+    },
+    "format": ":title: :spoiler:trivia (:votes votes) https://www.imdb.com/title/:id/trivia?item=:trivia_id",
+    "tweet_vars": {
+        "0": {
+            "var": ":title",
+            "recordfield": "title"
+        },
+        "1": {
+            "var": ":trivia",
+            "recordfield": "text",
+            "truncate": true
+        },
+        "2": {
+            "var": ":votes",
+            "recordfield": "votes"
+        },
+        "3": {
+            "var": ":spoiler",
+            "recordfield": "spoiler"
+        },
+        "4": {
+            "var": ":id",
+            "recordfield": "movie_id"
+        },
+        "5": {
+            "var": ":trivia_id",
+            "recordfield": "trivia_id"
+        }
+    }
+}
