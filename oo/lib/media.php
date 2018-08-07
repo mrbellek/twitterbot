@@ -34,9 +34,15 @@ class Media extends Base
             $this->logger->output('- is URL, downloading..');
             $sBinary = file_get_contents($sFilePath);
             if ($sBinary) {
-                $sFilePath = getcwd() . '/tempimg.jpg';
-                file_put_contents($sFilePath, $sBinary);
-                $this->logger->output('- wrote %s bytes to disk', number_format(strlen($sBinary)));
+                if (strlen($sBinary) > 5 * 1024 * 1024) {
+                    $this->logger->write(2, sprintf('Image is too large for tweet: %s (%d bytes)', $sFilePath, strlen($sBinary)));
+                    $this->logger->output('- Error: file is too large! %d bytes, max is 5MB', strlen($sBinary));
+                    return false;
+                } else {
+                    $sFilePath = getcwd() . '/tempimg.jpg';
+                    file_put_contents($sFilePath, $sBinary);
+                    $this->logger->output('- wrote %s bytes to disk', number_format(strlen($sBinary)));
+                }
             }
         }
 
@@ -237,7 +243,7 @@ class Media extends Base
 
         //need to download and save the file since the library expects a local file
         $sVideoBinary = file_get_contents($sFilePath);
-        if (strlen($sVideoBinary) < 5 * pow(1024, 2)) {
+        if (strlen($sVideoBinary) < 15 * pow(1024, 2)) {
 
             $this->logger->output('- Saving %s bytes to disk..', number_format(strlen($sVideoBinary)));
             $sTempFilePath = getcwd() . '/video.mp4';
@@ -259,9 +265,10 @@ class Media extends Base
 
                 return $oRet->media_id_string;
             }
+        } else {
+            $this->logger->write(2, sprintf('File is too large! File is %d bytes, max is 15MB (%s)', strlen($sVideoBinary), $sFilePath));
+            $this->logger->output('- File is too large! %d bytes, max is 15MB', strlen($sVideoBinary));
         }
-
-        $this->logger->output('- File is too large!');
 
         return false;
     }
