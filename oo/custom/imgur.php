@@ -11,21 +11,24 @@ class Imgur {
 
     public function getFavoritesAlbums($sUsername = 'mrbellek')
     {
-        $sUrl = sprintf($this->sImgurAccountUrl, $sUsername . '/gallery_favorites/1');
-
         $aFactsDumpAlbums = [];
 
-        $oResponse = $this->curlGet($sUrl);
-        if ($oResponse->success) {
-            foreach ($oResponse->data as $oItem) {
-                if (isset($oItem->is_album) && $oItem->is_album && stripos($oItem->title, 'fact') !== false) {
-                    $aFactsDumpAlbums[] = $oItem->link;
-                    /*printf('Facts dump album: %s (id: %s) - %s - %d images' . PHP_EOL,
-                        $oItem->title,
-                        $oItem->id,
-                        $oItem->link,
-                        $oItem->images_count
-                    );*/
+        //fetch 3 pages of favorites
+        for ($i = 1; $i <= 3; $i++) {
+            $sUrl = sprintf($this->sImgurAccountUrl, $sUsername . '/gallery_favorites/' . $i);
+
+            $oResponse = $this->curlGet($sUrl);
+            if ($oResponse->success) {
+                foreach ($oResponse->data as $oItem) {
+                    if (isset($oItem->is_album) && $oItem->is_album && stripos($oItem->title, 'fact') !== false) {
+                        $aFactsDumpAlbums[] = $oItem->link;
+                        /*printf('Facts dump album: %s (id: %s) - %s - %d images' . PHP_EOL,
+                            $oItem->title,
+                            $oItem->id,
+                            $oItem->link,
+                            $oItem->images_count
+                        );*/
+                    }
                 }
             }
         }

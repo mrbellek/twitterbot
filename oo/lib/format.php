@@ -133,7 +133,7 @@ class Format extends Base
         //replace all non-truncated fields
         foreach ($aTweetVars as $oTweetVar) {
             if (empty($oTweetVar->truncate) || $oTweetVar->truncate == false) {
-                $sTweet = str_replace($oTweetVar->var, $aRecord[$oTweetVar->recordfield], $sTweet);
+                $sTweet = str_replace($oTweetVar->var, $aRecord->{$oTweetVar->recordfield}, $sTweet);
             }
         }
 
@@ -155,7 +155,7 @@ class Format extends Base
                 $iTruncateLimit += strlen($oTweetVar->var);
 
                 //get text to replace placeholder with
-                $sText = html_entity_decode($aRecord[$oTweetVar->recordfield], ENT_QUOTES, 'UTF-8');
+                $sText = html_entity_decode($aRecord->{$oTweetVar->recordfield}, ENT_QUOTES, 'UTF-8');
 
                 //disable mentions if needed
                 if (!$this->oConfig->get('allow_mentions', false)) {
