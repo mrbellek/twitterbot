@@ -56,7 +56,7 @@ if ($_POST && !$sError) {
         } elseif (!empty($_POST['action']) && strtolower($_POST['action']) == 'save') {
 
             //validate stuff
-            if (empty($_POST['game']) || empty($_POST['platform']) || empty($_POST['startdate']) || empty($_POST['enddate'])) {
+            if (empty($_POST['game']) || empty($_POST['platform'])) {
 
                 $sError = 'Missing fields.';
 
@@ -70,6 +70,7 @@ if ($_POST && !$sError) {
                         UPDATE gameswithgold
                         SET game = :game,
                             platform = :platform,
+                            gamepass = :gamepass,
                             startdate = :startdate,
                             enddate = :enddate,
                             link = :link
@@ -78,8 +79,9 @@ if ($_POST && !$sError) {
                     );
                     $sth->bindValue(':game'     , $_POST['game']);
                     $sth->bindValue(':platform' , $_POST['platform']);
-                    $sth->bindValue(':startdate', date('Y-m-d', strtotime($_POST['startdate'])));
-                    $sth->bindValue(':enddate'  , date('Y-m-d', strtotime($_POST['enddate'])));
+                    $sth->bindValue(':gamepass' , !empty($_POST['gamepass']) ? 1 : 0);
+                    $sth->bindValue(':startdate', !empty($_POST['startdate']) ? date('Y-m-d', strtotime($_POST['startdate'])) : null);
+                    $sth->bindValue(':enddate'  , !empty($_POST['enddate']) ? date('Y-m-d', strtotime($_POST['enddate'])) : null);
                     $sth->bindValue(':link'     , $_POST['link']);
                     $sth->bindValue(':id'       , (int)$_POST['id']);
 
@@ -95,13 +97,14 @@ if ($_POST && !$sError) {
 
                     //insert query
                     $sth = $oPDO->prepare('
-                        INSERT INTO gameswithgold (game, platform, startdate, enddate, link)
-                        VALUES (:game, :platform, :startdate, :enddate, :link)'
+                        INSERT INTO gameswithgold (game, platform, gamepass, startdate, enddate, link)
+                        VALUES (:game, :platform, :gamepass, :startdate, :enddate, :link)'
                     );
                     $sth->bindValue(':game'     , $_POST['game']);
                     $sth->bindValue(':platform' , $_POST['platform']);
-                    $sth->bindValue(':startdate', date('Y-m-d', strtotime($_POST['startdate'])));
-                    $sth->bindValue(':enddate'  , date('Y-m-d', strtotime($_POST['enddate'])));
+                    $sth->bindValue(':gamepass' , !empty($_POST['gamepass']) ? 1 : 0);
+                    $sth->bindValue(':startdate', !empty($_POST['startdate']) ? date('Y-m-d', strtotime($_POST['startdate'])) : null);
+                    $sth->bindValue(':enddate'  , !empty($_POST['enddate']) ? date('Y-m-d', strtotime($_POST['enddate'])) : null);
                     $sth->bindValue(':link'     , $_POST['link']);
 
                     if ($sth->execute()) {
@@ -136,7 +139,7 @@ $aUpcomingGames = array();
 $sth = $oPDO->prepare('
     SELECT *
     FROM gameswithgold
-    WHERE enddate >= CURDATE()
+    WHERE enddate >= CURDATE() OR enddate IS NULL
     ORDER BY startdate, enddate, platform, game'
 );
 if ($sth->execute()) {
@@ -234,6 +237,7 @@ if ($sth->execute()) {
                         <input type="text" id="game" name="game" class="form-control" value="<?= @$aData['game'] ?>" required />
                     </div>
                 </div>
+
                 <div class="row form-group">
                     <label for="platform" class="col-md-2 control-label">Platform</label>
                     <div class="col-md-10">
@@ -244,29 +248,57 @@ if ($sth->execute()) {
                         </select>
                     </div>
                 </div>
-                <div class="row form-group">
 
+                <div class="row form-group">
+                    <label class="col-md-2 control-label">Gamepass</label>
+                    <div class="col-md-10">
+                        <div class="form-check" style="margin-top: 6px;">
+                            <input class="form-check-input" type="checkbox" id="gamepass" name="gamepass" <?= @$aData['gamepass'] ? 'checked' : '' ?> />
+                            <label class="form-check-label" for="gamepass" style="font-weight: normal;">This game is on Gamepass</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row form-group">
                     <label for="startdate" class="col-md-2 control-label">Start date</label>
                     <div class="col-md-10">
-                        <input type="date" name="startdate" id="startdate" class="form-control" value="<?= (!empty($aData['startdate']) ? $aData['startdate'] : date('Y-m-d')) ?>" required/>
+                        <input type="date" name="startdate" id="startdate" class="form-control" value="<?= (!empty($aData['startdate']) ? $aData['startdate'] : (!empty($_GET['id']) ? '' : date('Y-m-d'))) ?>" />
                     </div>
                 </div>
-                <div class="row form-group">
 
+                <div class="row form-group">
                     <label for="enddate" class="col-md-2 control-label">End date</label>
                     <div class="col-md-10">
-                        <input type="date" name="enddate" id="enddate" class="form-control" value="<?= (!empty($aData['enddate']) ? $aData['enddate'] : date('Y-m-d', strtotime('+2 week'))) ?>" required />
+                        <input type="date" name="enddate" id="enddate" class="form-control" value="<?= (!empty($aData['enddate']) ? $aData['enddate'] : (!empty($_GET['id']) ? '' : date('Y-m-d', strtotime('+4 week')))) ?>" />
                     </div>
                 </div>
-                <div class="row form-group">
 
+                <div class="row form-group">
                     <label for="link" class="col-md-2 control-label">Link</label>
                     <div class="col-md-10">
                         <input type="text" name="link" id="link" class="form-control" value="<?= (!empty($aData['link']) ? $aData['link'] : '') ?>" />
                     </div>
                 </div>
-                <div class="row form-group hidden-sm hidden-xs">
 
+                <div class="row form-group">
+                    <label for="password" class="col-md-2 control-label">Password</label>
+                    <div class="col-md-10">
+                        <input type="password" name="password" id="password" class="form-control" required />
+                    </div>
+                </div>
+
+                <div class="row form-group">
+                    <label for="link" class="col-md-2 control-label">&nbsp;</label>
+                    <div class="col-md-10">
+                        <input type="submit" name="action" value="Save" class="btn btn-primary" />
+                        <?php if (!empty($_GET['id'])) { ?>
+                            <a href="gameswithgoldadd.php" class="btn btn-default">Cancel</a>
+                            <input type="submit" name="action" value="Delete" class="btn btn-danger confirm" />
+                        <?php } ?>
+                    </div>
+                </div>
+
+                <div class="row form-group hidden-sm hidden-xs">
                     <label class="col-md-2 control-label">Majornelson</label>
                     <div class="col-md-10">
                         <p class="form-control-static">
@@ -281,8 +313,8 @@ if ($sth->execute()) {
                         </p>
                     </div>
                 </div>
-                <div class="row form-group hidden-sm hidden-xs">
 
+                <div class="row form-group hidden-sm hidden-xs">
                     <label class="col-md-2 control-label">Playstation Plus blog</label>
                     <div class="col-md-10">
                         <p class="form-control-static">
@@ -296,24 +328,6 @@ if ($sth->execute()) {
                             <a href="http://en.wikipedia.org/wiki/List_of_Instant_Game_Collection_games_(North_America)" target="_blank">http://en.wikipedia.org/wiki/List_of_Instant_Game_Collection_games_(North_America)</a><br/>
                             <a href="http://en.wikipedia.org/wiki/List_of_Instant_Game_Collection_games_(PAL_region)" target="_blank">http://en.wikipedia.org/wiki/List_of_Instant_Game_Collection_games_(PAL_region)</a>
                         </p>
-                    </div>
-                </div>
-                <div class="row form-group">
-
-                    <label for="password" class="col-md-2 control-label">Password</label>
-                    <div class="col-md-10">
-                        <input type="password" name="password" id="password" class="form-control" required />
-                    </div>
-                </div>
-                <div class="row form-group">
-
-                    <label for="link" class="col-md-2 control-label">&nbsp;</label>
-                    <div class="col-md-10">
-                        <input type="submit" name="action" value="Save" class="btn btn-primary" />
-                        <?php if (!empty($_GET['id'])) { ?>
-                            <a href="gameswithgoldadd.php" class="btn btn-default">Cancel</a>
-                            <input type="submit" name="action" value="Delete" class="btn btn-danger confirm" />
-                        <?php } ?>
                     </div>
                 </div>
             </form>
@@ -333,7 +347,10 @@ if ($sth->execute()) {
 									<?= $aGame['game'] ?>
 								<?php } ?>
 							</td>
-                            <td><?= $aGame['platform'] ?></td>
+                            <td>
+                                <?= $aGame['platform'] ?>
+                                <?= ($aGame['gamepass'] ? '(gamepass)' : '') ?>
+                            </td>
 							<td>
 								<?= ($aGame['startdate'] <= date('Y-m-d') ? '<small><i class="glyphicon glyphicon-play"></i></small>' : '') ?>
 								<?= $aGame['startdate'] ?>

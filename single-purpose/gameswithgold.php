@@ -24,15 +24,20 @@ require_once('gameswithgold.inc.php');
 $o = new GamesWithGold(array(
     'sUsername'             => 'XboxPSfreegames',
 
-    'sTweetFormatStartXbox' => '[:platform] Starting today, :game is free for #Xbox Live Gold members - :link',
-    'sTweetFormatStopXbox'  => '[:platform] Today is the last day :game is free for #Xbox Live Gold members - :link',
-    'sDefaultLinkXbox'      => 'http://www.xbox.com/en-US/live/games-with-gold',
-	'sTruncateFieldXbox'	=> 'game',
+    'sTweetFormatStartXbox'     => '[:platform] Starting today, :game is free with #Xbox Live Gold - :link',
+    'sTweetFormatStopXbox'      => '[:platform] Today is the last day :game is free with #Xbox Live Gold - :link',
+    'sDefaultLinkXbox'          => 'http://www.xbox.com/en-US/live/games-with-gold',
+	'sTruncateFieldXbox'	    => 'game',
 
-    'sTweetFormatStartPSN'  => '[:platform] Starting today, :game is free for members with #Playstation Plus - :link',
-    'sTweetFormatStopPSN'	=> '[:platform] Today is the last day :game is free for members with #Playstation Plus - :link',
-    'sDefaultLinkPSN'       => 'http://www.playstation.com/en-us/explore/playstation-plus/',
-	'sTruncateFieldPSN'		=> 'game',
+    'sTweetFormatStartPSN'      => '[:platform] Starting today, :game is free with #Playstation Plus - :link',
+    'sTweetFormatStopPSN'	    => '[:platform] Today is the last day :game is free with #Playstation Plus - :link',
+    'sDefaultLinkPSN'           => 'http://www.playstation.com/en-us/explore/playstation-plus/',
+	'sTruncateFieldPSN'		    => 'game',
+
+    'sTweetFormatStartGamepass' => '[Xbox GamePass] Starting today, :game is available for free with #Xbox GamePass - :link',
+    'sTweetFormatStopGamepass'  => '[Xbox GamePass] Today is the last day :game is available for free with #Xbox GamePass - :link',
+    'sDefaultLinkGamepass'      => 'https://www.microsoft.com/store/p/Xbox-Game-Pass/CFQ7TTC0K6L8',
+    'sTruncateFieldGamepass'    => 'game',
 ));
 $o->run();
 
@@ -88,6 +93,11 @@ class GamesWithGold {
         $this->sDefaultLinkPSN          = (!empty($aArgs['sDefaultLinkPSN'])        ? $aArgs['sDefaultLinkPSN']         : '');
 		$this->sTruncateFieldPSN        = (!empty($aArgs['sTruncateFieldPSN'])      ? $aArgs['sTruncateFieldPSN']       : '');
 
+        $this->sTweetFormatStartGamepass    = (!empty($aArgs['sTweetFormatStartGamepass'])  ? $aArgs['sTweetFormatStartGamepass']   : '');
+        $this->sTweetFormatStopGamepass     = (!empty($aArgs['sTweetFormatStopGamepass'])   ? $aArgs['sTweetFormatStopGamepass']    : '');
+        $this->sDefaultLinkGamepass         = (!empty($aArgs['sDefaultLinkGamepass'])       ? $aArgs['sDefaultLinkGamepass']        : '');
+        $this->sTruncateFieldGamepass       = (!empty($aArgs['sTruncateFieldGamepass'])     ? $aArgs['sTruncateFieldGamepass']      : '');
+
         if ($this->sLogFile == '.log') {
             $this->sLogFile = pathinfo($_SERVER['SCRIPT_FILENAME'], PATHINFO_FILENAME) . '.log';
         }
@@ -104,14 +114,24 @@ class GamesWithGold {
         if ($this->getIdentity()) {
 
             //fetch record from database for games starting free period today
-            if ($aRecords = $this->fetchStartRecords()) {
+            if (php_sapi_name() == 'cli') {
+                global $argv;
+                $sDate = isset($argv[1]) ? $argv[1] : '';
+            } else {
+                $sDate = filter_input(INPUT_GET, 'date');
+            }
+            if ($aRecords = $this->fetchStartRecords($sDate)) {
 
                 foreach ($aRecords as $aRecord) {
                     $sTweet = '';
 
                     //determine platform and format start tweet
                     if (stripos($aRecord['platform'], 'xbox') !== FALSE) {
-                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStartXbox, 'xbox');
+                        if ($aRecord['gamepass']) {
+                            $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStartGamepass, 'xbox', true);
+                        } else {
+                            $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStartXbox, 'xbox');
+                        }
                     } elseif (stripos($aRecord['platform'], 'playstation') !== FALSE) {
                         $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStartPSN, 'ps');
                     }
@@ -128,14 +148,18 @@ class GamesWithGold {
             }
 
             //fetch record from database for games ending free period tomorrow
-            if ($aRecords = $this->fetchStopRecords()) {
+            if ($aRecords = $this->fetchStopRecords($sDate)) {
 
                 foreach ($aRecords as $aRecord) {
                     $sTweet = '';
 
                     //determine platform and format stop tweet
                     if (stripos($aRecord['platform'], 'xbox') !== FALSE) {
-                        $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStopXbox, 'xbox');
+                        if ($aRecord['gamepass']) {
+                            $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStopGamepass, 'xbox', true);
+                        } else {
+                            $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStopXbox, 'xbox');
+                        }
                     } elseif (stripos($aRecord['platform'], 'playstation') !== FALSE) {
                         $sTweet = $this->formatTweet($aRecord, $this->sTweetFormatStopPSN, 'ps');
                     }
@@ -184,28 +208,32 @@ class GamesWithGold {
         return TRUE;
     }
 
-    private function fetchStartRecords() {
+    private function fetchStartRecords($sDate = '') {
 
+        $sDate = $sDate ? $sDate : date('Y-m-d');
         return $this->fetchRecords('
             SELECT *
             FROM gameswithgold
-            WHERE startdate = CURDATE()'
+            WHERE startdate = :date',
+            [':date' => $sDate]
 		);
     }
     
-    private function fetchStopRecords() {
+    private function fetchStopRecords($sDate = '') {
 
+        $sDate = $sDate ? $sDate : date('Y-m-d');
         return $this->fetchRecords('
             SELECT *
             FROM gameswithgold
-            WHERE enddate = CURDATE()'
+            WHERE enddate = :date',
+            [':date' => $sDate]
         );
     }
 
-    private function fetchRecords($sQuery) {
+    private function fetchRecords($sQuery, $aParams = []) {
 
         $sth = $this->oPDO->prepare($sQuery);
-		if ($sth->execute() == FALSE) {
+		if ($sth->execute($aParams) == FALSE) {
 			$this->logger(2, sprintf('Select query failed. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
 			$this->halt(sprintf('- Select query failed, halting. (%d %s)', $sth->errorCode(), $sth->errorInfo()));
 			return FALSE;
@@ -219,12 +247,16 @@ class GamesWithGold {
         }
     }
 
-    private function formatTweet($aRecord, $sFormat, $sPlatform) {
+    private function formatTweet($aRecord, $sFormat, $sPlatform, $bGamepass = false) {
 
 		//put in default link if game link is missing
 		if (!$aRecord['link']) {
 			if ($sPlatform == 'xbox') {
-				$aRecord['link'] = $this->sDefaultLinkXbox;
+                if ($bGamepass) {
+                    $aRecord['link'] = $this->sDefaultLinkGamepass;
+                } else {
+                    $aRecord['link'] = $this->sDefaultLinkXbox;
+                }
 			} elseif ($sPlatform == 'ps') {
 				$aRecord['link'] = $this->sDefaultLinkPSN;
 			}
@@ -241,7 +273,11 @@ class GamesWithGold {
 		if ($iTweetLength > $this->iTweetMaxLength) {
 
 			if ($sPlatform == 'xbox') {
-				$sOriginalFieldValue = $aRecord[$this->sTruncateFieldXbox];
+                if ($bGamepass) {
+                    $sOriginalFieldValue = $aRecord[$this->sTruncateFieldGamepass];
+                } else {
+                    $sOriginalFieldValue = $aRecord[$this->sTruncateFieldXbox];
+                }
 			} elseif ($sPlatform == 'ps') {
 				$sOriginalFieldValue = $aRecord[$this->sTruncateFieldPSN];
 			}
