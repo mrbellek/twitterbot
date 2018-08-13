@@ -30,6 +30,12 @@ if ($sSearch = filter_input(INPUT_POST, 'search')) {
     $aItems = $logger->view();
 }
 
+$errorLevels = [
+    'DEBUG' => '',
+    'ERROR' => 'danger',
+    'WARN' => 'warning',
+];
+
 $aBots = [
     //active
     'ChunkyBot',
@@ -37,7 +43,7 @@ $aBots = [
     'IWantABot',
     'NotesFromBTC',
     'r_Buttcoin',
-    'r_BimboFetish',
+    'r_BimboFetish', 'Bimbofetish2018',
     'stallman_txt',
     'DSTnotify',
     'bitcoin_pizza',
@@ -46,7 +52,6 @@ $aBots = [
     'mBibleVerses',
     'UnicodeTweet',
     'ExactoTweet',
-    'nsfw_r',
     'gonewild_r',
     'DonaldTrump_Is',
     'Wendy__Whoppers',
@@ -55,10 +60,16 @@ $aBots = [
     'ObamaReplay',
     'mrbellekplays',
 
+    'RealmGrinder',
+    'RandomAlbumCovr',
+    'FactsDumps',
+    'IMDbTriviaBot',
+
     //inactive/suspended
     //'10millioncombos',
     //'StopTextingAll',
     //'lAlwaysWin',
+    //'nsfw_r',
 
     //unfinished
     //'Benjaminfrgates',
@@ -76,7 +87,7 @@ $aBots = [
         <script type="text/javascript">
             var bots = ["<?= implode('", "', $aBots) ?>"];
             bots.forEach(function (item) {
-                $.get('<?= ltrim(filter_input(INPUT_SERVER, 'PHP_SELF'), '/') ?>?get=' + item, function(data) {
+                $.get('<?= filter_input(INPUT_SERVER, 'PHP_SELF') ?>?get=' + item, function(data) {
                     $('#botstatus').append('<a href="https://twitter.com/' + item + '" target="_blank" class="btn btn-' + data.status + '" style="margin: 0.5em;">' + item + '</a>');
                 }, 'json');
             });
@@ -112,7 +123,7 @@ $aBots = [
 					<th>Timestamp</th>
 				</tr>
 				<?php foreach ($aItems as $aRow) { ?>
-					<tr class="table-striped">
+                    <tr class="table-striped <?= $errorLevels[$aRow['level']] ?>">
 						<td><a href="https://twitter.com/<?= $aRow['botname'] ?>" target="_blank"><?= $aRow['botname'] ?></a></td>
 						<td><?= $aRow['error'] ?></td>
 						<td>

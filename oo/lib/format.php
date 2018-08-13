@@ -71,7 +71,7 @@ class Format extends Base
 
         //disable mentions if needed
         if (!$this->oConfig->get('allow_mentions', false)) {
-            $sTweet = str_replace('@', '@/', $sTweet);
+            $sTweet = str_replace('@', '#', $sTweet);
         }
 
         //determine maximum length left over for truncated field (links are shortened to t.co format of max 22 chars)
@@ -91,7 +91,7 @@ class Format extends Base
 
                 //disable mentions if needed
                 if (!$this->oConfig->get('allow_mentions', false)) {
-                    $sText = str_replace('@', '@/', $sText);
+                    $sText = str_replace('@', '#', $sText);
                 }
 
                 //get length of text with url shortening
@@ -139,7 +139,7 @@ class Format extends Base
 
         //disable mentions if needed
         if (!$this->oConfig->get('allow_mentions', false)) {
-            $sTweet = str_replace('@', '@/', $sTweet);
+            $sTweet = str_replace('@', '#', $sTweet);
         }
 
         //determine maximum length left over for truncated field (links are shortened to t.co format of max 22 chars)
@@ -159,7 +159,7 @@ class Format extends Base
 
                 //disable mentions if needed
                 if (!$this->oConfig->get('allow_mentions', false)) {
-                    $sText = str_replace('@', '@/', $sText);
+                    $sText = str_replace('@', '#', $sText);
                 }
 
                 //get length of text with url shortening

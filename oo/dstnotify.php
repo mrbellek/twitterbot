@@ -110,7 +110,7 @@ class DSTNotify
                 $this->logger->output('- %s groups start DST %s!', count($aGroups), $sDelay);
             } else {
                 $this->logger->output('- No groups start DST %s.', $sDelay);
-                $this->logger->write(5, 'No groups start DST %s.', $sDelay);
+                //$this->logger->write(5, 'No groups start DST %s.', $sDelay);
             }
         }
 
@@ -123,7 +123,7 @@ class DSTNotify
                 $this->logger->output('- %s groups exit DST %s!', count($aGroups), $sDelay);
             } else {
                 $this->logger->output('- No groups exit DST %s.', $sDelay);
-                $this->logger->write(5, 'No groups exit DST %s.', $sDelay);
+                //$this->logger->write(5, 'No groups exit DST %s.', $sDelay);
             }
         }
 

@@ -132,7 +132,9 @@ class Config
      */
     public function writeConfig()
     {
-        file_put_contents(DOCROOT . strtolower($this->sUsername) . '.json', json_encode($this->oSettings, JSON_PRETTY_PRINT));
+        if (isset($this->sUsername)) {
+            file_put_contents(DOCROOT . strtolower($this->sUsername) . '.json', json_encode($this->oSettings, JSON_PRETTY_PRINT));
+        }
     }
 
     public function __destruct()

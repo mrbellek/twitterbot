@@ -6,7 +6,7 @@
         "countercol": "postcount",
         "timestampcol": "lastposted"
     },
-    "format": ":title: :spoiler:trivia (:votes votes) https://www.imdb.com/title/:id/trivia?item=:trivia_id",
+    "format": ":title: :spoiler:trivia (:votes votes) https:\/\/www.imdb.com\/title\/:id\/trivia?item=:trivia_id",
     "tweet_vars": {
         "0": {
             "var": ":title",

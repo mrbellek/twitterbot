@@ -95,7 +95,8 @@ class Logger
         return $this->db->query('
             SELECT *
             FROM twitterlog
-            ORDER BY timestamp DESC'
+            ORDER BY timestamp DESC
+            LIMIT 100'
         );
 
     }
@@ -111,7 +112,8 @@ class Logger
             OR error LIKE :search
             OR level LIKE :search
             OR file LIKE :search
-            ORDER BY timestamp DESC',
+            ORDER BY timestamp DESC
+            LIMIT 100',
             [':search' => '%' . $sSearch . '%']
         );
     }
