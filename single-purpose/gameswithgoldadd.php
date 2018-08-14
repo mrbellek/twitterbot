@@ -380,7 +380,10 @@ if ($sth->execute()) {
 									<?= $aGame['game'] ?>
 								<?php } ?>
 							</td>
-                            <td class="platform"><?= $aGame['platform'] ?></td>
+                            <td class="platform">
+                                <?= $aGame['platform'] ?>
+                                <?= ($aGame['gamepass'] ? '(gamepass)' : '') ?>
+							</td>
                             <td><?= $aGame['enddate'] ?></td>
 							<td><?= $aGame['months_ago'] ?> months ago</td>
                         </tr>
