@@ -23,10 +23,10 @@ class BitcoinPizzaBot {
             'url' => 'https://www.bitstamp.net/api/ticker/',
             'target' => 'last',
         ),
-        'btc-e' => array(
+        /*'btc-e' => array(
             'url' => 'https://btc-e.com/api/3/ticker/btc_usd',
             'target' => 'btc_usd.last',
-        ),
+        ),*/
         'bitfinex' => array(
             'url' => 'https://api.bitfinex.com/v1/pubticker/BTCUSD',
             'target' => 'last_price',
