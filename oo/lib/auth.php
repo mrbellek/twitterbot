@@ -32,8 +32,8 @@ class Auth extends Base
 				return false;
 			}
 		} else {
-			$this->logger->write(2, sprintf('Twitter API call failed: GET account/verify_credentials (%s)', $oCurrentUser->errors[0]->message));
-			$this->logger->output(sprintf('- Call failed, halting. (%s)', $oCurrentUser->errors[0]->message));
+			$this->logger->write(2, sprintf('Twitter API call failed: GET account/verify_credentials (%s, %s)', $oCurrentUser->errors[0]->code, $oCurrentUser->errors[0]->message));
+			$this->logger->output(sprintf('- Call failed, halting. (%s, %s)', $oCurrentUser->errors[0]->code, $oCurrentUser->errors[0]->message));
 
 			return false;
         }

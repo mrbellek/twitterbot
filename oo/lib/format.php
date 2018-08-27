@@ -9,6 +9,7 @@ use Twitterbot\Custom\Imgur;
  * TODO: the tweet_vars.x.attach_image field is not checked, instead hardcoding it based on content type
  * TODO: any attached content isn't removed from the tweet
  * @TODO: https://imgur.com/tdXKAgN isn't correctly parsed
+ * @TODO: optionally add ellipsis when truncating field
  *
  * @param config:source - database/rss where record came from, needed for handling format settings
  * @param config:max_tweet_length

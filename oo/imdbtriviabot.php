@@ -22,7 +22,7 @@ class IMDbTriviaBot
         $oConfig = new Config;
         if ($oConfig->load($this->sUsername)) {
 
-            if (new Auth($oConfig)) {
+            if ((new Auth($oConfig))->isUserAuthed($this->sUsername)) {
                 $aRecord = (new Database($oConfig))
                     ->getRecord();
 
