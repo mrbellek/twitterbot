@@ -25,6 +25,12 @@ class RetweetBot
 	private $sLogFile;			//where to log stuff
     private $iLogLevel = 3;     //increase for debugging
 
+    private $aDontLogTheseErrors = [
+        327, //you have already retweeted this tweet
+        //TODO: 'you have been blocked from retweeting this user's tweets at their request'
+
+    ];
+
 	public function __construct($aArgs) {
 
 		$this->oTwitter = new TwitterOAuth(CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET);
@@ -295,9 +301,13 @@ class RetweetBot
 			);
 			$oRet = $this->oTwitter->post('statuses/retweet/' . $oTweet->id_str, array('trim_user' => TRUE));
 
-			if (!empty($oRet->errors)) {
-				$this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s)', $oRet->errors[0]->message), array('tweet' => $oTweet));
-				$this->halt(sprintf('- Retweet failed, halting. (%s)', $oRet->errors[0]->message));
+			if (!empty($oRet->errors) && !in_array($oRet->errors[0]->code, $this->aDontLogTheseErrors)) {
+                $this->logger(2, sprintf('Twitter API call failed: POST statuses/retweet (%s, %s)',
+                    $oRet->errors[0]->code,
+                    $oRet->errors[0]->message),
+                    array('tweet' => $oTweet)
+                );
+				$this->halt(sprintf('- Retweet failed, halting. (%s, %s)', $oRet->errors[0]->code, $oRet->errors[0]->message));
 				return FALSE;
 			}
 		}
