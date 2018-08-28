@@ -140,7 +140,7 @@ $sth = $oPDO->prepare('
     SELECT *
     FROM gameswithgold
     WHERE enddate >= CURDATE() OR enddate IS NULL
-    ORDER BY startdate, enddate, platform, game'
+    ORDER BY gamepass, startdate, enddate, platform, game'
 );
 if ($sth->execute()) {
     $aUpcomingGames = $sth->fetchAll(PDO::FETCH_ASSOC);
