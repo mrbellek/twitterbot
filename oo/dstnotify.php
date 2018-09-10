@@ -34,7 +34,7 @@ class DSTNotify
 {
     public function __construct()
     {
-        $this->sUsername = 'DSTNotify';
+        $this->sUsername = 'DSTnotify';
         $this->logger = new Logger;
     }
 
@@ -106,7 +106,7 @@ class DSTNotify
         //check if any of the countries are switching to DST (summer time) either today, tomorrow or next week
         foreach ($aDelays as $sDelay => $iDelaySeconds) {
             if ($aGroups = $this->checkDSTStart($sToday + $iDelaySeconds)) {
-                $aTweets = array_merge($aTweets, $this->formatTweetDST('starting', $aGroups, $sDelay));
+                $aTweets = array_merge($aTweets, $this->formatTweetDST('start', $aGroups, $sDelay));
                 $this->logger->output('- %s groups start DST %s!', count($aGroups), $sDelay);
             } else {
                 $this->logger->output('- No groups start DST %s.', $sDelay);
@@ -119,7 +119,7 @@ class DSTNotify
         //check if any of the countries are switching from DST (winter time) today, tomorrow or next week
         foreach ($aDelays as $sDelay => $iDelaySeconds) {
             if ($aGroups = $this->checkDSTEnd($sToday + $iDelaySeconds)) {
-                $aTweets = array_merge($aTweets, $this->formatTweetDST('ending', $aGroups, $sDelay));
+                $aTweets = array_merge($aTweets, $this->formatTweetDST('end', $aGroups, $sDelay));
                 $this->logger->output('- %s groups exit DST %s!', count($aGroups), $sDelay);
             } else {
                 $this->logger->output('- No groups exit DST %s.', $sDelay);
