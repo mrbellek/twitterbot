@@ -40,7 +40,7 @@ class Database extends Base
             ]);
         } catch(Exception $e) {
             //do not write to logger since database connection is down lol
-            $this->logger->output(sprintf('- Database connection failed. (%s)', $e->getMessage()));
+            $this->logger->output(sprintf('- Database connection to %s failed. (%s)', DB_HOST, $e->getMessage()));
 
             die('FATAL' . PHP_EOL);
         }
@@ -73,11 +73,11 @@ class Database extends Base
                     $key = (substr($key, 0, 1) == ':' ? $key : ':' . $key);
 
                     //bind as int if it looks like a number
-                    if (is_numeric($value)) {
-                        $sth->bindValue($key, $value, PDO::PARAM_INT);
-                    } else {
+                    //if (is_numeric($value) && !is_float($value)) {
+                    //    $sth->bindValue($key, $value, PDO::PARAM_INT);
+                    //} else {
                         $sth->bindValue($key, $value, PDO::PARAM_STR);
-                    }
+                    //}
                 }
 
                 //run query

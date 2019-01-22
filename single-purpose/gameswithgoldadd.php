@@ -139,8 +139,9 @@ $aUpcomingGames = array();
 $sth = $oPDO->prepare('
     SELECT *
     FROM gameswithgold
-    WHERE enddate >= CURDATE() OR enddate IS NULL
-    ORDER BY gamepass, startdate, enddate, platform, game'
+    WHERE (enddate >= CURDATE() OR enddate IS NULL)
+    AND gamepass = 0
+    ORDER BY startdate, enddate, platform, game'
 );
 if ($sth->execute()) {
     $aUpcomingGames = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -152,6 +153,29 @@ if ($sth->execute()) {
             $aUpcomingGames[$key]['platformclass'] = 'success';
         } elseif ($sPlatform == 'playstation') {
             $aUpcomingGames[$key]['platformclass'] = 'info';
+        }
+    }
+}
+
+//no form submit: list gamepass games
+$aGamepassGames = [];
+$sth = $oPDO->prepare('
+    SELECT *
+    FROM gameswithgold
+    WHERE (enddate >= CURDATE() OR enddate IS NULL)
+    AND gamepass = 1
+    ORDER BY startdate, enddate, platform, game'
+);
+if ($sth->execute()) {
+    $aGamepassGames = $sth->fetchAll(PDO::FETCH_ASSOC);
+
+    //make xbox games green color and playstation games blue color
+    foreach ($aGamepassGames as $key => $aGame) {
+        $sPlatform = (!empty($aPlatforms[$aGame['platform']]) ? $aPlatforms[$aGame['platform']] : '');
+        if ($sPlatform == 'xbox') {
+            $aGamepassGames[$key]['platformclass'] = 'success';
+        } elseif ($sPlatform == 'playstation') {
+            $aGamepassGames[$key]['platformclass'] = 'info';
         }
     }
 }
@@ -356,6 +380,36 @@ if ($sth->execute()) {
 								<?= $aGame['startdate'] ?>
 							</td>
                             <td><?= $aGame['enddate'] ?></td>
+                            <td><a href="?id=<?= $aGame['id']?>"><span class="glyphicon glyphicon-pencil"></span></a></td>
+                        </tr>
+                    <?php } ?>
+                </table>
+            <?php } ?>
+
+            <?php if ($aGamepassGames) { ?>
+                <table class="table table-condensed table-hover">
+                    <caption>Currently active Gamepass games</caption>
+                    <tr>
+                        <th>Game</th><th>Platform</th><th>Start date</th><th>End date</th><th></th>
+                    </tr>
+                    <?php foreach ($aGamepassGames as $aGame) { ?>
+                        <tr class="table-striped <?= $aGame['platformclass'] ?>">
+							<td>
+								<?php if ($aGame['link']) { ?>
+									<a href="<?= $aGame['link'] ?>" target="_blank"><?= $aGame['game'] ?></a>
+								<?php } else { ?>
+									<?= $aGame['game'] ?>
+								<?php } ?>
+							</td>
+                            <td>
+                                <?= $aGame['platform'] ?>
+                                <?= ($aGame['gamepass'] ? '(gamepass)' : '') ?>
+                            </td>
+							<td>
+								<?= ($aGame['startdate'] <= date('Y-m-d') ? '<small><i class="glyphicon glyphicon-play"></i></small>' : '') ?>
+								<?= $aGame['startdate'] ? $aGame['startdate'] : '<small><i>< 2018-08-01</i></small>' ?>
+							</td>
+                            <td><?= $aGame['enddate'] ? $aGame['enddate'] : '-' ?></td>
                             <td><a href="?id=<?= $aGame['id']?>"><span class="glyphicon glyphicon-pencil"></span></a></td>
                         </tr>
                     <?php } ?>

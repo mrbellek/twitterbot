@@ -76,6 +76,19 @@ $aBots = [
     //'TVgraphs',
 ];
 
+$filters = [
+    'You have already retweeted this Tweet.',
+    'You have been blocked from retweeting this user\'s tweets at their reques',
+];
+foreach ($aItems as $key => $aItem) {
+    foreach ($filters as $filter) {
+        if (strpos($aItem['error'], $filter) !== false) {
+            unset($aItems[$key]);
+            break;
+        }
+    }
+}
+
 ?><!DOCTYPE html>
 <html>
 	<head>
@@ -104,13 +117,25 @@ $aBots = [
 				<?php if (!empty($sSearch)) { ?>
 					<input type="hidden" name="search" value="<?= htmlentities($sSearch) ?>" />
 				<?php } ?>
-				<label for="search" class="col-sm-1 control-label">Search</label>
-				<div class="col-sm-10" style="margin-bottom: 2em;">
-					<input type="text" id="search" name="search" class="form-control" value="<?= @$sSearch ?>" />
-				</div>
-				<div class="col-sm-1">
-					<input type="submit" class="btn btn-info" value="Search" />
-				</div>
+                <div class="row form-group">
+                    <label for="search" class="col-sm-1 control-label">Search</label>
+                    <div class="col-sm-10" style="margin-bottom: 2em;">
+                        <input type="text" id="search" name="search" class="form-control" value="<?= @$sSearch ?>" />
+                    </div>
+                    <div class="col-sm-1">
+                        <input type="submit" class="btn btn-info" value="Search" />
+                    </div>
+                </div>
+                <div class="row form-group">
+                    <label for="filters" class="col-sm-1 control-label">Filters</label>
+                    <div class="col-sm-10">
+                        <select multiple class="form-control" size="6" name="filters" id="filters">
+                        <?php foreach ($filters as $key => $filter) { ?>
+                            <option value="<?= $key ?>"><?= $filter ?></option>
+                        <?php } ?>
+                        </select>
+                    </div>
+                </div>
 			</form>
 
 			<table class="table table-condensed table-hover">
