@@ -1,6 +1,6 @@
 <?php
 require_once('autoload.php');
-require_once('chunkybot.inc.php');
+require_once('founddildo.inc.php');
 
 use Twitterbot\Lib\Logger;
 use Twitterbot\Lib\Config;
@@ -40,36 +40,38 @@ $aBots = [
     //active
     'ChunkyBot',
     'FoundDildo',
-    'IWantABot',
-    'NotesFromBTC',
     'r_Buttcoin',
-    'r_BimboFetish', 'Bimbofetish2018',
-    'stallman_txt',
+    'r_BimboFetish',
     'DSTnotify',
     'bitcoin_pizza',
     'XboxPSfreegames',
-    'mrbellekgoogle',
     'mBibleVerses',
     'UnicodeTweet',
     'ExactoTweet',
-    'gonewild_r',
-    'DonaldTrump_Is',
     'Wendy__Whoppers',
-    'AppNeeds',
     'HolidaysBot',
-    'ObamaReplay',
     'mrbellekplays',
-
-    'RealmGrinder',
-    'RandomAlbumCovr',
     'FactsDumps',
     'IMDbTriviaBot',
+    'SeaOfPhotograph',
+    'JosetteFbookies',
 
     //inactive/suspended
+    //'IWantABot',
+    //'NotesFromBTC',
+    //'stallman_txt',
+    //'mrbellekgoogle',
+    //'AppNeeds',
+    //'RandomAlbumCovr',
+    //'gonewild_r',
+    //'DonaldTrump_Is',
+    //'Bimbofetish2018',
     //'10millioncombos',
     //'StopTextingAll',
     //'lAlwaysWin',
     //'nsfw_r',
+    //'ObamaReplay',
+    //'RealmGrinder',
 
     //unfinished
     //'Benjaminfrgates',

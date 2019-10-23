@@ -52,6 +52,7 @@ class File extends Base
             }
 
             $this->logger->output('- Writing filelist with %d entries to cache', count($this->aFileList));
+            $this->oConfig->set('filelist_mtime', date('Y-m-d H:i:s'));
             $this->writeFileList();
 
             return true;
@@ -91,12 +92,18 @@ class File extends Base
 		return $aFiles;
     }
 
+    public function getFromFolder($folder)
+    {
+        return $this->get($folder);
+    }
+
     /**
      * Get random file from the index, with all info
      *
+     * @param string $folder
      * @return array|false
      */
-    public function get()
+    public function get($folder = null)
     {
         $this->logger->output('Getting file..');
 
@@ -105,9 +112,9 @@ class File extends Base
 
         //get random file (lowest postcount) or random unposted file
         if ($this->oConfig->get('post_only_once', false) == true) {
-            $sFilename = $this->getRandomUnposted();
+            $sFilename = $this->getRandomUnposted($folder);
         } else {
-            $sFilename = $this->getRandom();
+            $sFilename = $this->getRandom($folder);
         }
 
         if (!$sFilename) {
@@ -143,27 +150,39 @@ class File extends Base
     /**
      * Get random file with lowest postcount from index
      *
+     * @param string|null $folder
      * @return string
      */
-    private function getRandom()
+    private function getRandom($folder = null)
     {
         $this->logger->output('- Getting random file');
 
-        //get lowest postcount in index
-        //HACK: make a global var here so we can use it below in the array_filter anonymous function
-        global $iLowestCount;
+        //get lowest postcount in index, optionally in a specific folder
         $iLowestCount = false;
         foreach ($this->aFileList as $sFilename => $iCount) {
-            if ($iLowestCount === false || $iCount < $iLowestCount) {
-                $iLowestCount = $iCount;
+            if (!$folder || strpos($sFilename, $folder) === 0) {
+                if ($iLowestCount === false || $iCount < $iLowestCount) {
+                    $iLowestCount = $iCount;
+                }
             }
         }
 
         //create temp array of files with lowest postcount
-        $aTempIndex = array_filter((array) $this->aFileList, function($i) {
-            global $iLowestCount;
+        $aTempIndex = array_filter((array) $this->aFileList, function($i) use($iLowestCount) {
             return ($i == $iLowestCount ? true : false);
         });
+
+        //optionally filter only on specific folder
+        if ($folder) {
+            $aTempIndex = array_filter($aTempIndex, function($filename) use ($folder) {
+                return strpos($filename, $folder) === 0;
+            }, ARRAY_FILTER_USE_KEY);
+        }
+
+        //array empty? don't return
+        if (!$aTempIndex) {
+            return '';
+        }
 
         //pick random file
         $sFilename = array_rand($aTempIndex);
@@ -174,14 +193,24 @@ class File extends Base
     /**
      * Get random unposted file
      *
+     * @param string|null $folder
      * @return string
      */
-    private function getRandomUnposted()
+    private function getRandomUnposted($folder = null)
     {
         $this->logger->output('- Getting unposted random file');
 
         //create temp array of all files that have postcount = 0 
-        $aTempIndex = array_filter($this->aFileList, function($i) { return ($i == 0 ? true : false); });
+        $aTempIndex = array_filter($this->aFileList, function($i) {
+            return ($i == 0 ? true : false);
+        });
+
+        //optionally filter only on specific folder
+        if ($folder) {
+            $aTempIndex = array_filter($aTempIndex, function($filename) use ($folder) {
+                return strpos($filename, $folder) === 0;
+            }, ARRAY_FILTER_USE_KEY);
+        }
 
         //pick random file
         $sFilename = array_rand($aTempIndex);
@@ -211,7 +240,6 @@ class File extends Base
     private function writeFileList()
     {
         $this->oConfig->set('filelist', $this->aFileList);
-        $this->oConfig->set('filelist_mtime', date('Y-m-d H:i:s'));
         $this->oConfig->writeConfig();
     }
 }

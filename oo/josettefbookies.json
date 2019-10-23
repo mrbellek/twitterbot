@@ -1,0 +1,12 @@
+{
+    "format": "#:dirname",
+    "source": "json",
+    "tweet_vars": {
+        "0": {
+            "var": ":dirname",
+            "value": "dirname"
+        }
+    },
+    "folder": "facebookies",
+    "max_index_age": "86400"
+}

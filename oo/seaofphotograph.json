@@ -1,0 +1,38 @@
+{
+    "source": "rss",
+    "feed": {
+        "url": "http:\/\/www.reddit.com\/r\/SeaOfPhotography\/.json?sort=new",
+        "format": "json",
+        "rootnode": "data>children"
+    },
+    "format": ":title (by :author) :link",
+    "timestamp_field": "data>created",
+    "tweet_vars": {
+        "0": {
+            "var": ":title",
+            "value": "data>title",
+            "truncate": true
+        },
+        "1": {
+            "var": ":author",
+            "value": "data>author",
+            "default": "[deleted]"
+        },
+        "2": {
+            "var": ":link",
+            "value": "data>permalink",
+            "prefix": "http:\/\/www.reddit.com"
+        },
+        "3": {
+            "var": ":type",
+            "value": "special:redditmediatype",
+            "subject": ":source"
+        },
+        "4": {
+            "var": ":source",
+            "value": "data>url",
+            "attach_image": true
+        }
+    },
+    "last_max_timestamp": 1490071633
+}
