@@ -9,6 +9,7 @@ class PictureBot {
 
 	private $sUsername;			//username we will be tweeting from
 	private $sSettingsFile;		//settings file to cache file list and store postcount
+	private $sSettingsExtraFile;//settings file with additional metadata info on files
 	private $sPictureFolder;	//folder with images
 	private $aPictureIndex;		//cached index of pictures
 	private $sMediaId;			//media id of uploaded picture
@@ -41,6 +42,7 @@ class PictureBot {
 		$this->sUsername = (!empty($aArgs['sUsername']) ? $aArgs['sUsername'] : '');
         $this->bReplyToCmds = (!empty($aArgs['bReplyToCmds']) ? $aArgs['bReplyToCmds'] : FALSE);
 		$this->sSettingsFile = (!empty($aArgs['sSettingsFile']) ? $aArgs['sSettingsFile'] : strtolower($this->sUsername) . '.json');
+		$this->sSettingsExtraFile = (!empty($aArgs['sSettingsFile']) ? $aArgs['sSettingsFile'] : strtolower($this->sUsername) . '-extra.json');
 
 		$this->sPictureFolder = (!empty($aArgs['sPictureFolder']) ? $aArgs['sPictureFolder'] : '.');
 		$this->iMaxIndexAge = (!empty($aArgs['iMaxIndexAge']) ? $aArgs['iMaxIndexAge'] : 3600 * 24);
@@ -68,6 +70,7 @@ class PictureBot {
 
 			//fetch random file
 			if ($aFile = $this->getFile()) {
+                $aFile = $this->getExtraFileInfo($aFile);
 
 				//upload picture
 				if ($this->uploadPicture($aFile['filepath'])) {
@@ -308,6 +311,33 @@ class PictureBot {
 		return FALSE;
 
 	}
+
+    private function getExtraFileInfo($aFile) {
+
+        if (!is_readable($this->sSettingsExtraFile)) {
+            return $aFile;
+        }
+
+        try {
+            $oExtra = json_decode(file_get_contents($this->sSettingsExtraFile));
+        } catch (\Exception $e) {
+            $this->logger(3, sprintf('Failed to read or parse extra settings file at "%s"', $this->sSettingsExtraFile));
+            return $aFile;
+        }
+
+        if (!empty($oExtra->{$aFile['filename']})) {
+            foreach (get_object_vars($oExtra->{$aFile['filename']}) as $var => $value) {
+                if (!isset($aFile[$var])) {
+                    $aFile[$var] = $value;
+                } else {
+                    printf('WARNING: Skipping extra info var "%s" because it already exists.', $var);
+                    $this->logger(3, sprintf('Skipping extra info var "%s" because it already exists.', $var));
+                }
+            }
+        }
+
+        return $aFile;
+    }
 
 	private function updatePostCount($aFile) {
 
