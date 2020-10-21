@@ -60,6 +60,12 @@ class Rss extends Base
             $oNodes = $oRssFeed;
         }
 
+        //limit to 10 latest items
+        //TODO: take this from a setting, this is a quick hack
+        if (count($oNodes) > 10) {
+            $oNodes = array_slice($oNodes, -10);
+        }
+        
         //truncate list of nodes to those with at least the max timestamp from last time
         $sLastMaxTimestamp = $this->oConfig->get('last_max_timestamp', 0);
         if ($sLastMaxTimestamp) {
